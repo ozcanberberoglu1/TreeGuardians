@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd443681727d4b8a8ada50ada27e138, type: 3}
+  m_Name: Chest_ancient
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ChestDefinition
+  id: ancient
+  nameKey: chest_ancient
+  tier: 2
+  iconClosed: {fileID: 21300000, guid: 96e083650f98442b8812df9db998acfe, type: 3}
+  iconOpen: {fileID: 21300000, guid: 0f79e31d38663490bb2e37ef5516935a, type: 3}
+  glowColor: {r: 0.85, g: 0.6, b: 1, a: 1}
+  coinsMin: 350
+  coinsMax: 600
+  sapMin: 25
+  sapMax: 45
+  gemsMin: 2
+  gemsMax: 6
+  cardDraws: 8
+  rarityWeights:
+  - 35
+  - 40
+  - 22
+  - 3
+  guaranteeEpic: 1
+  epicPityThreshold: 0
+  unlockSeconds: 28800
+  arenaTierBonusPerIndex: 0.15
+  gemSkipCostPerHour: 6

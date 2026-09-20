@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db732f75e6925451593292c71a4b8f6f, type: 3}
+  m_Name: Guardian_owl_scout
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.GuardianDefinition
+  id: owl_scout
+  nameKey: g_owl_scout_name
+  descriptionKey: g_owl_scout_desc
+  rarity: 2
+  portrait: {fileID: 21300000, guid: bc94b4c9e6e23449fbcd313cf39441ca, type: 3}
+  cardArt: {fileID: 21300000, guid: bc94b4c9e6e23449fbcd313cf39441ca, type: 3}
+  worldSprite: {fileID: 21300000, guid: 49e535fcd301d4cc69f8077c6a0a2095, type: 3}
+  worldPrefab: {fileID: 0}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  baseHealth: 420
+  baseAttack: 46
+  baseStructureDamage: 40
+  baseArmor: 3
+  critChance: 0.25
+  critMultiplier: 1.5
+  normalProjectile: {fileID: 11400000, guid: 11c684c563cfb4d76b8d06d06d68b671, type: 2}
+  attackCooldown: 2.4
+  range: 22
+  preferredTarget: 1
+  isFlying: 1
+  autoAttack: 1
+  playerAimable: 1
+  specialKind: 1
+  specialNameKey: special_power_shot
+  specialProjectile: {fileID: 11400000, guid: 11c684c563cfb4d76b8d06d06d68b671, type: 2}
+  specialEnergyCost: 100
+  specialMagnitude: 2.5
+  specialDuration: 0
+  passiveKind: 1
+  passiveMagnitude: 0.1
+  arenaUnlockIndex: 1
+  playableInPrototype: 1
+  attackSfx: 6
+  hurtSfx: 9

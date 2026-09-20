@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fdb71a36d7ff425bb81decfda2056cc, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Core.GameConfig
+  gameName: Tree Guardians
+  studioName: Leke Games
+  version: 0.1.0
+  bootScene: 00_Boot
+  loadingScene: 01_Loading
+  mainMenuScene: 02_MainMenu
+  battleScene: 03_Battle
+  resultsScene: 04_Results
+  sandboxScene: 05_Sandbox
+  includeSandboxInBuild: 0
+  targetFrameRate: 60
+  referenceResolution: {x: 2340, y: 1080}
+  canvasMatchWidthOrHeight: 0.5
+  minLoadingSeconds: 1
+  loadingBarSmoothing: 6
+  loadingTipIntervalSeconds: 2.5

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e68597b9ba21f454a9cc41ae5a12c6d6, type: 3}
+  m_Name: Tool_bee_hive
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ToolDefinition
+  id: bee_hive
+  nameKey: t_bee_hive_name
+  descriptionKey: t_bee_hive_desc
+  icon: {fileID: 21300000, guid: 8f6d21b4d332145998d5bbf1900558e4, type: 3}
+  accentColor: {r: 1, g: 0.8, b: 0.3, a: 1}
+  effect: 2
+  projectile: {fileID: 11400000, guid: 5dd2e2b86b8ea429bb73d0184d832a52, type: 2}
+  effectMagnitude: 12
+  effectDuration: 0
+  effectRadius: 0
+  projectileCount: 6
+  cooldownSeconds: 28
+  requiresAim: 0
+  maxLevel: 10
+  baseUpgradeSap: 20
+  upgradeGrowth: 1.4
+  magnitudePerLevel: 0.08
+  cooldownReductionPerLevel: 0.02
+  arenaUnlockIndex: 0
+  playableInPrototype: 1
+  useSfx: 18

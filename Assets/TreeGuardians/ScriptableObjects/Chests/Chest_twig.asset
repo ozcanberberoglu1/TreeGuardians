@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd443681727d4b8a8ada50ada27e138, type: 3}
+  m_Name: Chest_twig
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ChestDefinition
+  id: twig
+  nameKey: chest_twig
+  tier: 0
+  iconClosed: {fileID: 21300000, guid: bd79ec63c588e47eb9939fc71805951c, type: 3}
+  iconOpen: {fileID: 21300000, guid: 9e29e02283a934b2aa6fe5afb8f7d8d3, type: 3}
+  glowColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+  coinsMin: 40
+  coinsMax: 80
+  sapMin: 2
+  sapMax: 6
+  gemsMin: 0
+  gemsMax: 0
+  cardDraws: 3
+  rarityWeights:
+  - 70
+  - 25
+  - 4.5
+  - 0.5
+  guaranteeEpic: 0
+  epicPityThreshold: 12
+  unlockSeconds: 900
+  arenaTierBonusPerIndex: 0.15
+  gemSkipCostPerHour: 6

@@ -6,7 +6,7 @@
     },
     "codebaseMemory": {
       "type": "stdio",
-      "command": "codebase-memory-mcp",
+      "command": "/Users/ozcanberberoglu/.local/bin/codebase-memory-mcp",
       "args": []
     }
   }

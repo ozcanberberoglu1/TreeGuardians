@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab310e6b5f5004795b1d5325bf702422, type: 3}
+  m_Name: Quest_special_500
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.QuestDefinition
+  id: special_500
+  titleKey: q_special_500_title
+  descriptionKey: q_special_500_desc
+  icon: {fileID: 21300000, guid: ba5d2e57d6b904c3ab0223d1d26fc7d9, type: 3}
+  type: 5
+  targetCount: 500
+  isDaily: 0
+  reward:
+    coins: 120
+    sap: 0
+    gems: 2
+    trophies: 0
+    cards: []
+    chestIds: []
+    unlockGuardianIds: []
+    unlockToolIds: []

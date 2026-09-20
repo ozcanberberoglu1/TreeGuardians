@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd443681727d4b8a8ada50ada27e138, type: 3}
+  m_Name: Chest_grove
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ChestDefinition
+  id: grove
+  nameKey: chest_grove
+  tier: 1
+  iconClosed: {fileID: 21300000, guid: 35e859b03e68241309af149e718a387d, type: 3}
+  iconOpen: {fileID: 21300000, guid: 3e2e5d6ca13a24074940be45640bcc02, type: 3}
+  glowColor: {r: 0.6, g: 1, b: 0.5, a: 1}
+  coinsMin: 120
+  coinsMax: 220
+  sapMin: 8
+  sapMax: 16
+  gemsMin: 0
+  gemsMax: 1
+  cardDraws: 5
+  rarityWeights:
+  - 55
+  - 35
+  - 9
+  - 1
+  guaranteeEpic: 0
+  epicPityThreshold: 12
+  unlockSeconds: 10800
+  arenaTierBonusPerIndex: 0.15
+  gemSkipCostPerHour: 6

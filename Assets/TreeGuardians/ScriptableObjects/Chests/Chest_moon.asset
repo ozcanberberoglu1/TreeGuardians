@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd443681727d4b8a8ada50ada27e138, type: 3}
+  m_Name: Chest_moon
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ChestDefinition
+  id: moon
+  nameKey: chest_moon
+  tier: 3
+  iconClosed: {fileID: 21300000, guid: ad2407b5b98454ef7aa33d6942436505, type: 3}
+  iconOpen: {fileID: 21300000, guid: 0db57f462f27e402a85f42039f9b95ea, type: 3}
+  glowColor: {r: 0.6, g: 0.8, b: 1, a: 1}
+  coinsMin: 600
+  coinsMax: 1000
+  sapMin: 40
+  sapMax: 80
+  gemsMin: 10
+  gemsMax: 20
+  cardDraws: 10
+  rarityWeights:
+  - 20
+  - 40
+  - 32
+  - 8
+  guaranteeEpic: 1
+  epicPityThreshold: 0
+  unlockSeconds: 43200
+  arenaTierBonusPerIndex: 0.15
+  gemSkipCostPerHour: 6

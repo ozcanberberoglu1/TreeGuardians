@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7b8b5628ba91c43549d9ebef8211411a, type: 3}
+  m_Name: GameBalanceConfig
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Core.GameBalanceConfig
+  startingCoins: 1500
+  startingSap: 120
+  startingGems: 20
+  startingTrophies: 0
+  starterGuardianIds:
+  - thorn_archer
+  - cone_bomber
+  - bark_knight
+  - dew_fairy
+  starterToolIds:
+  - root_catapult
+  - dew_sprayer
+  starterChestId: twig
+  guardianMaxLevel: 30
+  healthPerLevel: 0.06
+  attackPerLevel: 0.06
+  structureDamagePerLevel: 0.05
+  upgradeCosts:
+  - rarity: 0
+    baseCards: 2
+    cardsGrowth: 1.35
+    baseCoins: 40
+    coinsGrowth: 1.4
+    cardsToUnlock: 1
+  - rarity: 1
+    baseCards: 2
+    cardsGrowth: 1.4
+    baseCoins: 80
+    coinsGrowth: 1.42
+    cardsToUnlock: 2
+  - rarity: 2
+    baseCards: 1
+    cardsGrowth: 1.5
+    baseCoins: 200
+    coinsGrowth: 1.45
+    cardsToUnlock: 2
+  - rarity: 3
+    baseCards: 1
+    cardsGrowth: 1.6
+    baseCoins: 500
+    coinsGrowth: 1.5
+    cardsToUnlock: 3
+  guardianSlotCount: 8
+  toolSlotCount: 3
+  treeUpgradeMaxLevel: 10
+  treeUpgradeBaseSap: 30
+  treeUpgradeGrowth: 1.5
+  treeTierStrongThreshold: 10
+  treeTierAncientThreshold: 24
+  battleDurationSeconds: 150
+  readyCountdownSeconds: 3
+  introSeconds: 1.2
+  resultRevealDelaySeconds: 1.5
+  autoAttackDamageMultiplier: 0.5
+  autoAttackCooldownMultiplier: 1.6
+  branchBreakDamagePercent: 0.35
+  branchBreakStunSeconds: 1.5
+  specialEnergyPerSecond: 4
+  specialEnergyPerHit: 6
+  specialEnergyMax: 100
+  timeUpScoring:
+    coreHealthWeight: 1
+    aliveGuardianWeight: 8
+    structureDamageWeight: 0.5
+  trophiesOnWin: 30
+  trophiesOnLoss: 15
+  trophiesOnDraw: 5
+  winCoinsBase: 120
+  loseCoinsBase: 30
+  winSapBase: 12
+  loseSapBase: 3
+  winCardDraws: 2
+  winChestChance: 1
+  chestSlotCount: 4
+  chestKeysEnabled: 0
+  dailyRewardCooldownHours: 20

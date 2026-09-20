@@ -1,0 +1,84 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af3e8fe88f0624cdd97eef29089b1bdb, type: 3}
+  m_Name: GameDatabase
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.GameDatabase
+  guardians:
+  - {fileID: 11400000, guid: cfe80c90ef8374f08985433c21321e68, type: 2}
+  - {fileID: 11400000, guid: 42b112c38497c446f94393e37902bc10, type: 2}
+  - {fileID: 11400000, guid: 05365d90f20e94d24abed030f2435191, type: 2}
+  - {fileID: 11400000, guid: 5269785e914864a92a0cb0bfa316ea2b, type: 2}
+  - {fileID: 11400000, guid: dc14344880fe846f3955f323769a8fa6, type: 2}
+  - {fileID: 11400000, guid: ae588ed4d7c5941809ecf3a0402cfdba, type: 2}
+  - {fileID: 11400000, guid: 90a0a919b847e4534b526007b2b8433a, type: 2}
+  - {fileID: 11400000, guid: be35580d247fe48a7aaaaa6d532cdf94, type: 2}
+  - {fileID: 11400000, guid: 881c3e706834645e8b3253bd39ea6364, type: 2}
+  - {fileID: 11400000, guid: 2bdd48d7232e7417fa1346148e98477f, type: 2}
+  - {fileID: 11400000, guid: 0bda36f466efe4d9d934e4f335f44948, type: 2}
+  - {fileID: 11400000, guid: 23c76205a128b4927bb666def1643805, type: 2}
+  projectiles:
+  - {fileID: 11400000, guid: 97574dd5d392849529ee6d7cbe2f1163, type: 2}
+  - {fileID: 11400000, guid: b937b929efc0d48319d2f20482a8fb3a, type: 2}
+  - {fileID: 11400000, guid: 26d5407cc664240fe9273a4d0c0cc903, type: 2}
+  - {fileID: 11400000, guid: d0ebdb3553e80459a81f6b7233bb0d8d, type: 2}
+  - {fileID: 11400000, guid: 1b898001ce0a545fa9482dec05c02dfa, type: 2}
+  - {fileID: 11400000, guid: 2eeb2fbf7bf7c4fd6a28dbb5e6e51257, type: 2}
+  - {fileID: 11400000, guid: f9f17392d9a714ca5b524111492fe9fe, type: 2}
+  - {fileID: 11400000, guid: 8a212e87acef848a486375ed75fd15b3, type: 2}
+  - {fileID: 11400000, guid: a68e6e5fdb8b743da9bc8397192feb1e, type: 2}
+  - {fileID: 11400000, guid: 11c684c563cfb4d76b8d06d06d68b671, type: 2}
+  - {fileID: 11400000, guid: 967cc26d5a07b4f31b8ed36dbef2bd89, type: 2}
+  - {fileID: 11400000, guid: 30c47d0da6550487abe028addab77d7f, type: 2}
+  - {fileID: 11400000, guid: 94cf1df48984e4dcd9091e7ed9f521bf, type: 2}
+  - {fileID: 11400000, guid: 8485877dfbeda439892a52c773005635, type: 2}
+  - {fileID: 11400000, guid: c8a343bbcf3a8406cae334b19e1767fe, type: 2}
+  - {fileID: 11400000, guid: a5c0d7c17c97b4229b200b24b4335e42, type: 2}
+  - {fileID: 11400000, guid: 5dd2e2b86b8ea429bb73d0184d832a52, type: 2}
+  - {fileID: 11400000, guid: 95d5cd7ca25be4db388bba6aecb372e6, type: 2}
+  tools:
+  - {fileID: 11400000, guid: c461c8cd466b04ce4a2f4794f145de93, type: 2}
+  - {fileID: 11400000, guid: 49e50335e81d34d5588180a8add1b298, type: 2}
+  - {fileID: 11400000, guid: cdbb20cf04c734aebb228d09a611a9e7, type: 2}
+  - {fileID: 11400000, guid: 7dbb2679916cc4edab3b427de7c3e9b9, type: 2}
+  - {fileID: 11400000, guid: 4b64dd5aff4cd4f02944cfde990dfdb1, type: 2}
+  - {fileID: 11400000, guid: c891b10ad68644c828d298e8169fe3e6, type: 2}
+  arenas:
+  - {fileID: 11400000, guid: 4287538ef1af14cab9dc997e9e17248a, type: 2}
+  - {fileID: 11400000, guid: 921e4a11d16c2412c920e9278a67f60f, type: 2}
+  - {fileID: 11400000, guid: 175723557609a4cf0a584f32f8914675, type: 2}
+  - {fileID: 11400000, guid: e0b31b0da13da4a9cb73580bebcfd029, type: 2}
+  chests:
+  - {fileID: 11400000, guid: 449c56a06c496499eaff61f60fdd874d, type: 2}
+  - {fileID: 11400000, guid: 9cccf0123092841b8b6d88158f06dec9, type: 2}
+  - {fileID: 11400000, guid: fd66630b716b7420395a3e88b9c9641a, type: 2}
+  - {fileID: 11400000, guid: 133f97361ae464af4bddeaf5ac7539f5, type: 2}
+  quests:
+  - {fileID: 11400000, guid: 82e4b73779bb24059a2328bb36110fda, type: 2}
+  - {fileID: 11400000, guid: b477a2e1d478440df9646812a76e1622, type: 2}
+  - {fileID: 11400000, guid: 9e2773c86acdf417fb8064839d11739f, type: 2}
+  - {fileID: 11400000, guid: f5a1254b023684bafb2b4e63d6f6c7ca, type: 2}
+  - {fileID: 11400000, guid: 07f509d598d71468f95921aa3ec5cb2c, type: 2}
+  - {fileID: 11400000, guid: fb3cdc1320e1946428fc8056bc466c7f, type: 2}
+  achievements:
+  - {fileID: 11400000, guid: 04a9be3f31e4d4127b019c5dc48d4ccc, type: 2}
+  - {fileID: 11400000, guid: 7570e191b63854b3e94505d11ba24a3f, type: 2}
+  - {fileID: 11400000, guid: 65b0fd038406b4d7a817ae2b3e9a06cc, type: 2}
+  - {fileID: 11400000, guid: b8bd74b67f9f9492aafbbe87c948f8bd, type: 2}
+  - {fileID: 11400000, guid: f98a1d0858c1746d0b05863ae9f5f19e, type: 2}
+  dailyRewards: {fileID: 11400000, guid: 121c4f8206e5e47428b4c02bbfd9268b, type: 2}
+  playerTree: {fileID: 11400000, guid: d500e74fa6fc048919f91cf3ca4d70fc, type: 2}
+  enemyTree: {fileID: 11400000, guid: 60875f6aa12c2458fb06235b11d10487, type: 2}
+  rarityPalette: {fileID: 11400000, guid: fad19440a52444e9c86c994b389027d1, type: 2}
+  audioLibrary: {fileID: 11400000, guid: dce74f77fecf740e3a774295aec84691, type: 2}
+  localization: {fileID: 11400000, guid: 3dbaea493776549368cf51fa3f2086e4, type: 2}
+  defaultProjectilePrefab: {fileID: 2056227766095197272, guid: 87cd5968c749f4a8f9602bad7f3c6d79, type: 3}
+  defaultGuardianPrefab: {fileID: 0}

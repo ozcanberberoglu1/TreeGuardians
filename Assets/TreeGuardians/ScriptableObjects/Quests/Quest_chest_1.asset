@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab310e6b5f5004795b1d5325bf702422, type: 3}
+  m_Name: Quest_chest_1
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.QuestDefinition
+  id: chest_1
+  titleKey: q_chest_1_title
+  descriptionKey: q_chest_1_desc
+  icon: {fileID: 21300000, guid: 0666c2119a85c4d558fd38ed8e4edbff, type: 3}
+  type: 4
+  targetCount: 1
+  isDaily: 0
+  reward:
+    coins: 60
+    sap: 0
+    gems: 0
+    trophies: 0
+    cards: []
+    chestIds: []
+    unlockGuardianIds: []
+    unlockToolIds: []

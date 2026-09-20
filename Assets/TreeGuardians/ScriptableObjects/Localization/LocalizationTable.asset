@@ -1,0 +1,1028 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e33682e09e7e41c49d4ea6fb03582dd, type: 3}
+  m_Name: LocalizationTable
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.LocalizationTable
+  entries:
+  - key: boot_ready
+    en: Ready
+    tr: "Haz\u0131r"
+  - key: loading_title
+    en: Loading
+    tr: "Y\xFCkleniyor"
+  - key: tip_bark
+    en: Break bark plates to expose the targets behind them.
+    tr: "Arkas\u0131ndaki hedefleri a\xE7mak i\xE7in kabuk plakalar\u0131n\u0131
+      k\u0131r."
+  - key: tip_branch
+    en: A broken branch drops the guardian standing on it.
+    tr: "K\u0131r\u0131lan bir dal \xFCzerindeki muhaf\u0131z\u0131 d\xFC\u015F\xFCr\xFCr."
+  - key: tip_core
+    en: The Heartwood only takes full damage once its bark is gone.
+    tr: "Kalp \xD6z\xFC ancak \xF6n\xFCndeki kabuk k\u0131r\u0131l\u0131nca tam hasar
+      al\u0131r."
+  - key: tip_special
+    en: Special energy fills over time and with every hit.
+    tr: "\xD6zel enerji zamanla ve her isabetle dolar."
+  - key: tip_tools
+    en: Tools have long cooldowns; save them for exposed targets.
+    tr: "Ara\xE7lar\u0131n bekleme s\xFCresi uzundur; a\xE7\u0131k hedeflere sakla."
+  - key: tip_upgrade
+    en: Duplicate cards become shards for upgrades.
+    tr: "Tekrar \xE7\u0131kan kartlar y\xFCkseltme par\xE7as\u0131na d\xF6n\xFC\u015F\xFCr."
+  - key: menu_battle
+    en: Battle
+    tr: "Sava\u015F"
+  - key: menu_guardians
+    en: Guardians
+    tr: "Muhaf\u0131zlar"
+  - key: menu_tree
+    en: Tree
+    tr: "A\u011Fa\xE7"
+  - key: menu_tools
+    en: Tools
+    tr: "Ara\xE7lar"
+  - key: menu_shop
+    en: Shop
+    tr: "Ma\u011Faza"
+  - key: menu_season
+    en: Season
+    tr: Sezon
+  - key: menu_events
+    en: Events
+    tr: Etkinlikler
+  - key: menu_inbox
+    en: Inbox
+    tr: Gelen Kutusu
+  - key: menu_profile
+    en: Profile
+    tr: Profil
+  - key: menu_rank
+    en: Rank
+    tr: "S\u0131ralama"
+  - key: menu_quests
+    en: Quests
+    tr: "G\xF6revler"
+  - key: menu_settings
+    en: Settings
+    tr: Ayarlar
+  - key: menu_edit_loadout
+    en: Edit Loadout
+    tr: "Kadroyu D\xFCzenle"
+  - key: menu_tree_power
+    en: Tree Power
+    tr: "A\u011Fa\xE7 G\xFCc\xFC"
+  - key: menu_arena
+    en: Arena
+    tr: Arena
+  - key: menu_next_arena
+    en: Next arena at {0} trophies
+    tr: Sonraki arena {0} kupada
+  - key: menu_max_arena
+    en: Highest arena reached
+    tr: "En y\xFCksek arenaya ula\u015F\u0131ld\u0131"
+  - key: menu_daily_reward
+    en: Daily Reward
+    tr: "G\xFCnl\xFCk \xD6d\xFCl"
+  - key: menu_coming_soon
+    en: Coming soon
+    tr: "Yak\u0131nda"
+  - key: menu_level
+    en: Level {0}
+    tr: Seviye {0}
+  - key: menu_sandbox
+    en: Sandbox
+    tr: Test Sahnesi
+  - key: currency_coins
+    en: Coins
+    tr: "Alt\u0131n"
+  - key: currency_sap
+    en: Sap
+    tr: "\xD6z"
+  - key: currency_gems
+    en: Gems
+    tr: "M\xFCcevher"
+  - key: currency_trophies
+    en: Trophies
+    tr: Kupa
+  - key: currency_info_coins
+    en: Coins come from battles, chests and quests. Spend them on guardian upgrades.
+    tr: "Alt\u0131n sava\u015Flardan, sand\u0131klardan ve g\xF6revlerden gelir.
+      Muhaf\u0131z y\xFCkseltmelerinde harcan\u0131r."
+  - key: currency_info_sap
+    en: Sap comes from battles and chests. Spend it on tree and tool upgrades.
+    tr: "\xD6z sava\u015Flardan ve sand\u0131klardan gelir. A\u011Fa\xE7 ve ara\xE7
+      geli\u015Ftirmelerinde harcan\u0131r."
+  - key: currency_info_gems
+    en: Gems are rare. Use them to skip chest timers.
+    tr: "M\xFCcevher nadirdir. Sand\u0131k s\xFCrelerini atlamak i\xE7in kullan."
+  - key: currency_go_shop
+    en: Go to Shop
+    tr: "Ma\u011Fazaya Git"
+  - key: ui_ok
+    en: OK
+    tr: Tamam
+  - key: ui_cancel
+    en: Cancel
+    tr: "\u0130ptal"
+  - key: ui_confirm
+    en: Confirm
+    tr: Onayla
+  - key: ui_close
+    en: Close
+    tr: Kapat
+  - key: ui_back
+    en: Back
+    tr: Geri
+  - key: ui_continue
+    en: Continue
+    tr: Devam
+  - key: ui_retry
+    en: Retry
+    tr: Tekrar
+  - key: ui_home
+    en: Home
+    tr: "Ana Men\xFC"
+  - key: ui_collect
+    en: Collect
+    tr: Topla
+  - key: ui_collect_all
+    en: Collect All
+    tr: Hepsini Topla
+  - key: ui_claim
+    en: Claim
+    tr: Al
+  - key: ui_claimed
+    en: Claimed
+    tr: "Al\u0131nd\u0131"
+  - key: ui_locked
+    en: Locked
+    tr: Kilitli
+  - key: ui_new
+    en: NEW
+    tr: "YEN\u0130"
+  - key: ui_max
+    en: MAX
+    tr: MAKS
+  - key: ui_level_short
+    en: Lv.{0}
+    tr: Sv.{0}
+  - key: ui_free
+    en: FREE
+    tr: "\xDCCRETS\u0130Z"
+  - key: ui_test
+    en: TEST
+    tr: TEST
+  - key: ui_yes
+    en: Yes
+    tr: Evet
+  - key: ui_no
+    en: No
+    tr: "Hay\u0131r"
+  - key: ui_skip
+    en: Skip
+    tr: Atla
+  - key: ui_tap_to_continue
+    en: Tap to continue
+    tr: "Devam etmek i\xE7in dokun"
+  - key: ui_unlock_at
+    en: Unlocks in arena {0}
+    tr: "{0}. arenada a\xE7\u0131l\u0131r"
+  - key: ui_info
+    en: Info
+    tr: Bilgi
+  - key: ui_equip
+    en: Equip
+    tr: "Yerle\u015Ftir"
+  - key: ui_unequip
+    en: Unequip
+    tr: "\xC7\u0131kar"
+  - key: ui_swap
+    en: Swap
+    tr: "De\u011Fi\u015Ftir"
+  - key: ui_upgrade
+    en: Upgrade
+    tr: "Y\xFCkselt"
+  - key: ui_sort
+    en: Sort
+    tr: "S\u0131rala"
+  - key: ui_filter
+    en: Filter
+    tr: Filtre
+  - key: ui_all
+    en: All
+    tr: "T\xFCm\xFC"
+  - key: ui_owned
+    en: Owned
+    tr: Sahip
+  - key: ui_equipped
+    en: Equipped
+    tr: "Tak\u0131l\u0131"
+  - key: ui_stats
+    en: Stats
+    tr: "\u0130statistik"
+  - key: error_unknown
+    en: Something went wrong.
+    tr: "Bir \u015Feyler ters gitti."
+  - key: insufficient_coins
+    en: Not enough coins
+    tr: "Yeterli alt\u0131n yok"
+  - key: insufficient_sap
+    en: Not enough sap
+    tr: "Yeterli \xF6z yok"
+  - key: insufficient_gems
+    en: Not enough gems
+    tr: "Yeterli m\xFCcevher yok"
+  - key: insufficient_cards
+    en: Not enough cards
+    tr: Yeterli kart yok
+  - key: insufficient_title
+    en: Insufficient Resources
+    tr: Yetersiz Kaynak
+  - key: insufficient_body
+    en: You need more {0} to do this.
+    tr: "Bunun i\xE7in daha fazla {0} gerekiyor."
+  - key: guardian_locked
+    en: Guardian is locked
+    tr: "Muhaf\u0131z kilitli"
+  - key: guardian_max_level
+    en: Maximum level reached
+    tr: "Maksimum seviyeye ula\u015F\u0131ld\u0131"
+  - key: tool_locked
+    en: Tool is locked
+    tr: "Ara\xE7 kilitli"
+  - key: tool_max_level
+    en: Maximum level reached
+    tr: "Maksimum seviyeye ula\u015F\u0131ld\u0131"
+  - key: tree_max_level
+    en: Maximum level reached
+    tr: "Maksimum seviyeye ula\u015F\u0131ld\u0131"
+  - key: loadout_empty
+    en: Equip at least one guardian to battle.
+    tr: "Sava\u015Fmak i\xE7in en az bir muhaf\u0131z yerle\u015Ftir."
+  - key: save_corrupt_title
+    en: Save Problem
+    tr: "Kay\u0131t Sorunu"
+  - key: save_corrupt_body
+    en: Your save file could not be read. A new save was created.
+    tr: "Kay\u0131t dosyan okunamad\u0131. Yeni bir kay\u0131t olu\u015Fturuldu."
+  - key: save_recovered_body
+    en: Your save was restored from a backup.
+    tr: "Kayd\u0131n yedekten geri y\xFCklendi."
+  - key: reset_save_title
+    en: Reset Progress?
+    tr: "\u0130lerleme S\u0131f\u0131rlans\u0131n m\u0131?"
+  - key: reset_save_body
+    en: All progress will be lost. This cannot be undone.
+    tr: "T\xFCm ilerleme silinecek. Bu geri al\u0131namaz."
+  - key: guardian_upgrade
+    en: Upgrade
+    tr: "Y\xFCkselt"
+  - key: guardian_equip
+    en: Equip
+    tr: "Yerle\u015Ftir"
+  - key: guardian_locked_label
+    en: Locked
+    tr: Kilitli
+  - key: guardian_cards
+    en: Cards
+    tr: Kartlar
+  - key: guardian_collection
+    en: Collection
+    tr: Koleksiyon
+  - key: guardian_equipped_slots
+    en: Equipped
+    tr: Kadro
+  - key: guardian_health
+    en: Health
+    tr: Can
+  - key: guardian_attack
+    en: Attack
+    tr: "Sald\u0131r\u0131"
+  - key: guardian_structure
+    en: Structure Dmg
+    tr: "Yap\u0131 Hasar\u0131"
+  - key: guardian_armor
+    en: Armor
+    tr: "Z\u0131rh"
+  - key: guardian_crit
+    en: Crit
+    tr: Kritik
+  - key: guardian_cooldown
+    en: Cooldown
+    tr: Bekleme
+  - key: guardian_range
+    en: Range
+    tr: Menzil
+  - key: guardian_special
+    en: Special
+    tr: "\xD6zel"
+  - key: guardian_passive
+    en: Passive
+    tr: Pasif
+  - key: guardian_power
+    en: Power
+    tr: "G\xFC\xE7"
+  - key: guardian_unlock_hint
+    en: Collect {0} cards to unlock
+    tr: "A\xE7mak i\xE7in {0} kart topla"
+  - key: guardian_next_level
+    en: Next level
+    tr: Sonraki seviye
+  - key: sort_power
+    en: Power
+    tr: "G\xFC\xE7"
+  - key: sort_level
+    en: Level
+    tr: Seviye
+  - key: sort_rarity
+    en: Rarity
+    tr: Nadirlik
+  - key: sort_new
+    en: New
+    tr: Yeni
+  - key: rarity_common
+    en: Common
+    tr: "S\u0131radan"
+  - key: rarity_rare
+    en: Rare
+    tr: Nadir
+  - key: rarity_epic
+    en: Epic
+    tr: Epik
+  - key: rarity_legendary
+    en: Legendary
+    tr: Efsanevi
+  - key: g_thorn_archer_name
+    en: Thorn Archer
+    tr: "Diken Ok\xE7u"
+  - key: g_thorn_archer_desc
+    en: Balanced ranger with straight thorn shots and a rapid volley.
+    tr: "D\xFCz diken at\u0131\u015Flar\u0131 ve h\u0131zl\u0131 yayl\u0131m ate\u015Fiyle
+      dengeli bir korucu."
+  - key: g_cone_bomber_name
+    en: Cone Bomber
+    tr: "Kozalak Bombac\u0131"
+  - key: g_cone_bomber_desc
+    en: Lobs heavy cones that splash on impact.
+    tr: "\xC7arp\u0131nca alan hasar\u0131 veren a\u011F\u0131r kozalaklar f\u0131rlat\u0131r."
+  - key: g_bark_knight_name
+    en: Bark Knight
+    tr: "Kabuk \u015E\xF6valyesi"
+  - key: g_bark_knight_desc
+    en: Short range, brutal against structures. Shields itself.
+    tr: "K\u0131sa menzil, yap\u0131lara kar\u015F\u0131 ac\u0131mas\u0131z. Kendine
+      kalkan a\xE7ar."
+  - key: g_dew_fairy_name
+    en: Dew Fairy
+    tr: "\xC7iy Perisi"
+  - key: g_dew_fairy_desc
+    en: Heals allies and fires gently homing dew drops.
+    tr: "M\xFCttefikleri iyile\u015Ftirir ve hafif y\xF6nlenen \xE7iy damlalar\u0131
+      atar."
+  - key: g_vine_master_name
+    en: Vine Master
+    tr: "Sarma\u015F\u0131k Ustas\u0131"
+  - key: g_vine_master_desc
+    en: Piercing spears that root enemies and split bark.
+    tr: "D\xFC\u015Fman\u0131 k\xF6kleyen ve kabu\u011Fu yaran delici m\u0131zraklar."
+  - key: g_spore_alchemist_name
+    en: Spore Alchemist
+    tr: "Mantar Simyac\u0131"
+  - key: g_spore_alchemist_desc
+    en: Leaves poison clouds that linger.
+    tr: "Kal\u0131c\u0131 zehir bulutlar\u0131 b\u0131rak\u0131r."
+  - key: g_owl_scout_name
+    en: Owl Scout
+    tr: "Bayku\u015F G\xF6zc\xFC"
+  - key: g_owl_scout_desc
+    en: Fires from above with a high critical chance.
+    tr: "Y\xFCksekten ate\u015F eder; kritik \u015Fans\u0131 y\xFCksektir."
+  - key: g_oak_warden_name
+    en: Oak Warden
+    tr: "Me\u015Fe Muhaf\u0131z\u0131"
+  - key: g_oak_warden_desc
+    en: A living wall that armors nearby allies.
+    tr: "Yak\u0131ndaki m\xFCttefiklere z\u0131rh veren ya\u015Fayan bir duvar."
+  - key: g_firefly_mage_name
+    en: Firefly Mage
+    tr: "Ate\u015Fb\xF6ce\u011Fi B\xFCy\xFCc\xFCs\xFC"
+  - key: g_firefly_mage_desc
+    en: Chains energy between targets.
+    tr: "Enerjiyi hedefler aras\u0131nda zincirler."
+  - key: g_beaver_engineer_name
+    en: Beaver Engineer
+    tr: "Kunduz M\xFChendis"
+  - key: g_beaver_engineer_desc
+    en: Shortens tool cooldowns for the whole tree.
+    tr: "T\xFCm a\u011Fac\u0131n ara\xE7 bekleme s\xFCrelerini k\u0131salt\u0131r."
+  - key: g_hedgehog_sniper_name
+    en: Hedgehog Sniper
+    tr: "Kirpi Ni\u015Fanc\u0131"
+  - key: g_hedgehog_sniper_desc
+    en: Unleashes a salvo of quills.
+    tr: "Bir diken salvosu f\u0131rlat\u0131r."
+  - key: g_ancient_sprout_name
+    en: Ancient Sprout
+    tr: Kadim Filiz
+  - key: g_ancient_sprout_desc
+    en: Blesses the team and returns once from defeat.
+    tr: "Tak\u0131m\u0131 kutsar ve bir kez yeniden do\u011Far."
+  - key: special_power_shot
+    en: Power Shot
+    tr: "G\xFC\xE7l\xFC At\u0131\u015F"
+  - key: special_salvo
+    en: Salvo
+    tr: Salvo
+  - key: special_heal
+    en: Dew Bloom
+    tr: "\xC7iy \xC7i\xE7e\u011Fi"
+  - key: special_root
+    en: Root Grip
+    tr: "K\xF6k K\u0131skac\u0131"
+  - key: special_poison
+    en: Spore Cloud
+    tr: Spor Bulutu
+  - key: special_chain
+    en: Chain Light
+    tr: "Zincir I\u015F\u0131k"
+  - key: special_shield
+    en: Bark Wall
+    tr: "Kabuk Duvar\u0131"
+  - key: special_armor
+    en: Oak Blessing
+    tr: "Me\u015Fe Kutsamas\u0131"
+  - key: special_tool_reset
+    en: Quick Hands
+    tr: "H\u0131zl\u0131 Eller"
+  - key: special_team_buff
+    en: Ancient Song
+    tr: "Kadim \u015Eark\u0131"
+  - key: passive_none
+    en: None
+    tr: Yok
+  - key: passive_crit
+    en: +{0}% crit chance
+    tr: "+%{0} kritik \u015Fans\u0131"
+  - key: passive_shield_on_hit
+    en: Gains shield on hit
+    tr: "Vurunca kalkan kazan\u0131r"
+  - key: passive_heal
+    en: Regenerates health
+    tr: "Can\u0131n\u0131 yeniler"
+  - key: passive_armor_aura
+    en: Armor aura for allies
+    tr: "M\xFCttefiklere z\u0131rh auras\u0131"
+  - key: passive_tool_cd
+    en: Tool cooldown -{0}%
+    tr: "Ara\xE7 bekleme -%{0}"
+  - key: passive_structure
+    en: +{0}% structure damage
+    tr: "+%{0} yap\u0131 hasar\u0131"
+  - key: passive_rebirth
+    en: Returns once after defeat
+    tr: "Yenilince bir kez geri d\xF6ner"
+  - key: t_root_catapult_name
+    en: Root Catapult
+    tr: "K\xF6k Manc\u0131n\u0131\u011F\u0131"
+  - key: t_root_catapult_desc
+    en: Lobs a heavy boulder that crushes structures.
+    tr: "Yap\u0131lar\u0131 ezen a\u011F\u0131r bir kaya f\u0131rlat\u0131r."
+  - key: t_dew_sprayer_name
+    en: Dew Sprayer
+    tr: "\xC7iy P\xFCsk\xFCrt\xFCc\xFC"
+  - key: t_dew_sprayer_desc
+    en: Heals a tree section and nearby guardians.
+    tr: "Bir a\u011Fa\xE7 b\xF6l\xFCm\xFCn\xFC ve yak\u0131n muhaf\u0131zlar\u0131
+      iyile\u015Ftirir."
+  - key: t_bee_hive_name
+    en: Bee Hive
+    tr: "Ar\u0131 Kovan\u0131"
+  - key: t_bee_hive_desc
+    en: Releases a homing swarm of bees.
+    tr: "Y\xF6nlenen bir ar\u0131 s\xFCr\xFCs\xFC salar."
+  - key: t_wind_bell_name
+    en: Wind Bell
+    tr: "R\xFCzg\xE2r \xC7an\u0131"
+  - key: t_wind_bell_desc
+    en: Deflects incoming projectiles slightly.
+    tr: "Gelen mermileri hafif\xE7e sapt\u0131r\u0131r."
+  - key: t_vine_net_name
+    en: Vine Net
+    tr: "Sarma\u015F\u0131k A\u011F\u0131"
+  - key: t_vine_net_desc
+    en: Slows and locks a target area.
+    tr: "Hedef b\xF6lgeyi yava\u015Flat\u0131r ve kilitler."
+  - key: t_seed_shield_name
+    en: Seed Shield
+    tr: "Tohum Kalkan\u0131"
+  - key: t_seed_shield_desc
+    en: A temporary barrier on a chosen section.
+    tr: "Se\xE7ilen b\xF6l\xFCmde ge\xE7ici bariyer."
+  - key: tools_equipped
+    en: Equipped Tools
+    tr: "Tak\u0131l\u0131 Ara\xE7lar"
+  - key: tools_collection
+    en: All Tools
+    tr: "T\xFCm Ara\xE7lar"
+  - key: tree_heartwood
+    en: Heartwood Level
+    tr: "Kalp \xD6z\xFC Seviyesi"
+  - key: tree_heartwood_desc
+    en: Increases total core health.
+    tr: "Toplam ana can\u0131 art\u0131r\u0131r."
+  - key: tree_bark
+    en: Bark Thickness
+    tr: "Kabuk Kal\u0131nl\u0131\u011F\u0131"
+  - key: tree_bark_desc
+    en: Increases armor of all sections.
+    tr: "T\xFCm b\xF6l\xFCmlerin z\u0131rh\u0131n\u0131 art\u0131r\u0131r."
+  - key: tree_branch
+    en: Branch Durability
+    tr: "Dal Dayan\u0131kl\u0131l\u0131\u011F\u0131"
+  - key: tree_branch_desc
+    en: Increases branch health.
+    tr: "Dal can\u0131n\u0131 art\u0131r\u0131r."
+  - key: tree_root
+    en: Root Strength
+    tr: "K\xF6k G\xFCc\xFC"
+  - key: tree_root_desc
+    en: Reduces splash and shake damage.
+    tr: "Alan ve sars\u0131nt\u0131 hasar\u0131n\u0131 azalt\u0131r."
+  - key: tree_sap
+    en: Sap Flow
+    tr: "\xD6z Ak\u0131\u015F\u0131"
+  - key: tree_sap_desc
+    en: Faster special energy in battle.
+    tr: "Sava\u015Fta \xF6zel enerji daha h\u0131zl\u0131 dolar."
+  - key: tree_canopy
+    en: Canopy Growth
+    tr: "Ta\xE7 Geli\u015Fimi"
+  - key: tree_canopy_desc
+    en: Unlocks guardian and tool slots.
+    tr: "Muhaf\u0131z ve ara\xE7 yuvalar\u0131 a\xE7ar."
+  - key: tree_tier_sprouting
+    en: Sprouting
+    tr: Filizlenen
+  - key: tree_tier_strong
+    en: Strong
+    tr: "G\xFC\xE7l\xFC"
+  - key: tree_tier_ancient
+    en: Ancient
+    tr: Kadim
+  - key: tree_panel_title
+    en: Tree of Life
+    tr: "Ya\u015Fam A\u011Fac\u0131"
+  - key: arena_sunny_grove
+    en: Sunny Grove
+    tr: "G\xFCne\u015Fli Koruluk"
+  - key: arena_misty_swamp
+    en: Misty Swamp
+    tr: "Sisli Batakl\u0131k"
+  - key: arena_crimson_autumn
+    en: Crimson Autumn
+    tr: "K\u0131z\u0131l Sonbahar"
+  - key: arena_moonlit_forest
+    en: Moonlit Forest
+    tr: "Ay\u0131\u015F\u0131\u011F\u0131 Orman\u0131"
+  - key: arena_recommended_power
+    en: Recommended power
+    tr: "\xD6nerilen g\xFC\xE7"
+  - key: arena_unlock_trophies
+    en: '{0} trophies to unlock'
+    tr: "A\xE7mak i\xE7in {0} kupa"
+  - key: prep_title
+    en: Battle Prep
+    tr: "Sava\u015F Haz\u0131rl\u0131\u011F\u0131"
+  - key: prep_your_loadout
+    en: Your Loadout
+    tr: Senin Kadron
+  - key: prep_enemy_loadout
+    en: Enemy Loadout
+    tr: Rakip Kadro
+  - key: prep_difficulty
+    en: Difficulty
+    tr: Zorluk
+  - key: prep_start
+    en: Start Battle
+    tr: "Sava\u015F\u0131 Ba\u015Flat"
+  - key: difficulty_easy
+    en: Easy
+    tr: Kolay
+  - key: difficulty_normal
+    en: Normal
+    tr: Normal
+  - key: difficulty_hard
+    en: Hard
+    tr: Zor
+  - key: prep_offline_bot
+    en: Offline bot match
+    tr: "\xC7evrimd\u0131\u015F\u0131 bot ma\xE7\u0131"
+  - key: battle_ready
+    en: READY
+    tr: HAZIR
+  - key: battle_fight
+    en: FIGHT!
+    tr: "SAVA\u015E!"
+  - key: battle_tree_exposed
+    en: TREE EXPOSED!
+    tr: "A\u011EA\xC7 A\xC7I\u011EA \xC7IKTI!"
+  - key: battle_core_exposed
+    en: HEARTWOOD EXPOSED!
+    tr: "KALP \xD6Z\xDC A\xC7IKTA!"
+  - key: battle_victory
+    en: VICTORY
+    tr: ZAFER
+  - key: battle_defeat
+    en: DEFEAT
+    tr: "YEN\u0130LG\u0130"
+  - key: battle_draw
+    en: DRAW
+    tr: BERABERE
+  - key: battle_time_up
+    en: TIME UP
+    tr: "S\xDCRE DOLDU"
+  - key: battle_branch_broken
+    en: BRANCH DOWN!
+    tr: DAL KIRILDI!
+  - key: battle_you
+    en: You
+    tr: Sen
+  - key: battle_bot
+    en: Bot
+    tr: Bot
+  - key: battle_paused
+    en: Paused
+    tr: "Duraklat\u0131ld\u0131"
+  - key: battle_resume
+    en: Resume
+    tr: Devam Et
+  - key: battle_forfeit
+    en: Forfeit
+    tr: Pes Et
+  - key: battle_forfeit_confirm
+    en: Leave the battle? It counts as a defeat.
+    tr: "Sava\u015Ftan ayr\u0131lmak istiyor musun? Yenilgi say\u0131l\u0131r."
+  - key: battle_offline
+    en: OFFLINE BOT
+    tr: "\xC7EVR\u0130MDI\u015EI BOT"
+  - key: battle_special_ready
+    en: Special ready
+    tr: "\xD6zel haz\u0131r"
+  - key: battle_stunned
+    en: Stunned
+    tr: Sersem
+  - key: results_title_victory
+    en: Victory!
+    tr: Zafer!
+  - key: results_title_defeat
+    en: Defeat
+    tr: Yenilgi
+  - key: results_title_draw
+    en: Draw
+    tr: Berabere
+  - key: results_damage
+    en: Damage dealt
+    tr: Verilen hasar
+  - key: results_core_left
+    en: Heartwood left
+    tr: "Kalan Kalp \xD6z\xFC"
+  - key: results_guardians_alive
+    en: Guardians alive
+    tr: "Ya\u015Fayan muhaf\u0131z"
+  - key: results_accuracy
+    en: Accuracy
+    tr: "\u0130sabet"
+  - key: results_rewards
+    en: Rewards
+    tr: "\xD6d\xFCller"
+  - key: results_trophies
+    en: Trophies
+    tr: Kupa
+  - key: results_unlocked
+    en: Unlocked!
+    tr: "A\xE7\u0131ld\u0131!"
+  - key: results_new_arena
+    en: New arena unlocked
+    tr: "Yeni arena a\xE7\u0131ld\u0131"
+  - key: results_chest_full
+    en: Chest slots full
+    tr: "Sand\u0131k yuvalar\u0131 dolu"
+  - key: chest_open
+    en: Open
+    tr: "A\xE7"
+  - key: chest_unlocking
+    en: Unlocking
+    tr: "A\xE7\u0131l\u0131yor"
+  - key: chest_ready
+    en: Ready!
+    tr: "Haz\u0131r!"
+  - key: chest_start
+    en: Start
+    tr: "Ba\u015Flat"
+  - key: chest_empty_slot
+    en: Empty slot
+    tr: "Bo\u015F yuva"
+  - key: chest_skip
+    en: Skip for {0}
+    tr: '{0} ile atla'
+  - key: chest_busy
+    en: Another chest is unlocking
+    tr: "Ba\u015Fka bir sand\u0131k a\xE7\u0131l\u0131yor"
+  - key: chest_twig
+    en: Twig Chest
+    tr: "Dal Sand\u0131\u011F\u0131"
+  - key: chest_grove
+    en: Grove Chest
+    tr: "Koru Sand\u0131\u011F\u0131"
+  - key: chest_ancient
+    en: Ancient Chest
+    tr: "Kadim Sand\u0131k"
+  - key: chest_moon
+    en: Moon Chest
+    tr: "Ay Sand\u0131\u011F\u0131"
+  - key: chest_tap_to_open
+    en: Tap to open
+    tr: "A\xE7mak i\xE7in dokun"
+  - key: quests_title
+    en: Quests
+    tr: "G\xF6revler"
+  - key: quests_tab_quests
+    en: Quests
+    tr: "G\xF6revler"
+  - key: quests_tab_achievements
+    en: Achievements
+    tr: "Ba\u015Far\u0131mlar"
+  - key: quests_daily
+    en: Daily
+    tr: "G\xFCnl\xFCk"
+  - key: q_play_1_title
+    en: Play a battle
+    tr: "Bir sava\u015F oyna"
+  - key: q_play_1_desc
+    en: Play 1 battle in any arena.
+    tr: "Herhangi bir arenada 1 sava\u015F oyna."
+  - key: q_win_1_title
+    en: Win a battle
+    tr: "Bir sava\u015F kazan"
+  - key: q_win_1_desc
+    en: Win 1 battle.
+    tr: "1 sava\u015F kazan."
+  - key: q_bark_3_title
+    en: Bark breaker
+    tr: "Kabuk k\u0131ran"
+  - key: q_bark_3_desc
+    en: Break 3 bark plates.
+    tr: "3 kabuk plakas\u0131 k\u0131r."
+  - key: q_upgrade_1_title
+    en: Grow stronger
+    tr: "G\xFC\xE7len"
+  - key: q_upgrade_1_desc
+    en: Upgrade a guardian.
+    tr: "Bir muhaf\u0131z\u0131 y\xFCkselt."
+  - key: q_chest_1_title
+    en: Treasure
+    tr: Hazine
+  - key: q_chest_1_desc
+    en: Open a chest.
+    tr: "Bir sand\u0131k a\xE7."
+  - key: q_special_500_title
+    en: Special force
+    tr: "\xD6zel g\xFC\xE7"
+  - key: q_special_500_desc
+    en: Deal 500 damage with special abilities.
+    tr: "\xD6zel yeteneklerle 500 hasar ver."
+  - key: a_first_victory_title
+    en: First Victory
+    tr: "\u0130lk Zafer"
+  - key: a_first_victory_desc
+    en: Win your first battle.
+    tr: "\u0130lk sava\u015F\u0131n\u0131 kazan."
+  - key: a_marksman_title
+    en: Master Marksman
+    tr: "Usta Ni\u015Fanc\u0131"
+  - key: a_marksman_desc
+    en: Deal 5000 special damage.
+    tr: "5000 \xF6zel hasar ver."
+  - key: a_branch_breaker_title
+    en: Branch Breaker
+    tr: "Dal K\u0131ran"
+  - key: a_branch_breaker_desc
+    en: Break 10 branches.
+    tr: "10 dal k\u0131r."
+  - key: a_collector_title
+    en: Collector
+    tr: Koleksiyoncu
+  - key: a_collector_desc
+    en: Upgrade guardians 20 times.
+    tr: "Muhaf\u0131zlar\u0131 20 kez y\xFCkselt."
+  - key: a_ancient_tree_title
+    en: Ancient Tree
+    tr: "Kadim A\u011Fa\xE7"
+  - key: a_ancient_tree_desc
+    en: Play 50 battles.
+    tr: "50 sava\u015F oyna."
+  - key: daily_title
+    en: Daily Reward
+    tr: "G\xFCnl\xFCk \xD6d\xFCl"
+  - key: daily_day
+    en: Day {0}
+    tr: "{0}. G\xFCn"
+  - key: daily_next_in
+    en: Next in {0}
+    tr: 'Sonraki: {0}'
+  - key: shop_title
+    en: Shop
+    tr: "Ma\u011Faza"
+  - key: shop_free_chest
+    en: Free Daily Chest
+    tr: "G\xFCnl\xFCk \xDCcretsiz Sand\u0131k"
+  - key: shop_coin_pack
+    en: Coin Pack
+    tr: "Alt\u0131n Paketi"
+  - key: shop_sap_pack
+    en: Sap Pack
+    tr: "\xD6z Paketi"
+  - key: shop_starter_pack
+    en: Starter Pack
+    tr: "Ba\u015Flang\u0131\xE7 Paketi"
+  - key: shop_bark_skin
+    en: Bark Skin
+    tr: "Kabuk G\xF6r\xFCn\xFCm\xFC"
+  - key: shop_mock_note
+    en: Purchases are simulated in this prototype.
+    tr: "Bu prototipte sat\u0131n almalar sim\xFCle edilir."
+  - key: shop_watch_ad
+    en: Watch Ad (TEST)
+    tr: "Reklam \u0130zle (TEST)"
+  - key: settings_title
+    en: Settings
+    tr: Ayarlar
+  - key: settings_language
+    en: Language
+    tr: Dil
+  - key: settings_music
+    en: Music
+    tr: "M\xFCzik"
+  - key: settings_sfx
+    en: Sound Effects
+    tr: Ses Efektleri
+  - key: settings_vibration
+    en: Vibration
+    tr: "Titre\u015Fim"
+  - key: settings_reduce_haptics
+    en: Reduce Haptics
+    tr: "Titre\u015Fimi Azalt"
+  - key: settings_reduce_motion
+    en: Reduce Motion
+    tr: Hareketi Azalt
+  - key: settings_quality
+    en: Quality
+    tr: Kalite
+  - key: settings_aim_mode
+    en: Aim Mode
+    tr: "Ni\u015Fan Modu"
+  - key: settings_replay_tutorial
+    en: Replay Tutorial
+    tr: "\xD6\u011Freticiyi Tekrarla"
+  - key: settings_reset_save
+    en: Reset Progress
+    tr: "\u0130lerlemeyi S\u0131f\u0131rla"
+  - key: settings_version
+    en: Version
+    tr: "S\xFCr\xFCm"
+  - key: quality_low
+    en: Low
+    tr: "D\xFC\u015F\xFCk"
+  - key: quality_medium
+    en: Medium
+    tr: Orta
+  - key: quality_high
+    en: High
+    tr: "Y\xFCksek"
+  - key: aim_pull_back
+    en: Pull back
+    tr: "Geri \xE7ek"
+  - key: aim_direct
+    en: Direct drag
+    tr: "Do\u011Frudan s\xFCr\xFCkle"
+  - key: language_en
+    en: English
+    tr: English
+  - key: language_tr
+    en: "T\xFCrk\xE7e"
+    tr: "T\xFCrk\xE7e"
+  - key: profile_title
+    en: Profile
+    tr: Profil
+  - key: profile_battles
+    en: Battles
+    tr: "Sava\u015Flar"
+  - key: profile_wins
+    en: Wins
+    tr: Galibiyet
+  - key: profile_best_trophies
+    en: Best trophies
+    tr: En iyi kupa
+  - key: rank_title
+    en: Arena Path
+    tr: Arena Yolu
+  - key: rank_current
+    en: Current
+    tr: Mevcut
+  - key: tut_step_1
+    en: Tap a guardian card to select it.
+    tr: "Se\xE7mek i\xE7in bir muhaf\u0131z kart\u0131na dokun."
+  - key: tut_step_2
+    en: Drag to aim, release to fire.
+    tr: "Ni\u015Fan almak i\xE7in s\xFCr\xFCkle, ate\u015F etmek i\xE7in b\u0131rak."
+  - key: tut_step_3
+    en: Aim at the enemy bark plate.
+    tr: "Rakip kabuk plakas\u0131n\u0131 hedefle."
+  - key: tut_step_4
+    en: The broken plate exposed a new target!
+    tr: "K\u0131r\u0131lan plaka yeni bir hedef a\xE7t\u0131!"
+  - key: tut_step_5
+    en: Use a tool from the tool bar.
+    tr: "Ara\xE7 \xE7ubu\u011Fundan bir ara\xE7 kullan."
+  - key: tut_step_6
+    en: Destroy the Heartwood to win!
+    tr: "Kazanmak i\xE7in Kalp \xD6z\xFC'n\xFC yok et!"
+  - key: tut_step_7
+    en: Collect your rewards.
+    tr: "\xD6d\xFCllerini topla."
+  - key: tut_step_8
+    en: Upgrade a guardian with your new cards.
+    tr: "Yeni kartlar\u0131nla bir muhaf\u0131z\u0131 y\xFCkselt."
+  - key: tut_skip
+    en: Skip tutorial
+    tr: "\xD6\u011Freticiyi atla"
+  - key: popup_reward_title
+    en: Rewards
+    tr: "\xD6d\xFCller"
+  - key: popup_unlock_title
+    en: New Guardian!
+    tr: "Yeni Muhaf\u0131z!"
+  - key: popup_unlock_tool
+    en: New Tool!
+    tr: "Yeni Ara\xE7!"
+  - key: popup_connection_title
+    en: Connection
+    tr: "Ba\u011Flant\u0131"
+  - key: popup_connection_body
+    en: Online play is not available in this prototype. Battles run against an offline
+      bot.
+    tr: "Bu prototipte \xE7evrimi\xE7i oyun yok. Sava\u015Flar \xE7evrimd\u0131\u015F\u0131
+      bota kar\u015F\u0131 oynan\u0131r."
+  - key: popup_confirm_upgrade
+    en: Upgrade {0} to level {1}?
+    tr: "{0} seviye {1}'e y\xFCkseltilsin mi?"
+  - key: stat_health
+    en: HP
+    tr: CAN
+  - key: stat_attack
+    en: ATK
+    tr: SAL
+  - key: stat_structure
+    en: STR
+    tr: YAPI
+  - key: stat_armor
+    en: ARM
+    tr: ZRH
+  - key: debug_title
+    en: Debug
+    tr: "Hata Ay\u0131klama"
+  - key: debug_add_coins
+    en: +1000 Coins
+    tr: "+1000 Alt\u0131n"
+  - key: debug_add_sap
+    en: +100 Sap
+    tr: "+100 \xD6z"
+  - key: debug_add_gems
+    en: +50 Gems
+    tr: "+50 M\xFCcevher"
+  - key: debug_reset
+    en: Reset Save
+    tr: "Kayd\u0131 S\u0131f\u0131rla"
+  - key: debug_unlock_all
+    en: Unlock All
+    tr: "Hepsini A\xE7"
+  - key: debug_finish_chests
+    en: Finish Chest Timers
+    tr: "Sand\u0131k S\xFCrelerini Bitir"
+  loadingTipKeys:
+  - tip_bark
+  - tip_branch
+  - tip_core
+  - tip_special
+  - tip_tools
+  - tip_upgrade

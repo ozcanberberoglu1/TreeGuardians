@@ -6,8 +6,23 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/TreeGuardians/Scenes/00_Boot.unity
+    guid: 768f09e89ad474d0998669fef843a6af
+  - enabled: 1
+    path: Assets/TreeGuardians/Scenes/01_Loading.unity
+    guid: 0973907d85ae14db8841e85372444788
+  - enabled: 1
+    path: Assets/TreeGuardians/Scenes/02_MainMenu.unity
+    guid: a718a913ace334a47b1ddce929860735
+  - enabled: 1
+    path: Assets/TreeGuardians/Scenes/03_Battle.unity
+    guid: c6a4eb68a6e2c462da64abdbd6760af5
+  - enabled: 1
+    path: Assets/TreeGuardians/Scenes/04_Results.unity
+    guid: 331c95cc2f35e4690981ad600f417c15
+  - enabled: 0
+    path: Assets/TreeGuardians/Scenes/05_Sandbox.unity
+    guid: 93c9a9ef5bfd143ae9a91522a8ff1c82
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

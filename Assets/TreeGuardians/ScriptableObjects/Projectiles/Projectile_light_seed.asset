@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2a04243144ac47f2b449ac28f5e1023, type: 3}
+  m_Name: Projectile_light_seed
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ProjectileDefinition
+  id: light_seed
+  nameKey: proj_light_seed
+  icon: {fileID: 21300000, guid: 47c671ad9642d45b58f39036193f9a23, type: 3}
+  prefab: {fileID: 0}
+  tint: {r: 1, g: 0.95, b: 0.5, a: 1}
+  visualScale: 1
+  motion: 2
+  speed: 16
+  gravityScale: 1
+  lifetime: 5
+  homingStrength: 5
+  bounceCount: 0
+  pierceCount: 0
+  collisionRadius: 0.2
+  baseDamage: 26
+  structureMultiplier: 0.7
+  guardianMultiplier: 1.1
+  splashRadius: 0
+  splashFalloff: 0.4
+  canHitOwnSide: 0
+  statusEffect:
+    type: 0
+    duration: 0
+    magnitude: 0
+  impactVfxPrefab: {fileID: 0}
+  launchSfx: 6
+  impactSfx: 7
+  shake:
+    amplitude: 0.05
+    duration: 0.1

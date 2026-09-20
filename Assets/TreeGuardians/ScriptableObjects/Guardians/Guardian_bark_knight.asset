@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db732f75e6925451593292c71a4b8f6f, type: 3}
+  m_Name: Guardian_bark_knight
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.GuardianDefinition
+  id: bark_knight
+  nameKey: g_bark_knight_name
+  descriptionKey: g_bark_knight_desc
+  rarity: 1
+  portrait: {fileID: 21300000, guid: 815433032fb8f4ffb94ce66000d51498, type: 3}
+  cardArt: {fileID: 21300000, guid: 815433032fb8f4ffb94ce66000d51498, type: 3}
+  worldSprite: {fileID: 21300000, guid: 3ae6de9a6fe044ab3bafe69aea1e443b, type: 3}
+  worldPrefab: {fileID: 0}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  baseHealth: 780
+  baseAttack: 30
+  baseStructureDamage: 95
+  baseArmor: 12
+  critChance: 0.03
+  critMultiplier: 1.5
+  normalProjectile: {fileID: 11400000, guid: 1b898001ce0a545fa9482dec05c02dfa, type: 2}
+  attackCooldown: 3.2
+  range: 12
+  preferredTarget: 2
+  isFlying: 0
+  autoAttack: 1
+  playerAimable: 1
+  specialKind: 6
+  specialNameKey: special_shield
+  specialProjectile: {fileID: 0}
+  specialEnergyCost: 100
+  specialMagnitude: 200
+  specialDuration: 6
+  passiveKind: 2
+  passiveMagnitude: 0.1
+  arenaUnlockIndex: 0
+  playableInPrototype: 1
+  attackSfx: 6
+  hurtSfx: 9

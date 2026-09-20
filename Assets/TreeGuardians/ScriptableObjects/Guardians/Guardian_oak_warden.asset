@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db732f75e6925451593292c71a4b8f6f, type: 3}
+  m_Name: Guardian_oak_warden
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.GuardianDefinition
+  id: oak_warden
+  nameKey: g_oak_warden_name
+  descriptionKey: g_oak_warden_desc
+  rarity: 2
+  portrait: {fileID: 21300000, guid: cce0425d7b66e47d5a21ba611006ca70, type: 3}
+  cardArt: {fileID: 21300000, guid: cce0425d7b66e47d5a21ba611006ca70, type: 3}
+  worldSprite: {fileID: 21300000, guid: a1469fc887f564baa8c340e0b5e0a3d3, type: 3}
+  worldPrefab: {fileID: 0}
+  tintColor: {r: 1, g: 1, b: 1, a: 1}
+  baseHealth: 1050
+  baseAttack: 30
+  baseStructureDamage: 60
+  baseArmor: 14
+  critChance: 0.02
+  critMultiplier: 1.5
+  normalProjectile: {fileID: 11400000, guid: 967cc26d5a07b4f31b8ed36dbef2bd89, type: 2}
+  attackCooldown: 3.4
+  range: 14
+  preferredTarget: 0
+  isFlying: 0
+  autoAttack: 1
+  playerAimable: 1
+  specialKind: 7
+  specialNameKey: special_armor
+  specialProjectile: {fileID: 0}
+  specialEnergyCost: 100
+  specialMagnitude: 8
+  specialDuration: 8
+  passiveKind: 4
+  passiveMagnitude: 3
+  arenaUnlockIndex: 1
+  playableInPrototype: 1
+  attackSfx: 6
+  hurtSfx: 9

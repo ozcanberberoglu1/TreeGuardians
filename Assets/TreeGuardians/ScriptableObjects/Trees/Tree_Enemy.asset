@@ -1,0 +1,275 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d0d66f230c248eb8b4e5613b4bf65a, type: 3}
+  m_Name: Tree_Enemy
+  m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.TreeDefinition
+  id: tree_enemy
+  nameKey: tree_enemy_name
+  heartwoodBaseHealth: 1200
+  heartwoodArmor: 10
+  protectedDamageMultiplier: 0.15
+  sections:
+  - sectionId: core
+    type: 0
+    baseHealth: 1200
+    armor: 10
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 3.4}
+    size: {x: 1.1, y: 1.1}
+    initiallyTargetable: 0
+    breakBehavior: 2
+  - sectionId: trunk_low
+    type: 1
+    baseHealth: 520
+    armor: 8
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 1.3}
+    size: {x: 1.9, y: 2.6}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: trunk_mid
+    type: 1
+    baseHealth: 460
+    armor: 8
+    poisonResistance: 0
+    parentSectionId: trunk_low
+    protectsSectionIds:
+    - core
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 3.5}
+    size: {x: 1.7, y: 2.4}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: trunk_top
+    type: 1
+    baseHealth: 400
+    armor: 6
+    poisonResistance: 0
+    parentSectionId: trunk_mid
+    protectsSectionIds: []
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 5.6}
+    size: {x: 1.5, y: 2.2}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: bark_low
+    type: 3
+    baseHealth: 220
+    armor: 4
+    poisonResistance: 0
+    parentSectionId: trunk_low
+    protectsSectionIds:
+    - trunk_low
+    guardianSlotIndex: -1
+    localPosition: {x: 1.15, y: 1.4}
+    size: {x: 0.9, y: 1.6}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: bark_mid
+    type: 3
+    baseHealth: 200
+    armor: 4
+    poisonResistance: 0
+    parentSectionId: trunk_mid
+    protectsSectionIds:
+    - core
+    - trunk_mid
+    guardianSlotIndex: -1
+    localPosition: {x: 1.05, y: 3.4}
+    size: {x: 0.9, y: 1.6}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: bark_top
+    type: 3
+    baseHealth: 180
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds:
+    - trunk_top
+    guardianSlotIndex: -1
+    localPosition: {x: 0.95, y: 5.4}
+    size: {x: 0.8, y: 1.4}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_low
+    type: 2
+    baseHealth: 260
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_low
+    protectsSectionIds: []
+    guardianSlotIndex: 0
+    localPosition: {x: 2.1, y: 2.3}
+    size: {x: 2.4, y: 0.55}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_mid
+    type: 2
+    baseHealth: 240
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_mid
+    protectsSectionIds: []
+    guardianSlotIndex: 1
+    localPosition: {x: 2.2, y: 4.2}
+    size: {x: 2.4, y: 0.55}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_high
+    type: 2
+    baseHealth: 220
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds: []
+    guardianSlotIndex: 2
+    localPosition: {x: 2, y: 6.1}
+    size: {x: 2.2, y: 0.5}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_top
+    type: 2
+    baseHealth: 200
+    armor: 2
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds: []
+    guardianSlotIndex: 3
+    localPosition: {x: 1.3, y: 7.6}
+    size: {x: 1.8, y: 0.5}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_back_low
+    type: 2
+    baseHealth: 260
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_low
+    protectsSectionIds: []
+    guardianSlotIndex: 4
+    localPosition: {x: -1.9, y: 2.7}
+    size: {x: 2.2, y: 0.55}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_back_mid
+    type: 2
+    baseHealth: 240
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_mid
+    protectsSectionIds: []
+    guardianSlotIndex: 5
+    localPosition: {x: -2, y: 4.6}
+    size: {x: 2.2, y: 0.55}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: branch_back_high
+    type: 2
+    baseHealth: 220
+    armor: 3
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds: []
+    guardianSlotIndex: 6
+    localPosition: {x: -1.7, y: 6.4}
+    size: {x: 2, y: 0.5}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: crown
+    type: 2
+    baseHealth: 200
+    armor: 2
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds: []
+    guardianSlotIndex: 7
+    localPosition: {x: -0.2, y: 8.3}
+    size: {x: 1.6, y: 0.5}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: canopy
+    type: 4
+    baseHealth: 300
+    armor: 2
+    poisonResistance: 0
+    parentSectionId: trunk_top
+    protectsSectionIds: []
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 7.4}
+    size: {x: 3.4, y: 1.8}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  - sectionId: root
+    type: 5
+    baseHealth: 400
+    armor: 10
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: -1
+    localPosition: {x: 0, y: 0.15}
+    size: {x: 3.2, y: 1}
+    initiallyTargetable: 1
+    breakBehavior: 2
+  guardianSlotPositions:
+  - {x: 3, y: 2.75}
+  - {x: 3.1, y: 4.65}
+  - {x: 2.8, y: 6.5}
+  - {x: 1.9, y: 8}
+  - {x: -2.7, y: 3.15}
+  - {x: -2.8, y: 5.05}
+  - {x: -2.4, y: 6.8}
+  - {x: -0.4, y: 8.75}
+  toolMountPositions:
+  - {x: 1.6, y: 0.7}
+  - {x: -1.6, y: 0.7}
+  - {x: 0.9, y: 9.2}
+  visuals:
+  - tier: 0
+    trunk: {fileID: 21300000, guid: 0a4192804f5fa4a8c86de0cd6e010259, type: 3}
+    branch: {fileID: 21300000, guid: 9895b4e6117184c0896e612bfbed6ad0, type: 3}
+    bark: {fileID: 21300000, guid: 1e8c3833c88f94633ad801c42a2a20ee, type: 3}
+    canopy: {fileID: 21300000, guid: 40af72a102a8e4472b3c3191276683ec, type: 3}
+    root: {fileID: 21300000, guid: 19abb946543af403e842d49bca18819e, type: 3}
+    heartwood: {fileID: 21300000, guid: f0cd58d1cfb884004bff1d65639067ad, type: 3}
+    leafColor: {r: 0.58, g: 0.82, b: 0.46, a: 1}
+    barkColor: {r: 0.66, g: 0.5, b: 0.34, a: 1}
+  - tier: 1
+    trunk: {fileID: 21300000, guid: 0a4192804f5fa4a8c86de0cd6e010259, type: 3}
+    branch: {fileID: 21300000, guid: 9895b4e6117184c0896e612bfbed6ad0, type: 3}
+    bark: {fileID: 21300000, guid: 1e8c3833c88f94633ad801c42a2a20ee, type: 3}
+    canopy: {fileID: 21300000, guid: 40af72a102a8e4472b3c3191276683ec, type: 3}
+    root: {fileID: 21300000, guid: 19abb946543af403e842d49bca18819e, type: 3}
+    heartwood: {fileID: 21300000, guid: f0cd58d1cfb884004bff1d65639067ad, type: 3}
+    leafColor: {r: 0.38, g: 0.7, b: 0.34, a: 1}
+    barkColor: {r: 0.55, g: 0.4, b: 0.26, a: 1}
+  - tier: 2
+    trunk: {fileID: 21300000, guid: 0a4192804f5fa4a8c86de0cd6e010259, type: 3}
+    branch: {fileID: 21300000, guid: 9895b4e6117184c0896e612bfbed6ad0, type: 3}
+    bark: {fileID: 21300000, guid: 1e8c3833c88f94633ad801c42a2a20ee, type: 3}
+    canopy: {fileID: 21300000, guid: 40af72a102a8e4472b3c3191276683ec, type: 3}
+    root: {fileID: 21300000, guid: 19abb946543af403e842d49bca18819e, type: 3}
+    heartwood: {fileID: 21300000, guid: f0cd58d1cfb884004bff1d65639067ad, type: 3}
+    leafColor: {r: 0.26, g: 0.56, b: 0.36, a: 1}
+    barkColor: {r: 0.42, g: 0.3, b: 0.2, a: 1}
+  heartwoodHealthPerLevel: 0.08
+  barkArmorPerLevel: 1.5
+  branchHealthPerLevel: 0.08
+  rootDamageReductionPerLevel: 0.03
+  sapFlowEnergyPerLevel: 0.06
