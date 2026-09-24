@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace TreeGuardians.UI.Menu
 {
-    /// One of the four chest slots in the bottom bar.
+    /// One chest slot in the bottom bar. Its index is the position under ChestSlotsView (MainMenu > BottomBar > ChestSlots).
     public sealed class ChestSlotView : MonoBehaviour
     {
         [SerializeField] int slotIndex;
@@ -77,7 +77,7 @@ namespace TreeGuardians.UI.Menu
                 return;
             }
             var slot = chests.Slots[slotIndex];
-            if (chestIcon != null) chestIcon.sprite = chests.IsReady(slotIndex) ? def.iconOpen : def.iconClosed;
+            if (chestIcon != null) chestIcon.sprite = chests.IsReady(slotIndex) ? ChestArt.Open(def) : ChestArt.Closed(def);
             if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);
             UpdateTimer(chests, def.unlockSeconds);
         }
@@ -89,13 +89,21 @@ namespace TreeGuardians.UI.Menu
             {
                 timerText.text = LocalizationService.Tr("chest_ready");
                 if (readyGlow != null && !readyGlow.activeSelf) readyGlow.SetActive(true);
-                if (chestIcon != null) chestIcon.sprite = chests.GetDefinition(slotIndex)?.iconOpen;
+                if (chestIcon != null) chestIcon.sprite = ChestArt.Open(chests.GetDefinition(slotIndex));
                 return;
             }
             var slot = chests.Slots[slotIndex];
             double rem = chests.GetRemainingSeconds(slotIndex);
             timerText.text = slot.unlocking ? FormatTime(rem) : FormatTime(unlockSeconds);
         }
+
+#if UNITY_EDITOR
+        public void EditorSetSlotIndex(int index)
+        {
+            slotIndex = index;
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+#endif
 
         public static string FormatTime(double seconds)
         {

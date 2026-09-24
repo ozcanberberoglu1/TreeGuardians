@@ -108,7 +108,7 @@ namespace TreeGuardians.Editor
             b.starterToolIds = new[] { "root_catapult", "dew_sprayer" };
             b.starterChestId = "twig";
             b.guardianMaxLevel = 30;
-            b.guardianSlotCount = 8; b.toolSlotCount = 3; b.chestSlotCount = 4;
+            b.guardianSlotCount = 8; b.toolSlotCount = 3; b.chestSlotCount = 6;
             b.battleDurationSeconds = 150f; b.readyCountdownSeconds = 3f;
             b.branchBreakDamagePercent = 0.35f; b.branchBreakStunSeconds = 1.5f;
             b.autoAttackDamageMultiplier = 0.5f; b.autoAttackCooldownMultiplier = 1.6f;
@@ -235,7 +235,10 @@ namespace TreeGuardians.Editor
         static ChestDefinition Chest(string id, ChestTier tier, Color glow, int cMin, int cMax, int sMin, int sMax, int gMin, int gMax, int draws, float[] weights, bool guaranteeEpic, float seconds)
         {
             var c = GetOrCreate<ChestDefinition>($"{SO}/Chests/Chest_{id}.asset");
-            c.id = id; c.nameKey = "chest_" + id; c.tier = tier; c.iconClosed = S(ArtPaths.Chest(id, false)); c.iconOpen = S(ArtPaths.Chest(id, true)); c.glowColor = glow;
+            c.id = id; c.nameKey = "chest_" + id; c.tier = tier; c.glowColor = glow;
+            // Art is authored on MainMenu > BottomBar > ChestSlots (ChestSlotsView); only fill placeholders when nothing is assigned yet.
+            if (c.iconClosed == null) c.iconClosed = S(ArtPaths.Chest(id, false));
+            if (c.iconOpen == null) c.iconOpen = S(ArtPaths.Chest(id, true));
             c.coinsMin = cMin; c.coinsMax = cMax; c.sapMin = sMin; c.sapMax = sMax; c.gemsMin = gMin; c.gemsMax = gMax;
             c.cardDraws = draws; c.rarityWeights = weights; c.guaranteeEpic = guaranteeEpic; c.epicPityThreshold = guaranteeEpic ? 0 : 12;
             c.unlockSeconds = seconds; c.arenaTierBonusPerIndex = 0.15f; c.gemSkipCostPerHour = 6;
@@ -251,6 +254,7 @@ namespace TreeGuardians.Editor
                 Chest("grove", ChestTier.Grove, new Color(0.6f, 1f, 0.5f), 120, 220, 8, 16, 0, 1, 5, new[] { 55f, 35f, 9f, 1f }, false, 10800f),
                 Chest("ancient", ChestTier.Ancient, new Color(0.85f, 0.6f, 1f), 350, 600, 25, 45, 2, 6, 8, new[] { 35f, 40f, 22f, 3f }, true, 28800f),
                 Chest("moon", ChestTier.Moon, new Color(0.6f, 0.8f, 1f), 600, 1000, 40, 80, 10, 20, 10, new[] { 20f, 40f, 32f, 8f }, true, 43200f),
+                Chest("sun", ChestTier.Sun, new Color(1f, 0.62f, 0.2f), 1000, 1600, 70, 120, 20, 40, 12, new[] { 10f, 35f, 40f, 15f }, true, 86400f),
             };
         }
 
@@ -289,7 +293,7 @@ namespace TreeGuardians.Editor
                     TreeVisualTier.Strong, 8, 1.5f, new[] { D("grove", 60f), D("ancient", 40f) }, false),
                 Arena("moonlit_forest", 3, 300, 1600, new Color(0.08f, 0.1f, 0.26f), new Color(0.2f, 0.26f, 0.46f), new Color(0.16f, 0.26f, 0.32f), new Color(0.7f, 0.8f, 1f), new Color(0.5f, 0.6f, 0.9f, 0.3f),
                     false, true, true, MusicTrackId.BattleMoon, 7, BotDifficulty.Hard, new[] { "owl_scout", "oak_warden", "firefly_mage", "hedgehog_sniper", "vine_master", "spore_alchemist", "bark_knight" }, 12, new[] { "root_catapult", "dew_sprayer", "bee_hive" },
-                    TreeVisualTier.Ancient, 14, 2f, new[] { D("ancient", 70f), D("moon", 30f) }, false),
+                    TreeVisualTier.Ancient, 14, 2f, new[] { D("ancient", 62f), D("moon", 30f), D("sun", 8f) }, false),
             };
         }
 

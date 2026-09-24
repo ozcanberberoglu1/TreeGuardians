@@ -85,6 +85,6 @@ MonoBehaviour:
   loseSapBase: 3
   winCardDraws: 2
   winChestChance: 1
-  chestSlotCount: 4
+  chestSlotCount: 6
   chestKeysEnabled: 0
   dailyRewardCooldownHours: 20

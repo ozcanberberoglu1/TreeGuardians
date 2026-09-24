@@ -284,6 +284,7 @@ namespace TreeGuardians.Editor
             new[] { "chest_grove", "Grove Chest", "Koru Sandığı" },
             new[] { "chest_ancient", "Ancient Chest", "Kadim Sandık" },
             new[] { "chest_moon", "Moon Chest", "Ay Sandığı" },
+            new[] { "chest_sun", "Sun Chest", "Güneş Sandığı" },
             new[] { "chest_tap_to_open", "Tap to open", "Açmak için dokun" },
 
             // Quests / achievements / daily

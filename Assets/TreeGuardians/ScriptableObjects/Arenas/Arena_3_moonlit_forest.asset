@@ -58,6 +58,8 @@ MonoBehaviour:
   rewardMultiplier: 2
   chestDrops:
   - chestId: ancient
-    weight: 70
+    weight: 62
   - chestId: moon
     weight: 30
+  - chestId: sun
+    weight: 8

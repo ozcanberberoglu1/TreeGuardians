@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TreeGuardians.Chests;
 using TreeGuardians.Data;
 using TreeGuardians.Localization;
 using TreeGuardians.Rewards;
@@ -50,7 +51,8 @@ namespace TreeGuardians.UI
             for (int i = 0; i < bundle.chestIds.Count; i++)
             {
                 var def = db != null ? db.GetChest(bundle.chestIds[i]) : null;
-                into.Add(new RewardItem { icon = def != null ? def.iconClosed : sprites.chest, label = "", sub = def != null ? LocalizationService.Tr(def.nameKey) : bundle.chestIds[i], tint = Color.white });
+                var chestIcon = def != null ? ChestArt.Closed(def) : null;
+                into.Add(new RewardItem { icon = chestIcon != null ? chestIcon : sprites.chest, label = "", sub = def != null ? LocalizationService.Tr(def.nameKey) : bundle.chestIds[i], tint = Color.white });
             }
             for (int i = 0; i < bundle.unlockGuardianIds.Count; i++)
             {

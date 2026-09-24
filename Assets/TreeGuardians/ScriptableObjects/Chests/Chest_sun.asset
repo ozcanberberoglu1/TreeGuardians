@@ -10,28 +10,28 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfd443681727d4b8a8ada50ada27e138, type: 3}
-  m_Name: Chest_grove
+  m_Name: Chest_sun
   m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.ChestDefinition
-  id: grove
-  nameKey: chest_grove
-  tier: 1
-  iconClosed: {fileID: 8691499601229014251, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
-  iconOpen: {fileID: 6488961356011211616, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
-  glowColor: {r: 0.6, g: 1, b: 0.5, a: 1}
-  coinsMin: 120
-  coinsMax: 220
-  sapMin: 8
-  sapMax: 16
-  gemsMin: 0
-  gemsMax: 1
-  cardDraws: 5
+  id: sun
+  nameKey: chest_sun
+  tier: 4
+  iconClosed: {fileID: -3000650687233087803, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
+  iconOpen: {fileID: -6741650870687829899, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
+  glowColor: {r: 1, g: 0.62, b: 0.2, a: 1}
+  coinsMin: 1000
+  coinsMax: 1600
+  sapMin: 70
+  sapMax: 120
+  gemsMin: 20
+  gemsMax: 40
+  cardDraws: 12
   rarityWeights:
-  - 55
+  - 10
   - 35
-  - 9
-  - 1
-  guaranteeEpic: 0
-  epicPityThreshold: 12
-  unlockSeconds: 10800
+  - 40
+  - 15
+  guaranteeEpic: 1
+  epicPityThreshold: 0
+  unlockSeconds: 86400
   arenaTierBonusPerIndex: 0.15
   gemSkipCostPerHour: 6

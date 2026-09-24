@@ -90,7 +90,7 @@ namespace TreeGuardians.Core
         [Tooltip("Zaferde boş slot varsa sandık verme olasılığı.")] [Range(0f, 1f)] public float winChestChance = 1f;
 
         [Header("Chests")]
-        public int chestSlotCount = 4;
+        [Tooltip("Ana menüdeki sandık yuvası sayısı; MainMenu > BottomBar > ChestSlots altındaki slot sayısıyla eşleşmeli.")] public int chestSlotCount = 6;
         [Tooltip("Sandık anahtarı sistemi aktif mi (prototipte kapalı).")] public bool chestKeysEnabled;
 
         [Header("Daily Reward")]
@@ -125,7 +125,7 @@ namespace TreeGuardians.Core
             guardianMaxLevel = Mathf.Max(1, guardianMaxLevel);
             guardianSlotCount = Mathf.Clamp(guardianSlotCount, 1, 8);
             toolSlotCount = Mathf.Clamp(toolSlotCount, 1, 3);
-            chestSlotCount = Mathf.Clamp(chestSlotCount, 1, 4);
+            chestSlotCount = Mathf.Clamp(chestSlotCount, 1, 8);
             battleDurationSeconds = Mathf.Max(10f, battleDurationSeconds);
         }
     }

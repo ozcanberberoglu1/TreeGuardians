@@ -322,22 +322,38 @@ namespace TreeGuardians.Editor.SceneBuild
             var rank = F.IconButton("RankButton", bar, F.Blue, F.Icon("rank"), F.TextLight, "menu_rank", 24f);
             F.Anchor((RectTransform)rank.transform, new Vector2(0f, 0.5f), new Vector2(0f, 0f), new Vector2(150f, 150f), new Vector2(0f, 0.5f));
             F.Set(controller, "rankButton", rank);
+            SummaryAndBadge(rank.transform, controller, "rankLabel", "rankBadge", "rankBadgeText");
 
             var quests = F.IconButton("QuestsButton", bar, F.Blue, F.Icon("quest"), F.TextLight, "menu_quests", 24f);
             F.Anchor((RectTransform)quests.transform, new Vector2(0f, 0.5f), new Vector2(170f, 0f), new Vector2(150f, 150f), new Vector2(0f, 0.5f));
             F.Set(controller, "questsButton", quests);
-            var badge = F.Image("Badge", quests.transform, F.Ui("circle"), F.Red, false, false);
-            F.Anchor((RectTransform)badge.transform, new Vector2(1f, 1f), new Vector2(10f, 10f), new Vector2(52f, 52f), new Vector2(1f, 1f));
-            var badgeText = F.OutlinedText("Count", badge.transform, null, 26f, F.TextLight, TextAlignmentOptions.Center, "0");
-            F.Stretch((RectTransform)badgeText.transform);
-            F.Set(controller, "questsBadge", badge.gameObject);
-            F.Set(controller, "questsBadgeText", badgeText);
+            SummaryAndBadge(quests.transform, controller, "questsLabel", "questsBadge", "questsBadgeText");
 
+            // Slot count follows GameBalanceConfig; chest art rows are seeded from the ChestDefinitions (hand-edited later on ChestSlotsView).
+            var balance = AssetDatabase.LoadAssetAtPath<GameBalanceConfig>(ContentBuilder.BalancePath);
+            int slotCount = balance != null ? balance.chestSlotCount : 6;
             var slots = F.HorizontalGroup("ChestSlots", bar, 12f, TextAnchor.MiddleLeft);
-            F.Anchor(slots, new Vector2(0f, 0.5f), new Vector2(336f, 0f), new Vector2(720f, 180f), new Vector2(0f, 0.5f));
-            var slotViews = new Object[4];
-            for (int i = 0; i < 4; i++) slotViews[i] = ChestSlot("ChestSlot_" + i, slots, i);
-            F.SetArray(controller, "chestSlots", slotViews);
+            F.Anchor(slots, new Vector2(0f, 0.5f), new Vector2(336f, 0f), new Vector2(slotCount * 182f, 180f), new Vector2(0f, 0.5f));
+            var slotViews = new Object[slotCount];
+            for (int i = 0; i < slotCount; i++) slotViews[i] = ChestSlot("ChestSlot_" + i, slots, i);
+            var slotsView = slots.gameObject.AddComponent<ChestSlotsView>();
+            F.SetArray(slotsView, "slots", slotViews);
+            var db = AssetDatabase.LoadAssetAtPath<GameDatabase>(ContentBuilder.DatabasePath);
+            if (db != null)
+            {
+                var so = new SerializedObject(slotsView);
+                var rows = so.FindProperty("chestVisuals");
+                rows.arraySize = db.chests.Count;
+                for (int i = 0; i < db.chests.Count; i++)
+                {
+                    var row = rows.GetArrayElementAtIndex(i);
+                    row.FindPropertyRelative("chest").objectReferenceValue = db.chests[i];
+                    row.FindPropertyRelative("closedSprite").objectReferenceValue = db.chests[i] != null ? db.chests[i].iconClosed : null;
+                    row.FindPropertyRelative("openSprite").objectReferenceValue = db.chests[i] != null ? db.chests[i].iconOpen : null;
+                }
+                so.ApplyModifiedPropertiesWithoutUndo();
+            }
+            F.Set(controller, "chestSlotsView", slotsView);
 
             var battle = F.Button("BattleButton", bar, F.Honey, "menu_battle", 56f);
             F.Anchor((RectTransform)battle.transform, new Vector2(1f, 0.5f), new Vector2(0f, 0f), new Vector2(420f, 150f), new Vector2(1f, 0.5f));
@@ -350,6 +366,20 @@ namespace TreeGuardians.Editor.SceneBuild
             var debugBtn = F.Button("DebugButton", safe, F.Red, null, 22f, null, null, "DEBUG");
             F.Anchor((RectTransform)debugBtn.transform, new Vector2(0f, 1f), new Vector2(260f, -14f), new Vector2(130f, 50f), new Vector2(0f, 1f));
             F.Set(controller, "debugButton", debugBtn);
+        }
+
+        /// "done/total" text under the icon plus the red unclaimed-reward badge in the corner.
+        static void SummaryAndBadge(Transform button, MenuUIController controller, string labelField, string badgeField, string badgeTextField)
+        {
+            var summary = F.OutlinedText("Summary", button, null, 22f, F.TextLight, TextAlignmentOptions.Center, "0/0");
+            F.AnchorStretchX((RectTransform)summary.transform, 4f, 26f, 6f, 6f, 0f, 0f);
+            F.Set(controller, labelField, summary);
+            var badge = F.Image("Badge", button, F.Ui("circle"), F.Red, false, false);
+            F.Anchor((RectTransform)badge.transform, new Vector2(1f, 1f), new Vector2(10f, 10f), new Vector2(52f, 52f), new Vector2(1f, 1f));
+            var badgeText = F.OutlinedText("Count", badge.transform, null, 26f, F.TextLight, TextAlignmentOptions.Center, "0");
+            F.Stretch((RectTransform)badgeText.transform);
+            F.Set(controller, badgeField, badge.gameObject);
+            F.Set(controller, badgeTextField, badgeText);
         }
 
         static ChestSlotView ChestSlot(string name, Transform parent, int index)

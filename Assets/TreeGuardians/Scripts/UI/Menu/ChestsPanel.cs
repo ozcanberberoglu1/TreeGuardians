@@ -53,7 +53,8 @@ namespace TreeGuardians.UI.Menu
         public void ShowSlot(int index)
         {
             var chests = Services.Get<ChestService>();
-            int count = chests != null ? chests.SlotCount : 4;
+            if (chests == null || chests.SlotCount <= 0) return;
+            int count = chests.SlotCount;
             slotIndex = ((index % count) + count) % count;
             if (!IsOpen) Open();
             Refresh();
@@ -73,7 +74,7 @@ namespace TreeGuardians.UI.Menu
             var def = chests.GetDefinition(slotIndex);
             if (slotIndexText != null) slotIndexText.text = $"{slotIndex + 1}/{chests.SlotCount}";
             bool empty = def == null;
-            if (chestImage != null) { chestImage.enabled = !empty; if (!empty) chestImage.sprite = chests.IsReady(slotIndex) ? def.iconOpen : def.iconClosed; }
+            if (chestImage != null) { chestImage.enabled = !empty; if (!empty) chestImage.sprite = chests.IsReady(slotIndex) ? ChestArt.Open(def) : ChestArt.Closed(def); }
             if (nameText != null) nameText.text = empty ? LocalizationService.Tr("chest_empty_slot") : LocalizationService.Tr(def.nameKey);
             if (startButton != null) startButton.gameObject.SetActive(!empty && chests.CanStartUnlock(slotIndex));
             if (openButton != null) openButton.gameObject.SetActive(!empty && chests.CanOpen(slotIndex));

@@ -15,8 +15,8 @@ MonoBehaviour:
   id: twig
   nameKey: chest_twig
   tier: 0
-  iconClosed: {fileID: 21300000, guid: bd79ec63c588e47eb9939fc71805951c, type: 3}
-  iconOpen: {fileID: 21300000, guid: 9e29e02283a934b2aa6fe5afb8f7d8d3, type: 3}
+  iconClosed: {fileID: -2881621123507394036, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
+  iconOpen: {fileID: -7867537649272193097, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
   glowColor: {r: 1, g: 0.85, b: 0.4, a: 1}
   coinsMin: 40
   coinsMax: 80

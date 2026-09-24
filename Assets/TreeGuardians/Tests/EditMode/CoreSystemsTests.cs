@@ -6,6 +6,7 @@ using TreeGuardians.Core;
 using TreeGuardians.Data;
 using TreeGuardians.Economy;
 using TreeGuardians.Meta;
+using TreeGuardians.Quests;
 using TreeGuardians.Rewards;
 using TreeGuardians.Save;
 using UnityEngine;
@@ -215,6 +216,65 @@ namespace TreeGuardians.Tests
                 Assert.IsTrue(bundle.cards.Count > 0);
             }
             finally { UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(saveGo); UnityEngine.Object.DestroyImmediate(chestsGo); }
+        }
+    }
+
+    public class QuestSummaryTests
+    {
+        static QuestDefinition Quest(string id, QuestType type, int target)
+        {
+            var q = ScriptableObject.CreateInstance<QuestDefinition>();
+            q.id = id; q.type = type; q.targetCount = target; q.reward = new RewardBundle { coins = 5 };
+            return q;
+        }
+
+        static AchievementDefinition Achievement(string id, QuestType metric, int target)
+        {
+            var a = ScriptableObject.CreateInstance<AchievementDefinition>();
+            a.id = id; a.metric = metric; a.targetCount = target; a.reward = new RewardBundle { coins = 5 };
+            return a;
+        }
+
+        [Test]
+        public void Summaries_CountCompletedAndClaimableSeparately()
+        {
+            var p = TestContent.Progress(out var host);
+            p.Database.quests.Add(Quest("q_win", QuestType.WinBattles, 1));
+            p.Database.quests.Add(Quest("q_play", QuestType.PlayBattles, 3));
+            p.Database.achievements.Add(Achievement("a_win", QuestType.WinBattles, 2));
+            p.Database.Build();
+            var saveGo = new GameObject("Save");
+            var save = saveGo.AddComponent<SaveService>();
+            save.SetPathOverride(System.IO.Path.Combine(Application.temporaryCachePath, "tg_test_quests.json"));
+            var questsGo = new GameObject("Quests");
+            var quests = questsGo.AddComponent<QuestService>();
+            try
+            {
+                quests.Initialize(p, save);
+                var q0 = quests.GetQuestSummary();
+                Assert.AreEqual(2, q0.total);
+                Assert.AreEqual(0, q0.completed);
+                Assert.AreEqual(0, q0.claimable);
+
+                quests.Report(QuestType.WinBattles);
+                var q1 = quests.GetQuestSummary();
+                Assert.AreEqual(1, q1.completed);
+                Assert.AreEqual(1, q1.claimable);
+                Assert.AreEqual(0, quests.GetAchievementSummary().completed, "achievement needs two wins");
+
+                Assert.IsNotNull(quests.TryClaim("q_win"));
+                var q2 = quests.GetQuestSummary();
+                Assert.AreEqual(1, q2.completed, "claimed quests still count as completed");
+                Assert.AreEqual(0, q2.claimable);
+
+                quests.Report(QuestType.WinBattles);
+                var a = quests.GetAchievementSummary();
+                Assert.AreEqual(1, a.total);
+                Assert.AreEqual(1, a.completed);
+                Assert.AreEqual(1, a.claimable);
+                Assert.AreEqual(1, quests.AchievementClaimableCount);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); UnityEngine.Object.DestroyImmediate(saveGo); UnityEngine.Object.DestroyImmediate(questsGo); }
         }
     }
 

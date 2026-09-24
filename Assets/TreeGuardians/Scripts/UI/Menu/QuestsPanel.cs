@@ -54,6 +54,13 @@ namespace TreeGuardians.UI.Menu
 
         protected override void OnOpen() => Refresh();
 
+        /// Selects the tab; safe to call before Open(). The Rank button opens achievements, the Quests button opens quests.
+        public void ShowTab(bool achievements)
+        {
+            showAchievements = achievements;
+            if (IsOpen) Refresh();
+        }
+
         void Update()
         {
             if (!IsOpen || !Services.IsBootstrapped || Time.unscaledTime < nextTick) return;

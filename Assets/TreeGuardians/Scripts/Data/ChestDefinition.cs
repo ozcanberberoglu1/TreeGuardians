@@ -9,8 +9,8 @@ namespace TreeGuardians.Data
         public string id = "chest_new";
         public string nameKey = "chest_new_name";
         public ChestTier tier = ChestTier.Twig;
-        public Sprite iconClosed;
-        public Sprite iconOpen;
+        [Tooltip("Kapalı görsel. Ana menüdeki ChestSlots > ChestSlotsView üzerinden otomatik doldurulur; doğrudan da atanabilir.")] public Sprite iconClosed;
+        [Tooltip("Açık görsel. Ana menüdeki ChestSlots > ChestSlotsView üzerinden otomatik doldurulur; doğrudan da atanabilir.")] public Sprite iconOpen;
         public Color glowColor = new Color(1f, 0.85f, 0.3f);
 
         [Header("Contents")]

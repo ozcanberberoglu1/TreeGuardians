@@ -15,8 +15,8 @@ MonoBehaviour:
   id: moon
   nameKey: chest_moon
   tier: 3
-  iconClosed: {fileID: 21300000, guid: ad2407b5b98454ef7aa33d6942436505, type: 3}
-  iconOpen: {fileID: 21300000, guid: 0db57f462f27e402a85f42039f9b95ea, type: 3}
+  iconClosed: {fileID: 296275487548532637, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
+  iconOpen: {fileID: 889573458233544023, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
   glowColor: {r: 0.6, g: 0.8, b: 1, a: 1}
   coinsMin: 600
   coinsMax: 1000

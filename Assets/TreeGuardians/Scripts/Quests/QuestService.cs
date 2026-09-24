@@ -184,6 +184,50 @@ namespace TreeGuardians.Quests
             }
         }
 
+        /// Quests only (daily + permanent). 'completed' counts quests that reached their target, claimed or not.
+        public QuestSummary GetQuestSummary()
+        {
+            var s = new QuestSummary();
+            if (!IsInitialized) return s;
+            var defs = db.quests;
+            for (int i = 0; i < defs.Count; i++)
+            {
+                var def = defs[i];
+                if (def == null) continue;
+                s.total++;
+                var q = FindQuest(def.id);
+                if (q == null || q.progress < def.targetCount) continue;
+                s.completed++;
+                if (!q.claimed) s.claimable++;
+            }
+            return s;
+        }
+
+        /// Achievements only. 'completed' counts achievements that reached their target, claimed or not.
+        public QuestSummary GetAchievementSummary()
+        {
+            var s = new QuestSummary();
+            if (!IsInitialized) return s;
+            var defs = db.achievements;
+            for (int i = 0; i < defs.Count; i++)
+            {
+                var def = defs[i];
+                if (def == null) continue;
+                s.total++;
+                var a = FindAchievement(def.id);
+                if (a == null || a.progress < def.targetCount) continue;
+                s.completed++;
+                if (!a.claimed) s.claimable++;
+            }
+            return s;
+        }
+
+        /// Unclaimed quest rewards plus the daily reward when it is ready (what the Quests badge shows).
+        public int QuestClaimableCount => GetQuestSummary().claimable + (CanClaimDailyReward() ? 1 : 0);
+
+        /// Unclaimed achievement rewards (what the Rank badge shows).
+        public int AchievementClaimableCount => GetAchievementSummary().claimable;
+
         public void CheckDailyReset()
         {
             var now = save.GetUtcNow();

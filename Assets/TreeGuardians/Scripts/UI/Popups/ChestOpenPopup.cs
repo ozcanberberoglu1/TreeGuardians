@@ -48,7 +48,7 @@ namespace TreeGuardians.UI.Popups
             slotIndex = slot;
             opened = false;
             bundle = null;
-            if (chestImage != null) { chestImage.sprite = def.iconClosed; chestImage.color = Color.white; }
+            if (chestImage != null) { chestImage.sprite = ChestArt.Closed(def); chestImage.color = Color.white; }
             if (glow != null) { glow.color = new Color(def.glowColor.r, def.glowColor.g, def.glowColor.b, 0f); }
             if (hintText != null) hintText.text = LocalizationService.Tr("chest_tap_to_open");
             foreach (var t in tiles) t?.Hide();
@@ -73,7 +73,7 @@ namespace TreeGuardians.UI.Popups
 
             if (chestButton != null) chestButton.interactable = false;
             if (hintText != null) hintText.text = "";
-            if (chestImage != null) { chestImage.sprite = def.iconOpen; TGTween.PunchScale(chestImage.transform, 0.25f, 0.4f); }
+            if (chestImage != null) { chestImage.sprite = ChestArt.Open(def); TGTween.PunchScale(chestImage.transform, 0.25f, 0.4f); }
             if (glow != null) { glow.color = new Color(def.glowColor.r, def.glowColor.g, def.glowColor.b, 0.9f); TGTween.ScaleTo(glow.transform, Vector3.one * 1.6f, 0.5f, Ease.OutCubic); }
             Services.Get<AudioService>()?.PlayUi(AudioEventId.ChestOpen);
             Services.Get<HapticService>()?.Medium();

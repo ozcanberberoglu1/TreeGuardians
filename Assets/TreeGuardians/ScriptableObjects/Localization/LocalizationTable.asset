@@ -1019,6 +1019,9 @@ MonoBehaviour:
   - key: debug_finish_chests
     en: Finish Chest Timers
     tr: "Sand\u0131k S\xFCrelerini Bitir"
+  - key: chest_sun
+    en: Sun Chest
+    tr: "G\xFCne\u015F Sand\u0131\u011F\u0131"
   loadingTipKeys:
   - tip_bark
   - tip_branch

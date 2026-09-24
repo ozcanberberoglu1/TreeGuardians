@@ -73,6 +73,12 @@ namespace TreeGuardians.Editor
                     if (!keys.Contains(g.nameKey)) Warn($"Guardian '{g.id}' nameKey '{g.nameKey}' missing in localization.");
                     if (!keys.Contains(g.descriptionKey)) Warn($"Guardian '{g.id}' descriptionKey missing in localization.");
                 }
+                foreach (var c in db.chests)
+                {
+                    if (c == null) continue;
+                    if (c.iconClosed == null || c.iconOpen == null) Warn($"Chest '{c.id}' has no closed/open art. Assign it on MainMenu > BottomBar > ChestSlots (ChestSlotsView).");
+                    if (!keys.Contains(c.nameKey)) Warn($"Chest '{c.id}' nameKey '{c.nameKey}' missing in localization.");
+                }
                 foreach (var t in db.tools)
                 {
                     if (t == null) continue;

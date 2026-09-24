@@ -15,8 +15,8 @@ MonoBehaviour:
   id: ancient
   nameKey: chest_ancient
   tier: 2
-  iconClosed: {fileID: 21300000, guid: 96e083650f98442b8812df9db998acfe, type: 3}
-  iconOpen: {fileID: 21300000, guid: 0f79e31d38663490bb2e37ef5516935a, type: 3}
+  iconClosed: {fileID: 8687486799443021748, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
+  iconOpen: {fileID: -3188185465694189129, guid: 08926eaa813864d0a910d42cc0099095, type: 3}
   glowColor: {r: 0.85, g: 0.6, b: 1, a: 1}
   coinsMin: 350
   coinsMax: 600

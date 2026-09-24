@@ -72,12 +72,17 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] CenterTreeDisplay centerTree;
 
         [Header("Bottom")]
-        [SerializeField] Button rankButton;
-        [SerializeField] Button questsButton;
-        [SerializeField] GameObject questsBadge;
+        [Tooltip("Başarımlar sekmesini açar; etiket = tamamlanan/toplam başarım.")] [SerializeField] Button rankButton;
+        [SerializeField] TMP_Text rankLabel;
+        [Tooltip("Alınmamış başarım ödülü sayısı; 0 ise gizlenir.")] [SerializeField] GameObject rankBadge;
+        [SerializeField] TMP_Text rankBadgeText;
+        [Tooltip("Görevler sekmesini açar; etiket = tamamlanan/toplam görev.")] [SerializeField] Button questsButton;
+        [SerializeField] TMP_Text questsLabel;
+        [Tooltip("Alınmamış görev ödülü + hazır günlük ödül sayısı; 0 ise gizlenir.")] [SerializeField] GameObject questsBadge;
         [SerializeField] TMP_Text questsBadgeText;
+        [Tooltip("İsteğe bağlı: arena yolu panelini (RankingPanel) açan buton.")] [SerializeField] Button arenaPathButton;
         [SerializeField] Button battleButton;
-        [SerializeField] ChestSlotView[] chestSlots = new ChestSlotView[4];
+        [Tooltip("BottomBar > ChestSlots üzerindeki ChestSlotsView: slotlar ve sandık görselleri.")] [SerializeField] ChestSlotsView chestSlotsView;
 
         [Header("Misc")]
         [SerializeField] UIToast toast;
@@ -86,6 +91,7 @@ namespace TreeGuardians.UI.Menu
 
         UIPanel current;
         PlayerProgressService progress;
+        QuestService questService;
         bool initialized;
         static bool dailyPromptShownThisSession;
 
@@ -108,6 +114,7 @@ namespace TreeGuardians.UI.Menu
                 GameEventBus.Unsubscribe<QuestProgressEvent>(OnQuestProgress);
                 GameEventBus.Unsubscribe<QuestClaimedEvent>(OnQuestClaimed);
                 GameEventBus.Unsubscribe<RewardAppliedEvent>(OnRewardApplied);
+                if (questService != null) questService.OnChanged -= RefreshQuestSummaries;
             }
         }
 
@@ -142,16 +149,25 @@ namespace TreeGuardians.UI.Menu
             Wire(toolsButton, () => OpenPanel(toolsPanel));
             Wire(profileButton, () => OpenPanel(profilePanel));
             Wire(editLoadoutButton, () => OpenPanel(guardiansPanel));
-            Wire(rankButton, () => OpenPanel(rankingPanel));
-            Wire(questsButton, () => OpenPanel(questsPanel));
+            Wire(rankButton, () => OpenQuests(true));
+            Wire(questsButton, () => OpenQuests(false));
+            Wire(arenaPathButton, () => OpenPanel(rankingPanel));
             Wire(battleButton, () => OpenPanel(battlePrepPanel));
             Wire(debugButton, () => OpenPanel(debugPanel));
-            for (int i = 0; i < chestSlots.Length; i++)
+            if (chestSlotsView != null)
             {
-                if (chestSlots[i] == null) continue;
-                int idx = i;
-                chestSlots[i].SetClickHandler(() => OpenChestSlot(idx));
+                for (int i = 0; i < chestSlotsView.SlotCount; i++)
+                {
+                    var slot = chestSlotsView.GetSlot(i);
+                    if (slot == null) continue;
+                    int idx = i;
+                    slot.SetClickHandler(() => OpenChestSlot(idx));
+                }
+                if (chestSlotsView.SlotCount != progress.Balance.chestSlotCount)
+                    Debug.LogWarning($"[MenuUIController] ChestSlotsView has {chestSlotsView.SlotCount} slots but GameBalanceConfig.chestSlotCount is {progress.Balance.chestSlotCount}.", chestSlotsView);
             }
+            questService = Services.Get<QuestService>();
+            if (questService != null) questService.OnChanged += RefreshQuestSummaries;
             if (debugButton != null) debugButton.gameObject.SetActive(Application.isEditor || Debug.isDebugBuild);
 
             GameEventBus.Subscribe<LoadoutChangedEvent>(OnLoadoutChanged);
@@ -226,6 +242,13 @@ namespace TreeGuardians.UI.Menu
         }
 
         public bool IsAnyPanelOpen => current != null;
+
+        /// Quests panel on the requested tab (Rank button = achievements, Quests button = quests).
+        public void OpenQuests(bool achievements)
+        {
+            questsPanel?.ShowTab(achievements);
+            OpenPanel(questsPanel);
+        }
 
         public void OpenGuardianDetail(string guardianId, int slot)
         {
@@ -351,16 +374,28 @@ namespace TreeGuardians.UI.Menu
                 }
             }
             centerTree?.Refresh();
-            RefreshQuestBadge();
-            for (int i = 0; i < chestSlots.Length; i++) chestSlots[i]?.Refresh();
+            RefreshQuestSummaries();
+            if (chestSlotsView != null)
+                for (int i = 0; i < chestSlotsView.SlotCount; i++) chestSlotsView.GetSlot(i)?.Refresh();
         }
 
-        void RefreshQuestBadge()
+        /// Rank = achievements (done/total + unclaimed rewards), Quests = quests (done/total + unclaimed rewards incl. daily).
+        void RefreshQuestSummaries()
         {
-            var quests = Services.Get<QuestService>();
-            int n = quests != null ? quests.ClaimableCount : 0;
-            if (questsBadge != null) questsBadge.SetActive(n > 0);
-            if (questsBadgeText != null) questsBadgeText.text = n.ToString();
+            if (this == null) return;
+            var quests = questService != null ? questService : Services.Get<QuestService>();
+            var q = quests != null ? quests.GetQuestSummary() : default;
+            var a = quests != null ? quests.GetAchievementSummary() : default;
+            int questClaimable = quests != null ? quests.QuestClaimableCount : 0;
+            SetSummary(questsLabel, questsBadge, questsBadgeText, q.completed, q.total, questClaimable);
+            SetSummary(rankLabel, rankBadge, rankBadgeText, a.completed, a.total, a.claimable);
+        }
+
+        static void SetSummary(TMP_Text label, GameObject badge, TMP_Text badgeText, int completed, int total, int claimable)
+        {
+            if (label != null) label.text = completed + "/" + total;
+            if (badge != null) badge.SetActive(claimable > 0);
+            if (badgeText != null) badgeText.text = claimable.ToString();
         }
 
         void OnLoadoutChanged(LoadoutChangedEvent e) => Refresh();
@@ -368,8 +403,8 @@ namespace TreeGuardians.UI.Menu
         void OnArenaChanged(ArenaChangedEvent e) => Refresh();
         void OnCurrencyChanged(CurrencyChangedEvent e) { if (e.type == CurrencyType.Trophies) Refresh(); }
         void OnLanguageChanged(LanguageChangedEvent e) => Refresh();
-        void OnQuestProgress(QuestProgressEvent e) => RefreshQuestBadge();
-        void OnQuestClaimed(QuestClaimedEvent e) => RefreshQuestBadge();
+        void OnQuestProgress(QuestProgressEvent e) => RefreshQuestSummaries();
+        void OnQuestClaimed(QuestClaimedEvent e) => RefreshQuestSummaries();
         void OnRewardApplied(RewardAppliedEvent e) => Refresh();
     }
 }

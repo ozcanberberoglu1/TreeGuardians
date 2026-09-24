@@ -66,7 +66,7 @@ namespace TreeGuardians.Data
 
     public enum TreeVisualTier { Sprouting = 0, Strong = 1, Ancient = 2 }
 
-    public enum ChestTier { Twig = 0, Grove = 1, Ancient = 2, Moon = 3 }
+    public enum ChestTier { Twig = 0, Grove = 1, Ancient = 2, Moon = 3, Sun = 4 }
 
     public enum BattleOutcome { None = 0, Victory = 1, Defeat = 2, Draw = 3 }
 
