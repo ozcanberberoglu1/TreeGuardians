@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: a869c2d98cdc24337a7f002ff93ae52b
+guid: b5ae8ed9997a64cf598b3ea9fcdda4db
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8559069062078836266
-    second: papagan_0
-  - first:
-      213: -8476023410207198542
-    second: papagan_1
-  - first:
-      213: -2181951875640474223
-    second: papagan_2
-  - first:
-      213: -5922535374988774977
-    second: papagan_3
-  - first:
-      213: 3916249654117283273
-    second: papagan_4
-  - first:
-      213: -3367381654678181001
-    second: papagan_5
+      213: -5890069722076002401
+    second: "o\u0308rdek_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: papagan_0
+      name: "o\u0308rdek_0"
       rect:
         serializedVersion: 2
-        x: 200
-        y: 831
-        width: 247
-        height: 192
+        x: 81
+        y: 39
+        width: 954
+        height: 1319
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,118 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a2eae3dc6fbe7c670800000000000000
-      internalID: 8559069062078836266
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: papagan_1
-      rect:
-        serializedVersion: 2
-        x: 586
-        y: 642
-        width: 368
-        height: 382
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2b274b6cd9d1f5a80800000000000000
-      internalID: -8476023410207198542
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: papagan_2
-      rect:
-        serializedVersion: 2
-        x: 50
-        y: 510
-        width: 412
-        height: 305
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 195c37f545628b1e0800000000000000
-      internalID: -2181951875640474223
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: papagan_3
-      rect:
-        serializedVersion: 2
-        x: 547
-        y: 140
-        width: 462
-        height: 482
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: fb1fb14947deecda0800000000000000
-      internalID: -5922535374988774977
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: papagan_4
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 13
-        width: 221
-        height: 446
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9c5386daf40595630800000000000000
-      internalID: 3916249654117283273
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: papagan_5
-      rect:
-        serializedVersion: 2
-        x: 227
-        y: 26
-        width: 213
-        height: 435
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 77b6db9e938a441d0800000000000000
-      internalID: -3367381654678181001
+      spriteID: f9740617bc4424ea0800000000000000
+      internalID: -5890069722076002401
       vertices: []
       indices: 
       edges: []
@@ -286,12 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      papagan_0: 8559069062078836266
-      papagan_1: -8476023410207198542
-      papagan_2: -2181951875640474223
-      papagan_3: -5922535374988774977
-      papagan_4: 3916249654117283273
-      papagan_5: -3367381654678181001
+      "o\u0308rdek_0": -5890069722076002401
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

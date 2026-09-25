@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: 03910601cbcc1436aa6e52249d586cb8
+guid: 090f073bc11504a158f83e293b90ebf3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6449792728481089402
-    second: baykus_0
-  - first:
-      213: 5498605267239960164
-    second: baykus_1
-  - first:
-      213: -4590550964879822872
-    second: baykus_2
-  - first:
-      213: 4359697543591485531
-    second: baykus_3
-  - first:
-      213: -5768842550408673082
-    second: baykus_4
-  - first:
-      213: 211215940522561488
-    second: baykus_5
+      213: -9016401376789149428
+    second: horoz_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: baykus_0
+      name: horoz_0
       rect:
         serializedVersion: 2
-        x: 50
-        y: 511
-        width: 402
-        height: 371
+        x: 93
+        y: 8
+        width: 943
+        height: 1305
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,118 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 688bcf79fabbd76a0800000000000000
-      internalID: -6449792728481089402
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: baykus_1
-      rect:
-        serializedVersion: 2
-        x: 551
-        y: 630
-        width: 370
-        height: 374
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 46efde19b58fe4c40800000000000000
-      internalID: 5498605267239960164
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: baykus_2
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 24
-        width: 218
-        height: 444
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8efe20f18361b40c0800000000000000
-      internalID: -4590550964879822872
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: baykus_3
-      rect:
-        serializedVersion: 2
-        x: 218
-        y: 19
-        width: 223
-        height: 450
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b50e9e531d1c08c30800000000000000
-      internalID: 4359697543591485531
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: baykus_4
-      rect:
-        serializedVersion: 2
-        x: 493
-        y: 69
-        width: 507
-        height: 556
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 6c88bb9d344f0ffa0800000000000000
-      internalID: -5768842550408673082
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: baykus_5
-      rect:
-        serializedVersion: 2
-        x: 178
-        y: 21
-        width: 13
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0df4fb167c36ee200800000000000000
-      internalID: 211215940522561488
+      spriteID: c09c32008be4fd280800000000000000
+      internalID: -9016401376789149428
       vertices: []
       indices: 
       edges: []
@@ -286,12 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      baykus_0: -6449792728481089402
-      baykus_1: 5498605267239960164
-      baykus_2: -4590550964879822872
-      baykus_3: 4359697543591485531
-      baykus_4: -5768842550408673082
-      baykus_5: 211215940522561488
+      horoz_0: -9016401376789149428
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

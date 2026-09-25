@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: 286ed5423b9a54373a1f3035815a8537
+guid: 3f043f16c7ee640d4a152aac44d593be
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8648707884363184448
-    second: tavuk_0
-  - first:
-      213: 8992556237661966220
-    second: tavuk_1
-  - first:
-      213: -680898287134236793
-    second: tavuk_2
-  - first:
-      213: -1289579438359817921
-    second: tavuk_3
-  - first:
-      213: -4040627129575778665
-    second: tavuk_4
-  - first:
-      213: -2276811263788138117
-    second: tavuk_5
+      213: 5604539251270583319
+    second: kedi_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: tavuk_0
+      name: kedi_0
       rect:
         serializedVersion: 2
-        x: 47
-        y: 525
-        width: 384
-        height: 316
+        x: 92
+        y: 75
+        width: 945
+        height: 1238
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,118 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 049769d7ff1660870800000000000000
-      internalID: 8648707884363184448
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tavuk_1
-      rect:
-        serializedVersion: 2
-        x: 548
-        y: 618
-        width: 395
-        height: 398
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c8f8098e04afbcc70800000000000000
-      internalID: 8992556237661966220
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tavuk_2
-      rect:
-        serializedVersion: 2
-        x: 553
-        y: 126
-        width: 196
-        height: 492
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 78f113b8d96fc86f0800000000000000
-      internalID: -680898287134236793
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tavuk_3
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 14
-        width: 211
-        height: 449
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f315ae2555e7a1ee0800000000000000
-      internalID: -1289579438359817921
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tavuk_4
-      rect:
-        serializedVersion: 2
-        x: 214
-        y: 18
-        width: 231
-        height: 462
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 79654d7a80fcce7c0800000000000000
-      internalID: -4040627129575778665
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tavuk_5
-      rect:
-        serializedVersion: 2
-        x: 771
-        y: 155
-        width: 252
-        height: 459
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b71cc49f7342760e0800000000000000
-      internalID: -2276811263788138117
+      spriteID: 71487b141c257cd40800000000000000
+      internalID: 5604539251270583319
       vertices: []
       indices: 
       edges: []
@@ -286,12 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      tavuk_0: 8648707884363184448
-      tavuk_1: 8992556237661966220
-      tavuk_2: -680898287134236793
-      tavuk_3: -1289579438359817921
-      tavuk_4: -4040627129575778665
-      tavuk_5: -2276811263788138117
+      kedi_0: 5604539251270583319
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -15,7 +15,7 @@ namespace TreeGuardians.Editor.Animals
     public static class AnimalRigInspector
     {
         public const string PreviewScenePath = "Assets/Art/_AnimalRigPreview.unity";
-        static readonly string[] Animals = { "yabandomuzu", "ördek", "kartal", "kedi", "maymun" };
+        static string[] Animals => AnimalRigBuilder.DiscoverAnimals().ToArray();
 
         [MenuItem("Tree Guardians/Animals/Report Rigs", priority = 120)]
         public static void Report()
@@ -76,22 +76,32 @@ namespace TreeGuardians.Editor.Animals
             cam.backgroundColor = new Color(0.55f, 0.75f, 0.9f);
             camGo.AddComponent<UniversalAdditionalCameraData>().renderType = CameraRenderType.Base;
 
-            float x = -6.4f;
-            foreach (var name in Animals)
+            // Grid: up to 7 per row, two rows.
+            var names = Animals;
+            int cols = Mathf.Max(1, Mathf.CeilToInt(names.Length / 2f));
+            cols = Mathf.Min(cols, 7);
+            const float spacing = 3.1f;
+            cam.orthographicSize = names.Length > cols ? 6.6f : 4.6f;
+            cam.transform.position = new Vector3(0f, names.Length > cols ? -0.6f : 1.2f, -10f);
+            int index = 0;
+            foreach (var name in names)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AnimalRigBuilder.PrefabPath(name));
                 if (prefab == null) continue;
+                int row = index / cols, col = index % cols;
+                index++;
+                float x = -(cols - 1) * spacing * 0.5f + col * spacing;
+                float y = names.Length > cols ? (row == 0 ? 2.4f : -3.6f) : 0f;
                 var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-                inst.transform.position = new Vector3(x, 0f, 0f);
+                inst.transform.position = new Vector3(x, y, 0f);
                 var label = new GameObject("Label_" + name);
-                label.transform.position = new Vector3(x, -2.6f, 0f);
+                label.transform.position = new Vector3(x, y - 2.6f, 0f);
                 var tm = label.AddComponent<TextMesh>();
                 tm.text = name;
                 tm.fontSize = 48;
                 tm.characterSize = 0.08f;
                 tm.anchor = TextAnchor.MiddleCenter;
                 tm.color = Color.black;
-                x += 3.2f;
             }
             EditorSceneManager.SaveScene(scene, PreviewScenePath);
             Debug.Log("[TG] Preview scene saved: " + PreviewScenePath);

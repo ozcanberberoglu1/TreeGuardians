@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: e96adc416bde744a8b4d7105d0d72760
+guid: 6234dfb71c7734f70ad75c605ef47909
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8563105518322048534
-    second: ayi_0
-  - first:
-      213: 8724679907347633320
-    second: ayi_1
-  - first:
-      213: 1113374231793231866
-    second: ayi_2
-  - first:
-      213: -7968692109617642262
-    second: ayi_3
-  - first:
-      213: -5868769897896052799
-    second: ayi_4
-  - first:
-      213: -6584422288950452487
-    second: ayi_5
+      213: -6516704795684178678
+    second: penguen_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,101 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ayi_0
-      rect:
-        serializedVersion: 2
-        x: 41
-        y: 532
-        width: 393
-        height: 321
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 61ed5c1891346d670800000000000000
-      internalID: 8563105518322048534
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ayi_1
-      rect:
-        serializedVersion: 2
-        x: 544
-        y: 145
-        width: 206
-        height: 471
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8a49170862a441970800000000000000
-      internalID: 8724679907347633320
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ayi_2
-      rect:
-        serializedVersion: 2
-        x: 584
-        y: 614
-        width: 341
-        height: 395
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: af7eb1407ff737f00800000000000000
-      internalID: 1113374231793231866
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ayi_3
-      rect:
-        serializedVersion: 2
-        x: 777
-        y: 171
-        width: 246
-        height: 445
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ae448c90fb4896190800000000000000
-      internalID: -7968692109617642262
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ayi_4
+      name: penguen_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 28
-        width: 215
-        height: 436
+        y: 76
+        width: 1054
+        height: 1286
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -244,30 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1c776673fd0fd8ea0800000000000000
-      internalID: -5868769897896052799
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ayi_5
-      rect:
-        serializedVersion: 2
-        x: 233
-        y: 34
-        width: 204
-        height: 427
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9fe91ff50de6f94a0800000000000000
-      internalID: -6584422288950452487
+      spriteID: a05f82be3830095a0800000000000000
+      internalID: -6516704795684178678
       vertices: []
       indices: 
       edges: []
@@ -286,12 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ayi_0: 8563105518322048534
-      ayi_1: 8724679907347633320
-      ayi_2: 1113374231793231866
-      ayi_3: -7968692109617642262
-      ayi_4: -5868769897896052799
-      ayi_5: -6584422288950452487
+      penguen_0: -6516704795684178678
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

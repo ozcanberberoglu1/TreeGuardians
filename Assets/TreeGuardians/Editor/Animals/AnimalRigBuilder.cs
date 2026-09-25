@@ -23,6 +23,48 @@ namespace TreeGuardians.Editor.Animals
         public const string ControllerPath = ArtRoot + "/animation/YabanDomuzuController.controller";
         public const string LitSpriteMaterialGuid = "a97c105638bdf8b4a8650670310a4cd3";
         public static readonly string[] NewAnimals = { "kartal", "kedi", "maymun" };
+        /// Hand-rigged references that must never be re-rigged by the tool.
+        public static readonly string[] HandRigged = { "yabandomuzu", "ördek" };
+
+        /// Folder names come back from the file system in NFD on macOS ("ördek"); compare in NFC.
+        public static bool IsHandRigged(string name)
+        {
+            string n = name.Normalize(System.Text.NormalizationForm.FormC);
+            foreach (var h in HandRigged) if (h.Normalize(System.Text.NormalizationForm.FormC) == n) return true;
+            return false;
+        }
+
+        /// Every Assets/Art/<name>/<name>.png sheet (hand-rigged references first).
+        public static List<string> DiscoverAnimals()
+        {
+            var list = new List<string>();
+            foreach (var dir in System.IO.Directory.GetDirectories(ArtRoot))
+            {
+                string name = System.IO.Path.GetFileName(dir);
+                if (name.StartsWith("_") || name == "animation") continue;
+                if (System.IO.File.Exists(System.IO.Path.Combine(dir, name + ".png"))) list.Add(name);
+            }
+            list.Sort((a, b) =>
+            {
+                int ia = IsHandRigged(a) ? System.Array.FindIndex(HandRigged, h => h.Normalize(System.Text.NormalizationForm.FormC) == a.Normalize(System.Text.NormalizationForm.FormC)) : -1;
+                int ib = IsHandRigged(b) ? System.Array.FindIndex(HandRigged, h => h.Normalize(System.Text.NormalizationForm.FormC) == b.Normalize(System.Text.NormalizationForm.FormC)) : -1;
+                if (ia >= 0 || ib >= 0) return (ia >= 0 ? ia : 99).CompareTo(ib >= 0 ? ib : 99);
+                return string.Compare(a, b, StringComparison.Ordinal);
+            });
+            return list;
+        }
+
+        [MenuItem("Tree Guardians/Animals/Rig All Sheets In Assets-Art (auto-discover)", priority = 99)]
+        public static void RigAllDiscovered()
+        {
+            foreach (var name in DiscoverAnimals())
+            {
+                if (IsHandRigged(name)) continue;
+                Rig(name);
+            }
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
 
         const int AlphaTolerance = 10;
         const float OutlineDetail = 0.10f;

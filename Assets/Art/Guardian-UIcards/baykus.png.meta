@@ -1,25 +1,10 @@
 fileFormatVersion: 2
-guid: 1baba7d2981c548f19d6457780f0e5a0
+guid: bfc30343bd80f460fab2c90284611d61
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9016401376789149428
-    second: horoz_0
-  - first:
-      213: -3003356119824016086
-    second: horoz_1
-  - first:
-      213: 2561016909183439910
-    second: horoz_2
-  - first:
-      213: -4623330523530838910
-    second: horoz_3
-  - first:
-      213: 365490712604204260
-    second: horoz_4
-  - first:
-      213: 4194433265932858057
-    second: horoz_5
+      213: -6449792728481089402
+    second: baykus_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -141,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: horoz_0
+      name: baykus_0
       rect:
         serializedVersion: 2
-        x: 50
-        y: 528
-        width: 393
-        height: 296
+        x: 92
+        y: 0
+        width: 944
+        height: 1313
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -156,118 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c09c32008be4fd280800000000000000
-      internalID: -9016401376789149428
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: horoz_1
-      rect:
-        serializedVersion: 2
-        x: 566
-        y: 622
-        width: 349
-        height: 402
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a2dd4ef758fe156d0800000000000000
-      internalID: -3003356119824016086
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: horoz_2
-      rect:
-        serializedVersion: 2
-        x: 5
-        y: 12
-        width: 207
-        height: 452
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 624d5af5f4f8a8320800000000000000
-      internalID: 2561016909183439910
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: horoz_3
-      rect:
-        serializedVersion: 2
-        x: 223
-        y: 5
-        width: 229
-        height: 456
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 28c39b16261a6dfb0800000000000000
-      internalID: -4623330523530838910
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: horoz_4
-      rect:
-        serializedVersion: 2
-        x: 528
-        y: 117
-        width: 226
-        height: 501
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4ec5a7ddddb721500800000000000000
-      internalID: 365490712604204260
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: horoz_5
-      rect:
-        serializedVersion: 2
-        x: 775
-        y: 169
-        width: 242
-        height: 440
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9c2720215de953a30800000000000000
-      internalID: 4194433265932858057
+      spriteID: 688bcf79fabbd76a0800000000000000
+      internalID: -6449792728481089402
       vertices: []
       indices: 
       edges: []
@@ -286,12 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      horoz_0: -9016401376789149428
-      horoz_1: -3003356119824016086
-      horoz_2: 2561016909183439910
-      horoz_3: -4623330523530838910
-      horoz_4: 365490712604204260
-      horoz_5: 4194433265932858057
+      baykus_0: -6449792728481089402
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
