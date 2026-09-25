@@ -49,7 +49,7 @@ namespace TreeGuardians.Core
         };
 
         [Header("Tree")]
-        [Tooltip("Ağaçtaki toplam muhafız yuvası.")] public int guardianSlotCount = 8;
+        [Tooltip("Ağaçtaki toplam muhafız yuvası; ana menü ağacındaki bölme (GuardianSpawnPoint) sayısıyla eşleşmeli.")] public int guardianSlotCount = 6;
         [Tooltip("Savaşta takılı araç sayısı.")] public int toolSlotCount = 3;
         [Tooltip("Ağaç geliştirme yollarının maksimum seviyesi.")] public int treeUpgradeMaxLevel = 10;
         [Tooltip("Ağaç geliştirme temel sap maliyeti.")] public int treeUpgradeBaseSap = 30;
@@ -58,7 +58,7 @@ namespace TreeGuardians.Core
         [Tooltip("Toplam ağaç seviyesi bu değere ulaşınca 'Kadim' görünüm.")] public int treeTierAncientThreshold = 24;
 
         [Header("Battle Timing")]
-        public float battleDurationSeconds = 150f;
+        public float battleDurationSeconds = 300f;
         public float readyCountdownSeconds = 3f;
         public float introSeconds = 1.2f;
         public float resultRevealDelaySeconds = 1.5f;
@@ -75,6 +75,20 @@ namespace TreeGuardians.Core
         [Tooltip("Vuruş başına kazanılan özel enerji.")] public float specialEnergyPerHit = 6f;
         public float specialEnergyMax = 100f;
         public TimeUpScoring timeUpScoring = new TimeUpScoring();
+        [Tooltip("Her muhafız için (iki taraf) en az bu kadar kritik vuruş şansı.")] [Range(0f, 1f)] public float critChanceMin = 0.2f;
+
+        [Header("Turn-based castle duel")]
+        [Tooltip("Taraflar sırayla tek atış yapar; kapalıysa eski gerçek zamanlı savaş.")] public bool turnBasedBattle = true;
+        [Tooltip("Oyuncunun muhafız seçip ateş etmesi için süre (saniye).")] public float turnSeconds = 10f;
+        [Tooltip("Atıştan sonra sıranın geçmesi için en az bekleme.")] public float turnResolveMinSeconds = 0.6f;
+        [Tooltip("Mermi havada kalsa bile sıranın geçeceği üst sınır.")] public float turnResolveMaxSeconds = 6f;
+        [Tooltip("Bot bu süre içinde ateş edemezse sıra oyuncuya döner.")] public float botTurnTimeoutSeconds = 4f;
+        [Tooltip("Mermi tanımında yarıçap yoksa kale duvarında açılan delik yarıçapı (dünya birimi).")] public float castleHoleRadius = 0.8f;
+        [Tooltip("Delikten görünen muhafıza isabette duvarın da oyulma yarıçapı (delik yarıçapının katı).")] [Range(0f, 1.5f)] public float guardianHitWallChipRadius = 0.85f;
+        [Tooltip("Muhafıza isabette duvara da uygulanan yapı hasarı oranı.")] [Range(0f, 1f)] public float guardianHitWallChipDamage = 0.35f;
+        [Tooltip("Açılan delikten duman tütme olasılığı.")] [Range(0f, 1f)] public float holeSmokeChance = 0.85f;
+        public float holeSmokeSecondsMin = 5f;
+        public float holeSmokeSecondsMax = 10f;
 
         [Header("Trophies")]
         public int trophiesOnWin = 30;
@@ -127,6 +141,11 @@ namespace TreeGuardians.Core
             toolSlotCount = Mathf.Clamp(toolSlotCount, 1, 3);
             chestSlotCount = Mathf.Clamp(chestSlotCount, 1, 8);
             battleDurationSeconds = Mathf.Max(10f, battleDurationSeconds);
+            turnSeconds = Mathf.Clamp(turnSeconds, 2f, 60f);
+            turnResolveMinSeconds = Mathf.Max(0f, turnResolveMinSeconds);
+            turnResolveMaxSeconds = Mathf.Max(turnResolveMinSeconds, turnResolveMaxSeconds);
+            botTurnTimeoutSeconds = Mathf.Max(0.5f, botTurnTimeoutSeconds);
+            castleHoleRadius = Mathf.Clamp(castleHoleRadius, 0.1f, 3f);
         }
     }
 }

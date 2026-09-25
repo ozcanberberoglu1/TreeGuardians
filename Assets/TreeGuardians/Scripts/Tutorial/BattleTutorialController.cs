@@ -155,7 +155,7 @@ namespace TreeGuardians.Tutorial
 
         void OnSelectionChanged() { if (running && shown && step == 0) Advance(); }
         void OnFired(ProjectileFiredEvent e) { if (running && e.side == BattleSide.Player && step == 1) Advance(); }
-        void OnSectionDamaged(SectionDamagedEvent e) { if (running && e.side == BattleSide.Enemy && step == 2) Advance(); }
+        void OnSectionDamaged(SectionDamagedEvent e) { if (running && e.side == BattleSide.Enemy && (step == 2 || step == 3)) Advance(); }
         void OnSectionDestroyed(SectionDestroyedEvent e) { if (running && e.side == BattleSide.Enemy && step == 3) Advance(); }
         void OnToolUsed(ToolUsedEvent e) { if (running && e.side == BattleSide.Player && step == 4) Advance(); }
         void OnFinished(BattleFinishedEvent e) { if (running) Complete(); }

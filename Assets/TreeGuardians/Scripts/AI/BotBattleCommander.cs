@@ -40,9 +40,33 @@ namespace TreeGuardians.AI
         float ThinkInterval => difficulty == BotDifficulty.Easy ? easyThink : difficulty == BotDifficulty.Hard ? hardThink : normalThink;
         float AngleError => difficulty == BotDifficulty.Easy ? easyAngleError : difficulty == BotDifficulty.Hard ? hardAngleError : normalAngleError;
 
+        /// Turn-based: called when the enemy turn starts; the bot answers after a short, difficulty-based delay.
+        public void BeginTurn()
+        {
+            float delay = difficulty == BotDifficulty.Easy ? 1.6f : difficulty == BotDifficulty.Hard ? 0.7f : 1.1f;
+            thinkTimer = delay * ctx.Range(0.85f, 1.25f);
+            toolTimer = thinkTimer * 0.5f;
+            turnShotQueued = false;
+        }
+
+        bool turnShotQueued;
+
         public void Tick(float dt)
         {
             if (ctx == null || !ctx.isPlaying) return;
+            if (ctx.turnBased)
+            {
+                if (ctx.turns == null || !ctx.turns.CanFire(Side) || turnShotQueued) return;
+                thinkTimer -= dt;
+                toolTimer -= dt;
+                if (toolTimer <= 0f) { toolTimer = 999f; ConsiderTools(); }
+                if (thinkTimer <= 0f)
+                {
+                    turnShotQueued = true;
+                    ThinkTurn();
+                }
+                return;
+            }
             thinkTimer -= dt;
             toolTimer -= dt;
             if (thinkTimer <= 0f)
@@ -55,6 +79,77 @@ namespace TreeGuardians.AI
                 toolTimer = ctx.Range(2.5f, 5f);
                 ConsiderTools();
             }
+        }
+
+        /// One shot with a random alive guardian: an exposed enemy guardian when the walls allow it, otherwise a random wall part.
+        void ThinkTurn()
+        {
+            var roster = ctx.enemyRoster;
+            if (roster == null) return;
+            roster.GetAlive(ownAlive);
+            if (ownAlive.Count == 0) return;
+            var g = ownAlive[ctx.rng.Next(ownAlive.Count)];
+            int viewIndex = IndexOf(roster, g);
+            if (viewIndex < 0) return;
+            bool useSpecial = g.SpecialReady && ctx.NextFloat() < (difficulty == BotDifficulty.Hard ? 0.8f : 0.45f) && g.CanFire(true);
+            if (!ChooseCastleAimPoint(out var aim)) return;
+            var def = useSpecial && g.Definition.specialProjectile != null ? g.Definition.specialProjectile : g.Definition.normalProjectile;
+            if (def == null) return;
+            var v = ctx.projectiles.LaunchVelocity(def, g.MuzzlePosition, aim, 1f);
+            Vector2 dir = v.sqrMagnitude > 0.001f ? v.normalized : Vector2.left;
+            float err = ctx.Range(-AngleError, AngleError) * Mathf.Deg2Rad;
+            float c = Mathf.Cos(err), s = Mathf.Sin(err);
+            dir = new Vector2(dir.x * c - dir.y * s, dir.x * s + dir.y * c);
+            queue.Enqueue(BattleCommand.Select(Side, viewIndex));
+            queue.Enqueue(BattleCommand.Fire(Side, viewIndex, dir, 1f, useSpecial));
+        }
+
+        bool ChooseCastleAimPoint(out Vector2 aim)
+        {
+            aim = Vector2.zero;
+            var tree = ctx.playerTree;
+            var roster = ctx.playerRoster;
+            if (tree == null) return false;
+            if (roster != null) roster.GetAlive(enemyAlive); else enemyAlive.Clear();
+            float exposedChance = difficulty == BotDifficulty.Easy ? 0.35f : difficulty == BotDifficulty.Hard ? 0.9f : 0.6f;
+            if (enemyAlive.Count > 0 && tree.IsDestructible && ctx.NextFloat() < exposedChance)
+            {
+                GuardianController best = null;
+                for (int i = 0; i < enemyAlive.Count; i++)
+                {
+                    var g = enemyAlive[i];
+                    if (g.BodyCollider == null) continue;
+                    Vector2 c = g.BodyCollider.bounds.center;
+                    if (!tree.IsHoleAt(c)) continue;
+                    if (best == null || g.HealthPercent < best.HealthPercent) best = g;
+                }
+                if (best != null) { aim = best.BodyCollider.bounds.center; return true; }
+            }
+            tree.GetAliveSections(enemySections, false);
+            if (enemySections.Count == 0) return false;
+            TreeSection pick = null;
+            if (difficulty != BotDifficulty.Easy)
+            {
+                // Prefer walls that still hide a living guardian; the hole will expose it for later shots.
+                for (int k = 0; k < 6 && pick == null; k++)
+                {
+                    var s = enemySections[ctx.rng.Next(enemySections.Count)];
+                    if (s.Type == TreeSectionType.RootStabilizer) continue;
+                    if (s.GuardianSlotIndex >= 0 && roster != null && roster.GetBySlotPosition(s.GuardianSlotIndex) != null) pick = s;
+                }
+            }
+            if (pick == null)
+            {
+                for (int k = 0; k < 6 && pick == null; k++)
+                {
+                    var s = enemySections[ctx.rng.Next(enemySections.Count)];
+                    if (s.Type != TreeSectionType.RootStabilizer) pick = s;
+                }
+            }
+            if (pick == null) pick = enemySections[ctx.rng.Next(enemySections.Count)];
+            var b = pick.WorldBounds;
+            aim = new Vector2(ctx.Range(b.min.x + b.size.x * 0.2f, b.max.x - b.size.x * 0.2f), ctx.Range(b.min.y + b.size.y * 0.25f, b.max.y - b.size.y * 0.25f));
+            return true;
         }
 
         void Think()
@@ -202,7 +297,7 @@ namespace TreeGuardians.AI
                     return worst != null ? (Vector2)worst.transform.position : (Vector2)ownTree.transform.position;
                 }
                 case ToolEffectType.Barrier:
-                    return ownTree != null && ownTree.Core != null ? (Vector2)ownTree.Core.transform.position : Vector2.zero;
+                    return ownTree != null ? (ownTree.Core != null ? (Vector2)ownTree.Core.transform.position : (Vector2)ownTree.transform.position + Vector2.up * 3f) : Vector2.zero;
                 case ToolEffectType.SlowField:
                 {
                     if (ctx.playerRoster != null) ctx.playerRoster.GetAlive(enemyAlive); else enemyAlive.Clear();

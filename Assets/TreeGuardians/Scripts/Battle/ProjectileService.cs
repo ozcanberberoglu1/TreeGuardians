@@ -103,33 +103,49 @@ namespace TreeGuardians.Battle
                 source = p.Side, isSpecial = p.IsSpecial, isTool = p.IsTool, isCrit = p.IsCrit,
                 status = p.Def.statusEffect, hitPoint = hit.point, sourceSlot = p.Source != null ? p.Source.SlotIndex : -1
             };
+            // A cast that starts inside the collider reports distance 0; use the projectile position as the impact point then.
+            Vector2 point = hit.distance <= 0.001f ? p.Position : hit.point;
+            info.hitPoint = point;
             if (ctx.targeting.TryGetSection(hit.collider, out var section))
             {
                 if (section.Side == p.Side && !p.Def.canHitOwnSide) return false;
                 if (section.IsDestroyed) return false;
+                if (section.Tree != null && section.Tree.IsDestructible && section.Tree.IsHoleAt(point)) return false; // flies on through the hole
+                info.holeRadius = HoleRadius(p);
                 if (p.Def.splashRadius > 0f) return true;
                 info.amount = rawStructure;
                 ctx.damage.HitSection(section, rawStructure, info);
-                OnHitFeedback(p, hit.point, true);
+                OnHitFeedback(p, point, true);
                 return true;
             }
             if (ctx.targeting.TryGetGuardian(hit.collider, out var guardian))
             {
                 if (guardian.Side == p.Side && !p.Def.canHitOwnSide) return false;
                 if (!guardian.IsAlive) return false;
+                var wall = ctx.TreeOf(guardian.Side);
+                if (wall != null && wall.IsCoveredAt(point)) return false; // still hidden behind an intact wall
                 if (p.Def.splashRadius > 0f) return true;
                 info.amount = rawGuardian;
                 ctx.damage.HitGuardian(guardian, rawGuardian, info);
-                OnHitFeedback(p, hit.point, true);
+                // The wall around a guardian hit keeps crumbling, so a barely exposed guardian does not shield the wall.
+                ctx.damage.ChipWall(wall, point, HoleRadius(p) * ctx.balance.guardianHitWallChipRadius, rawStructure * ctx.balance.guardianHitWallChipDamage, info);
+                OnHitFeedback(p, point, true);
                 return true;
             }
             return false;
+        }
+
+        float HoleRadius(ProjectileController p)
+        {
+            float r = p.Def.holeRadius > 0f ? p.Def.holeRadius : ctx.balance.castleHoleRadius;
+            return r * (p.IsSpecial ? 1.3f : 1f);
         }
 
         public void SplashAt(ProjectileController p, Vector2 point, float rawGuardian, float rawStructure)
         {
             var info = new DamageInfo { source = p.Side, isSpecial = p.IsSpecial, isTool = p.IsTool, isCrit = p.IsCrit, status = p.Def.statusEffect, hitPoint = point, sourceSlot = p.Source != null ? p.Source.SlotIndex : -1 };
             ctx.damage.Splash(point, p.Def.splashRadius, p.Def.splashFalloff, rawGuardian, rawStructure, info, p.Def.canHitOwnSide);
+            ctx.damage.CarveAt(point, Mathf.Max(HoleRadius(p), p.Def.splashRadius * 0.85f), p.Side, p.Def.canHitOwnSide);
             if (p.Def.statusEffect.type == StatusEffectType.Poison) ctx.vfx?.Poison(point, p.Def.splashRadius);
             OnHitFeedback(p, point, true);
         }

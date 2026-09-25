@@ -43,6 +43,7 @@ namespace TreeGuardians.Battle
         public StatusEffectSpec status;
         public Vector2 hitPoint;
         public int sourceSlot;
+        [Tooltip("Kale duvarında açılacak delik yarıçapı (0 = delik yok).")] public float holeRadius;
     }
 
     [Serializable]
@@ -71,6 +72,9 @@ namespace TreeGuardians.Battle
         public bool isPlaying;
         public bool isPaused;
         public float elapsed;
+        /// Castle duel: sides alternate single shots (see BattleTurnController).
+        public bool turnBased;
+        public BattleTurnController turns;
 
         public Trees.TreeController playerTree;
         public Trees.TreeController enemyTree;

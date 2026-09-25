@@ -54,14 +54,14 @@ MonoBehaviour:
     baseCoins: 500
     coinsGrowth: 1.5
     cardsToUnlock: 3
-  guardianSlotCount: 8
+  guardianSlotCount: 6
   toolSlotCount: 3
   treeUpgradeMaxLevel: 10
   treeUpgradeBaseSap: 30
   treeUpgradeGrowth: 1.5
   treeTierStrongThreshold: 10
   treeTierAncientThreshold: 24
-  battleDurationSeconds: 150
+  battleDurationSeconds: 300
   readyCountdownSeconds: 3
   introSeconds: 1.2
   resultRevealDelaySeconds: 1.5
@@ -76,6 +76,18 @@ MonoBehaviour:
     coreHealthWeight: 1
     aliveGuardianWeight: 8
     structureDamageWeight: 0.5
+  critChanceMin: 0.2
+  turnBasedBattle: 1
+  turnSeconds: 10
+  turnResolveMinSeconds: 0.6
+  turnResolveMaxSeconds: 6
+  botTurnTimeoutSeconds: 4
+  castleHoleRadius: 0.8
+  guardianHitWallChipRadius: 0.85
+  guardianHitWallChipDamage: 0.35
+  holeSmokeChance: 0.85
+  holeSmokeSecondsMin: 5
+  holeSmokeSecondsMax: 10
   trophiesOnWin: 30
   trophiesOnLoss: 15
   trophiesOnDraw: 5

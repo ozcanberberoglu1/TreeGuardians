@@ -15,6 +15,7 @@ namespace TreeGuardians.Editor.SceneBuild
     public static class MainMenuSceneBuilder
     {
         static readonly Vector2 PanelSize = new Vector2(1900f, 940f);
+        public const string TreeSilhouetteMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_TreeSilhouette.mat";
 
         public static void Build()
         {
@@ -36,6 +37,17 @@ namespace TreeGuardians.Editor.SceneBuild
             BuildRails(safe, controller);
             BuildCenterPanel(safe, controller, centerTree);
             BuildBottomBar(safe, controller);
+            // HUD roots fade out while a side-docked panel (Guardians) is open.
+            var hudGroups = new System.Collections.Generic.List<Object>();
+            foreach (var hudName in new[] { "TopBar", "LeftRail", "RightRail", "CenterTreePanel", "BottomBar", "DebugButton" })
+            {
+                var hud = safe.Find(hudName);
+                if (hud == null) continue;
+                var group = hud.GetComponent<CanvasGroup>();
+                if (group == null) group = hud.gameObject.AddComponent<CanvasGroup>();
+                hudGroups.Add(group);
+            }
+            F.SetArray(controller, "hudGroups", hudGroups.ToArray());
 
             var panels = F.Rect("Panels", safe);
             F.Stretch(panels);
@@ -143,33 +155,34 @@ namespace TreeGuardians.Editor.SceneBuild
             centerTree = treeRoot.AddComponent<CenterTreeDisplay>();
             var visuals = tree != null ? tree.GetVisuals(TreeVisualTier.Sprouting) : null;
             var barkColor = visuals != null ? visuals.barkColor : new Color(0.6f, 0.45f, 0.3f);
-            var leafColor = visuals != null ? visuals.leafColor : new Color(0.5f, 0.8f, 0.45f);
-            var root = F.WorldSprite("Root", treeRoot.transform, F.Sprite(ArtPaths.TreePart("root")), barkColor * 0.85f, 1, new Vector3(0f, 0f, 0f));
+            var root = F.WorldSprite("Root", treeRoot.transform, F.Sprite(ArtPaths.TreePart("root")), barkColor * 0.85f, 2, new Vector3(0f, 1.48f, 0f));
             root.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
-            var trunk = F.WorldSprite("Trunk", treeRoot.transform, F.Sprite(ArtPaths.Tree("trunk", 0)), barkColor, 2, new Vector3(0f, 0.1f, 0f));
-            trunk.transform.localScale = new Vector3(0.6f, 1.0f, 1f);
-            var branches = new Object[8];
-            var guardians = new Object[8];
-            for (int i = 0; i < 8; i++)
+            // Placeholder compartments (3 x 2 grid); the user's art replaces the sprites, the structure stays: part sprite + GuardianSpawner.
+            var balance = AssetDatabase.LoadAssetAtPath<GameBalanceConfig>(ContentBuilder.BalancePath);
+            int slotCount = balance != null ? balance.guardianSlotCount : 6;
+            var silhouetteMat = AssetDatabase.LoadAssetAtPath<Material>(TreeSilhouetteMaterialPath);
+            var so = new SerializedObject(centerTree);
+            var slotsProp = so.FindProperty("slots");
+            slotsProp.arraySize = slotCount;
+            for (int i = 0; i < slotCount; i++)
             {
-                Vector2 slot = tree != null ? tree.guardianSlotPositions[i] * 0.6f : new Vector2(i < 4 ? 1.5f : -1.5f, 1f + (i % 4) * 1f);
-                bool back = slot.x < 0f;
-                var b = F.WorldSprite("Branch_" + i, treeRoot.transform, F.Sprite(ArtPaths.Tree("branch", 0)), barkColor, 3, new Vector3(back ? slot.x + 0.4f : slot.x - 0.4f, slot.y - 0.35f, 0f));
-                b.transform.localScale = new Vector3(back ? -0.42f : 0.42f, 0.42f, 1f);
-                branches[i] = b;
-                var g = F.WorldSprite("Guardian_" + i, treeRoot.transform, null, Color.white, 6, new Vector3(slot.x, slot.y - 0.15f, 0f));
-                g.transform.localScale = new Vector3(back ? -0.34f : 0.34f, 0.34f, 1f);
-                g.enabled = false;
-                guardians[i] = g;
+                int col = i % 3, row = i / 3;
+                var pos = new Vector3(-1.64f + col * 1.65f, 2.6f + row * 1.6f, 0f);
+                var part = F.WorldSprite("treePart" + (i + 1), treeRoot.transform, F.Sprite(ArtPaths.Tree("trunk", 0)), barkColor, 1, pos);
+                part.transform.localScale = new Vector3(0.62f, 0.27f, 1f);
+                if (silhouetteMat != null) part.sharedMaterial = silhouetteMat;
+                var spawner = F.Child("GuardianSpawner", part.transform, new Vector3(0f, -0.65f, 0f));
+                spawner.transform.localScale = new Vector3(1f / part.transform.localScale.x, 1f / part.transform.localScale.y, 1f);
+                var spawnPoint = spawner.AddComponent<GuardianSpawnPoint>();
+                var visual = F.WorldSprite("Visual", spawner.transform, null, Color.white, 6, Vector3.zero);
+                visual.enabled = false;
+                F.Set(spawnPoint, "spriteVisual", visual);
+                F.Set(spawnPoint, "faceLeft", col == 2);
+                var row0 = slotsProp.GetArrayElementAtIndex(i);
+                row0.FindPropertyRelative("part").objectReferenceValue = part;
+                row0.FindPropertyRelative("spawnPoint").objectReferenceValue = spawnPoint;
             }
-            var canopy = F.WorldSprite("Canopy", treeRoot.transform, F.Sprite(ArtPaths.TreePart("canopy")), leafColor, 4, new Vector3(0f, 4.9f, 0f));
-            canopy.transform.localScale = new Vector3(1.0f, 1.0f, 1f);
-
-            F.Set(centerTree, "trunk", trunk);
-            F.Set(centerTree, "canopy", canopy);
-            F.Set(centerTree, "root", root);
-            F.SetArray(centerTree, "branches", branches);
-            F.SetArray(centerTree, "guardianSprites", guardians);
+            so.ApplyModifiedPropertiesWithoutUndo();
             F.Set(centerTree, "breathTarget", treeRoot.transform);
 
             var animator = F.Root("MenuEnvironmentAnimator").AddComponent<MenuEnvironmentAnimator>();
@@ -505,7 +518,10 @@ namespace TreeGuardians.Editor.SceneBuild
 
         static GuardiansPanel BuildGuardiansPanel(Transform parent)
         {
-            var panel = MakePanel<GuardiansPanel>("GuardiansPanel", parent, "menu_guardians", out _);
+            var panel = MakePanel<GuardiansPanel>("GuardiansPanel", parent, "menu_guardians", out _, new Vector2(1240f, 940f));
+            // Docked to the right: the center tree slides into the free area on the left and turns into a silhouette (CenterTreeDisplay).
+            F.Anchor((RectTransform)panel.transform, new Vector2(1f, 0.5f), new Vector2(-20f, 0f), new Vector2(1240f, 940f), new Vector2(1f, 0.5f));
+            F.Set(panel.GetComponent<ResponsiveWidth>(), "sideMargin", 20f);
             var content = Content(panel.transform);
 
             var equippedLabel = F.Text("EquippedLabel", content, "guardian_equipped_slots", 30f, F.TextLight, TextAlignmentOptions.MidlineLeft, true);

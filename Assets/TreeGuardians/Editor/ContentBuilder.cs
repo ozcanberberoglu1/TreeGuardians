@@ -39,8 +39,8 @@ namespace TreeGuardians.Editor
             db.quests = BuildQuests();
             db.achievements = BuildAchievements();
             db.dailyRewards = BuildDailyRewards();
-            db.playerTree = BuildTree("tree_player", SO + "/Trees/Tree_Player.asset", "tree_player_name");
-            db.enemyTree = BuildTree("tree_enemy", SO + "/Trees/Tree_Enemy.asset", "tree_enemy_name");
+            db.playerTree = BuildCastleTree("tree_player", SO + "/Trees/Tree_Player.asset", "tree_player_name");
+            db.enemyTree = BuildCastleTree("tree_enemy", SO + "/Trees/Tree_Enemy.asset", "tree_enemy_name");
             db.rarityPalette = BuildRarityPalette();
             db.audioLibrary = BuildAudioLibrary();
             db.localization = BuildLocalization();
@@ -108,8 +108,9 @@ namespace TreeGuardians.Editor
             b.starterToolIds = new[] { "root_catapult", "dew_sprayer" };
             b.starterChestId = "twig";
             b.guardianMaxLevel = 30;
-            b.guardianSlotCount = 8; b.toolSlotCount = 3; b.chestSlotCount = 6;
-            b.battleDurationSeconds = 150f; b.readyCountdownSeconds = 3f;
+            b.guardianSlotCount = 6; b.toolSlotCount = 3; b.chestSlotCount = 6;
+            b.battleDurationSeconds = 300f; b.readyCountdownSeconds = 3f;
+            b.turnBasedBattle = true; b.turnSeconds = 10f; b.turnResolveMinSeconds = 0.6f; b.turnResolveMaxSeconds = 6f; b.botTurnTimeoutSeconds = 4f; b.castleHoleRadius = 0.8f; b.critChanceMin = 0.2f;
             b.branchBreakDamagePercent = 0.35f; b.branchBreakStunSeconds = 1.5f;
             b.autoAttackDamageMultiplier = 0.5f; b.autoAttackCooldownMultiplier = 1.6f;
             b.trophiesOnWin = 30; b.trophiesOnLoss = 15; b.trophiesOnDraw = 5;
@@ -145,22 +146,22 @@ namespace TreeGuardians.Editor
             {
                 Proj("thorn", "thorn", new Color(0.7f, 0.9f, 0.55f), ProjectileMotion.Straight, 22f, 32f, 1f, 1f),
                 Proj("thorn_volley", "thorn", new Color(0.85f, 1f, 0.6f), ProjectileMotion.Straight, 24f, 26f, 1f, 1.1f),
-                Proj("cone_bomb", "cone", new Color(0.8f, 0.6f, 0.35f), ProjectileMotion.Ballistic, 15f, 45f, 1.3f, 0.9f, 0.28f, 6f, p => { p.splashRadius = 1.6f; p.splashFalloff = 0.4f; p.shake = new ShakeProfile { amplitude = 0.1f, duration = 0.15f }; }),
-                Proj("cannon_cone", "cone", new Color(1f, 0.7f, 0.3f), ProjectileMotion.Ballistic, 14f, 95f, 1.5f, 1f, 0.36f, 6f, p => { p.splashRadius = 2.4f; p.visualScale = 1.4f; p.shake = new ShakeProfile { amplitude = 0.16f, duration = 0.2f }; }),
-                Proj("bark_slam", "rock", new Color(0.75f, 0.65f, 0.55f), ProjectileMotion.Straight, 14f, 30f, 2.2f, 0.6f, 0.3f, 2.5f, p => p.shake = new ShakeProfile { amplitude = 0.08f, duration = 0.12f }),
-                Proj("dew_drop", "lightseed", new Color(0.6f, 0.9f, 1f), ProjectileMotion.Homing, 12f, 18f, 0.5f, 1f, 0.2f, 5f, p => p.homingStrength = 4f),
+                Proj("cone_bomb", "cone", new Color(0.8f, 0.6f, 0.35f), ProjectileMotion.Ballistic, 21f, 45f, 1.3f, 0.9f, 0.28f, 6f, p => { p.splashRadius = 1.6f; p.splashFalloff = 0.4f; p.shake = new ShakeProfile { amplitude = 0.1f, duration = 0.15f }; }),
+                Proj("cannon_cone", "cone", new Color(1f, 0.7f, 0.3f), ProjectileMotion.Ballistic, 21f, 95f, 1.5f, 1f, 0.36f, 6f, p => { p.splashRadius = 2.4f; p.visualScale = 1.4f; p.shake = new ShakeProfile { amplitude = 0.16f, duration = 0.2f }; }),
+                Proj("bark_slam", "rock", new Color(0.75f, 0.65f, 0.55f), ProjectileMotion.Straight, 19f, 30f, 2.2f, 0.6f, 0.3f, 3f, p => p.shake = new ShakeProfile { amplitude = 0.08f, duration = 0.12f }),
+                Proj("dew_drop", "lightseed", new Color(0.6f, 0.9f, 1f), ProjectileMotion.Homing, 16f, 18f, 0.5f, 1f, 0.2f, 5f, p => p.homingStrength = 4f),
                 Proj("vine_spear", "vinespear", new Color(0.5f, 0.85f, 0.4f), ProjectileMotion.Piercing, 20f, 34f, 1.6f, 1f, 0.22f, 4f, p => { p.pierceCount = 1; p.statusEffect = new StatusEffectSpec { type = StatusEffectType.Root, duration = 1.5f, magnitude = 1f }; }),
-                Proj("spore_bomb", "sporebomb", new Color(0.95f, 0.6f, 0.8f), ProjectileMotion.Ballistic, 13f, 20f, 0.8f, 1f, 0.28f, 6f, p => { p.gravityScale = 0.9f; p.splashRadius = 2.2f; p.statusEffect = new StatusEffectSpec { type = StatusEffectType.Poison, duration = 4f, magnitude = 8f }; }),
-                Proj("spore_cloud", "sporebomb", new Color(0.85f, 0.4f, 0.75f), ProjectileMotion.Ballistic, 12f, 30f, 0.8f, 1f, 0.34f, 6f, p => { p.gravityScale = 0.9f; p.splashRadius = 3f; p.visualScale = 1.4f; p.statusEffect = new StatusEffectSpec { type = StatusEffectType.Poison, duration = 6f, magnitude = 12f }; }),
+                Proj("spore_bomb", "sporebomb", new Color(0.95f, 0.6f, 0.8f), ProjectileMotion.Ballistic, 20f, 20f, 0.8f, 1f, 0.28f, 6f, p => { p.gravityScale = 0.9f; p.splashRadius = 2.2f; p.statusEffect = new StatusEffectSpec { type = StatusEffectType.Poison, duration = 4f, magnitude = 8f }; }),
+                Proj("spore_cloud", "sporebomb", new Color(0.85f, 0.4f, 0.75f), ProjectileMotion.Ballistic, 20f, 30f, 0.8f, 1f, 0.34f, 6f, p => { p.gravityScale = 0.9f; p.splashRadius = 3f; p.visualScale = 1.4f; p.statusEffect = new StatusEffectSpec { type = StatusEffectType.Poison, duration = 6f, magnitude = 12f }; }),
                 Proj("owl_feather", "thorn", new Color(0.9f, 0.95f, 1f), ProjectileMotion.Straight, 26f, 38f, 0.9f, 1.2f, 0.2f, 4f),
-                Proj("acorn", "seed", new Color(0.75f, 0.55f, 0.3f), ProjectileMotion.Ballistic, 14f, 36f, 1.4f, 0.9f, 0.26f, 6f),
+                Proj("acorn", "seed", new Color(0.75f, 0.55f, 0.3f), ProjectileMotion.Ballistic, 21f, 36f, 1.4f, 0.9f, 0.26f, 6f),
                 Proj("light_seed", "lightseed", new Color(1f, 0.95f, 0.5f), ProjectileMotion.Homing, 16f, 26f, 0.7f, 1.1f, 0.2f, 5f, p => p.homingStrength = 5f),
                 Proj("wood_chip", "rock", new Color(0.8f, 0.65f, 0.45f), ProjectileMotion.Straight, 18f, 24f, 1.5f, 0.8f, 0.22f, 4f),
                 Proj("quill", "thorn", new Color(0.55f, 0.45f, 0.4f), ProjectileMotion.Straight, 28f, 16f, 0.8f, 1.2f, 0.16f, 3.5f),
                 Proj("sprout_orb", "lightseed", new Color(0.6f, 1f, 0.7f), ProjectileMotion.Homing, 14f, 30f, 0.9f, 1f, 0.24f, 5f, p => p.homingStrength = 3.5f),
-                Proj("root_boulder", "rock", new Color(0.6f, 0.5f, 0.4f), ProjectileMotion.Ballistic, 13f, 120f, 2f, 0.5f, 0.42f, 7f, p => { p.gravityScale = 1.2f; p.splashRadius = 1.8f; p.visualScale = 1.7f; p.shake = new ShakeProfile { amplitude = 0.2f, duration = 0.2f }; }),
-                Proj("bee", "bee", new Color(1f, 0.85f, 0.3f), ProjectileMotion.Homing, 10f, 12f, 0.3f, 1.2f, 0.18f, 4f, p => p.homingStrength = 6f),
-                Proj("bounce_cone", "cone", new Color(0.7f, 0.5f, 0.3f), ProjectileMotion.Bouncing, 16f, 28f, 1.2f, 0.9f, 0.26f, 6f, p => p.bounceCount = 2),
+                Proj("root_boulder", "rock", new Color(0.6f, 0.5f, 0.4f), ProjectileMotion.Ballistic, 22f, 120f, 2f, 0.5f, 0.42f, 7f, p => { p.gravityScale = 1f; p.splashRadius = 1.8f; p.visualScale = 1.7f; p.shake = new ShakeProfile { amplitude = 0.2f, duration = 0.2f }; }),
+                Proj("bee", "bee", new Color(1f, 0.85f, 0.3f), ProjectileMotion.Homing, 14f, 12f, 0.3f, 1.2f, 0.18f, 4f, p => p.homingStrength = 6f),
+                Proj("bounce_cone", "cone", new Color(0.7f, 0.5f, 0.3f), ProjectileMotion.Bouncing, 21f, 28f, 1.2f, 0.9f, 0.26f, 6f, p => p.bounceCount = 2),
             };
             return list;
         }
@@ -358,7 +359,75 @@ namespace TreeGuardians.Editor
             };
         }
 
-        static TreeDefinition BuildTree(string id, string path, string nameKey)
+        public const string CastleSheetPath = "Assets/TreeGuardians/Art/UI/Panel/new-Tree.png";
+
+        static Sprite CastleSprite(string name)
+        {
+            foreach (var o in AssetDatabase.LoadAllAssetsAtPath(CastleSheetPath))
+                if (o is Sprite s && s.name == name) return s;
+            return null;
+        }
+
+        static TreeSectionSpec Part(string id, TreeSectionType type, float hp, float armor, Vector2 pos, Vector2 size, int slot, string spriteName)
+        {
+            var s = Sec(id, type, hp, armor, "", pos, size, slot);
+            s.sprite = CastleSprite(spriteName);
+            return s;
+        }
+
+        /// The user's castle art (new-Tree sheet): base + 6 compartments laid out exactly like the main-menu tree, base on the ground.
+        static TreeDefinition BuildCastleTree(string id, string path, string nameKey)
+        {
+            var t = GetOrCreate<TreeDefinition>(path);
+            t.id = id; t.nameKey = nameKey; t.destructibleCastle = true;
+            t.heartwoodBaseHealth = 1200f; t.heartwoodArmor = 10f; t.protectedDamageMultiplier = 0.15f;
+            const float lift = -0.77f; // menu layout is authored with the base bottom 0.77 above the root
+            t.sections = new List<TreeSectionSpec>
+            {
+                Part("base", TreeSectionType.RootStabilizer, 900, 40, new Vector2(0f, 1.48f + lift), new Vector2(5.12f, 1.43f), -1, "new-Tree_7"),
+                Part("part1", TreeSectionType.BarkArmor, 420, 6, new Vector2(-1.64f, 2.60f + lift), new Vector2(1.62f, 1.38f), 0, "new-Tree_4"),
+                Part("part2", TreeSectionType.BarkArmor, 420, 6, new Vector2(0.01f, 2.60f + lift), new Vector2(1.69f, 1.38f), 1, "new-Tree_5"),
+                Part("part3", TreeSectionType.BarkArmor, 420, 6, new Vector2(1.66f, 2.60f + lift), new Vector2(1.61f, 1.38f), 2, "new-Tree_6"),
+                Part("part4", TreeSectionType.BarkArmor, 520, 6, new Vector2(-1.63f, 5.40f + lift), new Vector2(2.26f, 4.28f), 3, "new-Tree_0"),
+                Part("part5", TreeSectionType.BarkArmor, 460, 6, new Vector2(0.01f, 4.39f + lift), new Vector2(1.69f, 2.21f), 4, "new-Tree_3"),
+                Part("part6", TreeSectionType.BarkArmor, 520, 6, new Vector2(1.63f, 5.42f + lift), new Vector2(2.22f, 4.28f), 5, "new-Tree_2"),
+            };
+            t.guardianSlotPositions = new[]
+            {
+                new Vector2(-1.64f, 1.95f + lift), new Vector2(0.01f, 1.95f + lift), new Vector2(1.66f, 2.22f + lift),
+                new Vector2(-1.63f, 3.58f + lift), new Vector2(0.01f, 3.65f + lift), new Vector2(1.63f, 3.59f + lift),
+                new Vector2(0f, 12f), new Vector2(0f, 12.5f)
+            };
+            t.toolMountPositions = new[] { new Vector2(-1.63f, 7.6f + lift), new Vector2(0.01f, 5.55f + lift), new Vector2(1.63f, 7.6f + lift) };
+            if (t.visuals == null || t.visuals.Length == 0)
+                t.visuals = new[] { new TreeVisualSet { tier = TreeVisualTier.Sprouting, leafColor = Color.white, barkColor = Color.white } };
+            EditorUtility.SetDirty(t);
+            return t;
+        }
+
+        [MenuItem("Tree Guardians/2b. Rebuild Castle Trees, Projectiles + Strings", priority = 3)]
+        public static void RebuildCastleTreesAndStrings()
+        {
+            var db = AssetDatabase.LoadAssetAtPath<GameDatabase>(DatabasePath);
+            if (db == null) { Debug.LogError("[TG] GameDatabase missing; run '2. Build Content Assets' first."); return; }
+            var balance = AssetDatabase.LoadAssetAtPath<GameBalanceConfig>(BalancePath);
+            db.playerTree = BuildCastleTree("tree_player", SO + "/Trees/Tree_Player.asset", "tree_player_name");
+            db.enemyTree = BuildCastleTree("tree_enemy", SO + "/Trees/Tree_Enemy.asset", "tree_enemy_name");
+            db.projectiles = BuildProjectiles();
+            db.localization = BuildLocalization();
+            if (balance != null)
+            {
+                balance.battleDurationSeconds = 300f; balance.turnBasedBattle = true; balance.turnSeconds = 10f;
+                balance.turnResolveMinSeconds = 0.6f; balance.turnResolveMaxSeconds = 6f; balance.botTurnTimeoutSeconds = 4f; balance.castleHoleRadius = 0.8f; balance.critChanceMin = 0.2f;
+                balance.holeSmokeChance = 0.85f; balance.holeSmokeSecondsMin = 5f; balance.holeSmokeSecondsMax = 10f;
+                EditorUtility.SetDirty(balance);
+            }
+            EditorUtility.SetDirty(db);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[TG] Castle trees + strings rebuilt.");
+        }
+
+        static TreeDefinition BuildLegacyTree(string id, string path, string nameKey)
         {
             var t = GetOrCreate<TreeDefinition>(path);
             t.id = id; t.nameKey = nameKey;

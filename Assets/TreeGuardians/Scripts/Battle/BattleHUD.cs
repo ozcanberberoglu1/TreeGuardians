@@ -24,6 +24,14 @@ namespace TreeGuardians.Battle
         [SerializeField] ToolActionButton[] toolButtons = new ToolActionButton[3];
         [SerializeField] TMP_Text hintText;
 
+        [Header("Turn (castle duel)")]
+        [SerializeField] GameObject turnGroup;
+        [SerializeField] TMP_Text turnText;
+        [SerializeField] Image turnTimerFill;
+        [SerializeField] Color turnPlayerColor = new Color(0.36f, 0.75f, 0.35f);
+        [SerializeField] Color turnEnemyColor = new Color(0.9f, 0.35f, 0.3f);
+        [SerializeField] Color turnUrgentColor = new Color(1f, 0.55f, 0.2f);
+
         [Header("Message")]
         [SerializeField] CanvasGroup messageGroup;
         [SerializeField] TMP_Text messageText;
@@ -66,7 +74,38 @@ namespace TreeGuardians.Battle
             pausePopup?.HideImmediate();
             if (messageGroup != null) messageGroup.alpha = 0f;
             if (hintText != null) hintText.text = "";
+            if (turnGroup != null) turnGroup.SetActive(ctx.turnBased);
             lastSecond = -1;
+            lastTurnLabel = null;
+        }
+
+        string lastTurnLabel;
+
+        void TickTurn()
+        {
+            var turns = ctx.turns;
+            if (turns == null || turnGroup == null) return;
+            string label;
+            float fill;
+            Color color;
+            switch (turns.Phase)
+            {
+                case TurnPhase.PlayerAct:
+                    label = LocalizationService.Tr("battle_your_turn") + "  " + Mathf.CeilToInt(turns.TimeLeft);
+                    fill = ctx.balance.turnSeconds > 0f ? turns.TimeLeft / ctx.balance.turnSeconds : 0f;
+                    color = turns.TimeLeft <= 3f ? turnUrgentColor : turnPlayerColor;
+                    break;
+                case TurnPhase.PlayerResolve:
+                    label = LocalizationService.Tr("battle_your_turn");
+                    fill = 0f; color = turnPlayerColor;
+                    break;
+                default:
+                    label = LocalizationService.Tr("battle_enemy_turn");
+                    fill = 1f; color = turnEnemyColor;
+                    break;
+            }
+            if (turnText != null && label != lastTurnLabel) { turnText.text = label; lastTurnLabel = label; }
+            if (turnTimerFill != null) { turnTimerFill.fillAmount = fill; turnTimerFill.color = color; }
         }
 
         void OnGuardianButton(int i) => commander?.SelectSlot(i);
@@ -96,9 +135,14 @@ namespace TreeGuardians.Battle
                 if (ctx.playerTools != null) toolButtons[i]?.Refresh(ctx.playerTools.Get(i), i == pendingTool);
             if (hintText != null)
             {
-                string hint = pendingTool >= 0 ? LocalizationService.Tr("tut_step_5") : armed ? LocalizationService.Tr("battle_special_ready") : "";
+                string hint;
+                if (pendingTool >= 0) hint = LocalizationService.Tr("tut_step_5");
+                else if (armed) hint = LocalizationService.Tr("battle_special_ready");
+                else if (ctx.turns != null && ctx.turns.IsPlayerActing) hint = LocalizationService.Tr(selected >= 0 ? "battle_tap_to_fire" : "battle_select_guardian");
+                else hint = "";
                 if (hintText.text != hint) hintText.text = hint;
             }
+            TickTurn();
             if (messageGroup != null && messageUntil > 0f && Time.unscaledTime > messageUntil)
             {
                 messageUntil = 0f;

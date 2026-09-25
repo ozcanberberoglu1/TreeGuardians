@@ -50,6 +50,7 @@ namespace TreeGuardians.Data
         [Range(0f, 1f)] [Tooltip("Yarıçap kenarında kalan hasar oranı.")] public float splashFalloff = 0.4f;
         public bool canHitOwnSide;
         public StatusEffectSpec statusEffect;
+        [Tooltip("Kale duvarında açılan delik yarıçapı (0 = GameBalanceConfig.castleHoleRadius).")] public float holeRadius = 0f;
 
         [Header("Feedback")]
         public GameObject impactVfxPrefab;

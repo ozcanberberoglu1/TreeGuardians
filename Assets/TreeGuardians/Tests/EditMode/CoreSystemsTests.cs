@@ -278,6 +278,31 @@ namespace TreeGuardians.Tests
         }
     }
 
+    public class DestructibleMaskTests
+    {
+        [Test]
+        public void Carve_OpensHoleOnlyAroundImpact()
+        {
+            var mask = new TreeGuardians.Trees.DestructibleMask(new Rect(0f, 0f, 4f, 4f), 32f);
+            try
+            {
+                Assert.IsFalse(mask.IsDestroyedAt(new Vector2(2f, 2f)));
+                mask.Carve(new Vector2(2f, 2f), 0.5f);
+                mask.Apply();
+                Assert.IsTrue(mask.IsDestroyedAt(new Vector2(2f, 2f)), "center is open");
+                Assert.IsTrue(mask.IsDestroyedAt(new Vector2(2.2f, 2f)), "inside the hard core");
+                Assert.IsFalse(mask.IsDestroyedAt(new Vector2(3f, 2f)), "outside the radius stays intact");
+                Assert.IsFalse(mask.IsDestroyedAt(new Vector2(-1f, 2f)), "outside the mask counts as intact");
+                float f = mask.DestroyedFraction(new Rect(1.5f, 1.5f, 1f, 1f));
+                Assert.Greater(f, 0.3f);
+                Assert.Less(f, 1f);
+                mask.ClearRect(new Rect(0f, 0f, 1f, 1f));
+                Assert.IsTrue(mask.IsDestroyedAt(new Vector2(0.5f, 0.5f)));
+            }
+            finally { mask.Dispose(); }
+        }
+    }
+
     public class DamageTests
     {
         [Test]

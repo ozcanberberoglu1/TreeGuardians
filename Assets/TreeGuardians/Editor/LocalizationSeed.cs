@@ -257,6 +257,11 @@ namespace TreeGuardians.Editor
             new[] { "battle_offline", "OFFLINE BOT", "ÇEVRİMDIŞI BOT" },
             new[] { "battle_special_ready", "Special ready", "Özel hazır" },
             new[] { "battle_stunned", "Stunned", "Sersem" },
+            new[] { "battle_your_turn", "YOUR TURN", "SIRA SENDE" },
+            new[] { "battle_enemy_turn", "ENEMY TURN", "RAKİBİN SIRASI" },
+            new[] { "battle_turn_timeout", "TIME'S UP!", "SÜRE DOLDU!" },
+            new[] { "battle_select_guardian", "Pick a guardian card", "Bir muhafız kartı seç" },
+            new[] { "battle_tap_to_fire", "Tap the enemy castle to fire (or drag to aim)", "Ateş etmek için rakip kaleye dokun (ya da sürükleyerek nişan al)" },
 
             // Results
             new[] { "results_title_victory", "Victory!", "Zafer!" },
@@ -359,11 +364,11 @@ namespace TreeGuardians.Editor
 
             // Tutorial
             new[] { "tut_step_1", "Tap a guardian card to select it.", "Seçmek için bir muhafız kartına dokun." },
-            new[] { "tut_step_2", "Drag to aim, release to fire.", "Nişan almak için sürükle, ateş etmek için bırak." },
-            new[] { "tut_step_3", "Aim at the enemy bark plate.", "Rakip kabuk plakasını hedefle." },
-            new[] { "tut_step_4", "The broken plate exposed a new target!", "Kırılan plaka yeni bir hedef açtı!" },
+            new[] { "tut_step_2", "Tap the enemy castle to fire (or drag to aim).", "Ateş etmek için rakip kaleye dokun (ya da sürükleyerek nişan al)." },
+            new[] { "tut_step_3", "Hit the enemy walls to open holes.", "Delik açmak için rakip duvarlarını vur." },
+            new[] { "tut_step_4", "Guardians behind a hole can be hit!", "Delik açılan yerdeki muhafızlar vurulabilir!" },
             new[] { "tut_step_5", "Use a tool from the tool bar.", "Araç çubuğundan bir araç kullan." },
-            new[] { "tut_step_6", "Destroy the Heartwood to win!", "Kazanmak için Kalp Özü'nü yok et!" },
+            new[] { "tut_step_6", "Defeat every enemy guardian to win!", "Kazanmak için tüm rakip muhafızları yen!" },
             new[] { "tut_step_7", "Collect your rewards.", "Ödüllerini topla." },
             new[] { "tut_step_8", "Upgrade a guardian with your new cards.", "Yeni kartlarınla bir muhafızı yükselt." },
             new[] { "tut_skip", "Skip tutorial", "Öğreticiyi atla" },

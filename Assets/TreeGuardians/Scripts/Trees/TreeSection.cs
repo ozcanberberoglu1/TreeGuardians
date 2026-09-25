@@ -22,11 +22,16 @@ namespace TreeGuardians.Trees
         [SerializeField] Collider2D sectionCollider;
         [SerializeField] Transform damageVfxAnchor;
         [SerializeField] Color destroyedTint = new Color(0.3f, 0.3f, 0.3f, 0.35f);
+        [Tooltip("Kale parçaları: yok olunca renk/sprite değişmez, maske temizlenir.")] [SerializeField] bool keepVisualsOnDestroy;
 
         public string SectionId => sectionId;
         public TreeSectionType Type => type;
         public int GuardianSlotIndex => guardianSlotIndex;
         public Collider2D Collider => sectionCollider;
+        public IReadOnlyList<SpriteRenderer> Renderers => renderers;
+        /// Collider bounds captured at battle start (valid after the collider is disabled).
+        public Bounds WorldBounds { get; private set; }
+        public bool KeepVisualsOnDestroy => keepVisualsOnDestroy;
         public Transform VfxAnchor => damageVfxAnchor != null ? damageVfxAnchor : transform;
 
         public BattleSide Side { get; private set; }
@@ -104,6 +109,42 @@ namespace TreeGuardians.Trees
             }
             if (sectionCollider != null) sectionCollider.enabled = true;
             gameObject.SetActive(true);
+            WorldBounds = sectionCollider != null ? sectionCollider.bounds : new Bounds(transform.position, Vector3.one);
+        }
+
+        static readonly int MaskTexId = Shader.PropertyToID("_MaskTex");
+        static readonly int MaskRectId = Shader.PropertyToID("_MaskRect");
+        static readonly int UseMaskId = Shader.PropertyToID("_UseMask");
+        static readonly int SilhouetteId = Shader.PropertyToID("_Silhouette");
+        MaterialPropertyBlock block;
+
+        /// Binds the castle's shared destruction mask to this part's renderers (Sprite Destructible shader).
+        public void SetMask(Texture mask, Vector4 shaderRect, bool carvable)
+        {
+            if (block == null) block = new MaterialPropertyBlock();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null) continue;
+                r.GetPropertyBlock(block);
+                if (mask != null) block.SetTexture(MaskTexId, mask);
+                block.SetVector(MaskRectId, shaderRect);
+                block.SetFloat(UseMaskId, carvable && mask != null ? 1f : 0f);
+                r.SetPropertyBlock(block);
+            }
+        }
+
+        public void SetSilhouette(float amount)
+        {
+            if (block == null) block = new MaterialPropertyBlock();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null) continue;
+                r.GetPropertyBlock(block);
+                block.SetFloat(SilhouetteId, amount);
+                r.SetPropertyBlock(block);
+            }
         }
 
         public void SetBaseColor(Color color)
@@ -164,11 +205,14 @@ namespace TreeGuardians.Trees
             if (IsDestroyed) return;
             IsDestroyed = true;
             if (sectionCollider != null) sectionCollider.enabled = false;
-            for (int i = 0; i < renderers.Length; i++)
+            if (!keepVisualsOnDestroy)
             {
-                if (renderers[i] == null) continue;
-                renderers[i].color = destroyedTint;
-                if (damageStateSprites != null && damageStateSprites.Length > 2 && damageStateSprites[2] != null) renderers[i].sprite = damageStateSprites[2];
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    if (renderers[i] == null) continue;
+                    renderers[i].color = destroyedTint;
+                    if (damageStateSprites != null && damageStateSprites.Length > 2 && damageStateSprites[2] != null) renderers[i].sprite = damageStateSprites[2];
+                }
             }
             OnDestroyedEvent?.Invoke(this);
             GameEventBus.Publish(new SectionDestroyedEvent { type = type, side = Side, sectionId = sectionId });

@@ -106,6 +106,7 @@ namespace TreeGuardians.Editor
 
             // Build settings
             var buildScenes = EditorBuildSettings.scenes;
+            int expectedSections = (db != null && db.playerTree != null ? db.playerTree.sections.Count : 17) + (db != null && db.enemyTree != null ? db.enemyTree.sections.Count : 17);
             for (int i = 0; i < SceneBuildUtility.SceneNames.Length; i++)
             {
                 var path = SceneBuildUtility.ScenePath(SceneBuildUtility.SceneNames[i]);
@@ -154,7 +155,7 @@ namespace TreeGuardians.Editor
                     if (name == "03_Battle" || name == "05_Sandbox")
                     {
                         int sections = 0; foreach (var r in roots) sections += r.GetComponentsInChildren<Trees.TreeSection>(true).Length;
-                        if (sections < 20) Warn($"{name}: only {sections} TreeSections (expected 2 trees x 17).");
+                        if (sections < expectedSections) Warn($"{name}: only {sections} TreeSections (expected {expectedSections} from the tree definitions).");
                     }
                 }
             }

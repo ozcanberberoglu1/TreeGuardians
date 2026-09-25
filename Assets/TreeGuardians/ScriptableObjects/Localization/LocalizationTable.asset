@@ -681,6 +681,22 @@ MonoBehaviour:
   - key: battle_stunned
     en: Stunned
     tr: Sersem
+  - key: battle_your_turn
+    en: YOUR TURN
+    tr: SIRA SENDE
+  - key: battle_enemy_turn
+    en: ENEMY TURN
+    tr: "RAK\u0130B\u0130N SIRASI"
+  - key: battle_turn_timeout
+    en: TIME'S UP!
+    tr: "S\xDCRE DOLDU!"
+  - key: battle_select_guardian
+    en: Pick a guardian card
+    tr: "Bir muhaf\u0131z kart\u0131 se\xE7"
+  - key: battle_tap_to_fire
+    en: Tap the enemy castle to fire (or drag to aim)
+    tr: "Ate\u015F etmek i\xE7in rakip kaleye dokun (ya da s\xFCr\xFCkleyerek ni\u015Fan
+      al)"
   - key: results_title_victory
     en: Victory!
     tr: Zafer!
@@ -750,6 +766,9 @@ MonoBehaviour:
   - key: chest_moon
     en: Moon Chest
     tr: "Ay Sand\u0131\u011F\u0131"
+  - key: chest_sun
+    en: Sun Chest
+    tr: "G\xFCne\u015F Sand\u0131\u011F\u0131"
   - key: chest_tap_to_open
     en: Tap to open
     tr: "A\xE7mak i\xE7in dokun"
@@ -943,20 +962,21 @@ MonoBehaviour:
     en: Tap a guardian card to select it.
     tr: "Se\xE7mek i\xE7in bir muhaf\u0131z kart\u0131na dokun."
   - key: tut_step_2
-    en: Drag to aim, release to fire.
-    tr: "Ni\u015Fan almak i\xE7in s\xFCr\xFCkle, ate\u015F etmek i\xE7in b\u0131rak."
+    en: Tap the enemy castle to fire (or drag to aim).
+    tr: "Ate\u015F etmek i\xE7in rakip kaleye dokun (ya da s\xFCr\xFCkleyerek ni\u015Fan
+      al)."
   - key: tut_step_3
-    en: Aim at the enemy bark plate.
-    tr: "Rakip kabuk plakas\u0131n\u0131 hedefle."
+    en: Hit the enemy walls to open holes.
+    tr: "Delik a\xE7mak i\xE7in rakip duvarlar\u0131n\u0131 vur."
   - key: tut_step_4
-    en: The broken plate exposed a new target!
-    tr: "K\u0131r\u0131lan plaka yeni bir hedef a\xE7t\u0131!"
+    en: Guardians behind a hole can be hit!
+    tr: "Delik a\xE7\u0131lan yerdeki muhaf\u0131zlar vurulabilir!"
   - key: tut_step_5
     en: Use a tool from the tool bar.
     tr: "Ara\xE7 \xE7ubu\u011Fundan bir ara\xE7 kullan."
   - key: tut_step_6
-    en: Destroy the Heartwood to win!
-    tr: "Kazanmak i\xE7in Kalp \xD6z\xFC'n\xFC yok et!"
+    en: Defeat every enemy guardian to win!
+    tr: "Kazanmak i\xE7in t\xFCm rakip muhaf\u0131zlar\u0131 yen!"
   - key: tut_step_7
     en: Collect your rewards.
     tr: "\xD6d\xFCllerini topla."
@@ -1019,9 +1039,6 @@ MonoBehaviour:
   - key: debug_finish_chests
     en: Finish Chest Timers
     tr: "Sand\u0131k S\xFCrelerini Bitir"
-  - key: chest_sun
-    en: Sun Chest
-    tr: "G\xFCne\u015F Sand\u0131\u011F\u0131"
   loadingTipKeys:
   - tip_bark
   - tip_branch

@@ -91,7 +91,7 @@ namespace TreeGuardians.Guardians
             Attack = def.GetAttack(Level, balance);
             StructureDamage = def.GetStructureDamage(Level, balance);
             Armor = def.GetArmor(Level);
-            CritChance = def.critChance + (def.passiveKind == GuardianPassiveKind.CritBoost ? def.passiveMagnitude : 0f);
+            CritChance = Mathf.Max(balance.critChanceMin, def.critChance + (def.passiveKind == GuardianPassiveKind.CritBoost ? def.passiveMagnitude : 0f));
             CritMultiplier = def.critMultiplier;
             CooldownDuration = def.attackCooldown;
             Cooldown = def.attackCooldown * ctx.Range(0.3f, 0.8f);
@@ -116,7 +116,10 @@ namespace TreeGuardians.Guardians
             {
                 customVisual = Instantiate(def.worldPrefab, visualRoot);
                 customVisual.transform.localPosition = Vector3.zero;
+                foreach (var r in customVisual.GetComponentsInChildren<Renderer>(true)) r.sortingOrder += sprite != null ? sprite.sortingOrder : 8;
             }
+            CacheSortingOrders();
+            ApplySortingOffset(0);
             if (healthBarFill != null) fillBaseScaleX = healthBarFill.localScale.x == 0f ? 1f : Mathf.Abs(healthBarFill.localScale.x);
             if (energyBarFill != null) energyBaseScaleX = energyBarFill.localScale.x == 0f ? 1f : Mathf.Abs(energyBarFill.localScale.x);
             if (bodyCollider != null) bodyCollider.enabled = true;
@@ -139,6 +142,26 @@ namespace TreeGuardians.Guardians
         public void SetSelected(bool selected)
         {
             if (selectionRing != null) selectionRing.enabled = selected && IsAlive;
+        }
+
+        Renderer[] sortedRenderers;
+        int[] baseSortingOrders;
+        int sortingOffset;
+
+        void CacheSortingOrders()
+        {
+            sortedRenderers = GetComponentsInChildren<Renderer>(true);
+            baseSortingOrders = new int[sortedRenderers.Length];
+            for (int i = 0; i < sortedRenderers.Length; i++) baseSortingOrders[i] = sortedRenderers[i].sortingOrder;
+        }
+
+        /// Lifts (or restores) every renderer of this guardian, e.g. above the silhouetted castle wall while the player aims.
+        public void ApplySortingOffset(int offset)
+        {
+            if (sortedRenderers == null) CacheSortingOrders();
+            sortingOffset = offset;
+            for (int i = 0; i < sortedRenderers.Length; i++)
+                if (sortedRenderers[i] != null) sortedRenderers[i].sortingOrder = baseSortingOrders[i] + offset;
         }
 
         public void SetExternalSlow(float strength) => externalSlow = Mathf.Clamp01(strength);
@@ -185,7 +208,7 @@ namespace TreeGuardians.Guardians
             if (statusIcon != null) statusIcon.enabled = IsStunned || IsRooted || statuses[(int)StatusEffectType.Poison].remaining > 0f;
             UpdateBars();
 
-            if (Definition.autoAttack && Cooldown <= 0f && !IsStunned && !IsRooted && (roster == null || !roster.IsPlayerControlling(this)))
+            if (Definition.autoAttack && !ctx.turnBased && Cooldown <= 0f && !IsStunned && !IsRooted && (roster == null || !roster.IsPlayerControlling(this)))
                 AutoFire();
         }
 
@@ -208,7 +231,7 @@ namespace TreeGuardians.Guardians
         public bool CanFire(bool special)
         {
             if (!IsAlive || !IsActive || IsStunned || IsRooted) return false;
-            return special ? SpecialReady : Cooldown <= 0f;
+            return special ? SpecialReady : (ctx.turnBased || Cooldown <= 0f);
         }
 
         /// Fires along a direction with a 0..1 power (manual aim). Returns false when not allowed.
@@ -219,9 +242,8 @@ namespace TreeGuardians.Guardians
             if (special) return FireSpecial(direction, power);
             if (proj == null) return false;
             var velocity = direction.normalized * proj.speed * Mathf.Clamp(power, 0.35f, 1f);
-            Collider2D homing = null;
-            if (proj.motion == ProjectileMotion.Homing && ctx.targeting != null) ctx.targeting.FindInDirection(Side, MuzzlePosition, direction, out homing);
-            return FireWithVelocity(velocity, false, homing);
+            // Aimed shots always fly where they were aimed: no automatic homing target (only auto-attacks home).
+            return FireWithVelocity(velocity, false, null);
         }
 
         bool FireWithVelocity(Vector2 velocity, bool special, Collider2D homing, bool auto = false)
@@ -253,9 +275,7 @@ namespace TreeGuardians.Guardians
                 {
                     if (proj == null) return false;
                     var velocity = dir * proj.speed * Mathf.Clamp(power, 0.35f, 1f);
-                    Collider2D homing = null;
-                    if (proj.motion == ProjectileMotion.Homing && ctx.targeting != null) ctx.targeting.FindInDirection(Side, MuzzlePosition, dir, out homing);
-                    var p = ctx.projectiles.Fire(proj, MuzzlePosition, velocity, Side, this, true, false, Mathf.Max(1f, def.specialMagnitude) * critMult * BuffAttackMultiplier, homing);
+                    var p = ctx.projectiles.Fire(proj, MuzzlePosition, velocity, Side, this, true, false, Mathf.Max(1f, def.specialMagnitude) * critMult * BuffAttackMultiplier, null);
                     if (p != null) p.IsCrit = crit;
                     break;
                 }

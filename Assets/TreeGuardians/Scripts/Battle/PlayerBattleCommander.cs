@@ -8,7 +8,8 @@ using UnityEngine;
 
 namespace TreeGuardians.Battle
 {
-    /// Turns pointer input into battle commands: select guardian, drag to aim, release to fire, tap to place tools.
+    /// Turns pointer input into battle commands. Turn-based castle duel: pick a guardian card (own castle turns into a
+    /// silhouette so only your guardians are visible), then tap the enemy castle to fire at that point or drag to aim.
     public sealed class PlayerBattleCommander : MonoBehaviour, IBattleCommander
     {
         [SerializeField] Camera worldCamera;
@@ -16,18 +17,24 @@ namespace TreeGuardians.Battle
         [SerializeField] float maxDragDistance = 3.2f;
         [SerializeField] float minPower = 0.2f;
         [SerializeField] float directDragRange = 9f;
+        [Tooltip("Bu mesafeden az sürüklenen dokunuş 'noktaya ateş' sayılır (dünya birimi).")] [SerializeField] float tapDistance = 0.35f;
+        [SerializeField] float tapSeconds = 0.45f;
+        [Tooltip("Nişan alırken kendi muhafızlarının kale duvarı üstüne çıkarılma sorting offset'i.")] [SerializeField] int revealSortingOffset = 20;
 
         public BattleSide Side => BattleSide.Player;
         public int SelectedSlot { get; private set; } = -1;
         public bool SpecialArmed { get; private set; }
         public int PendingTool { get; private set; } = -1;
         public bool IsAiming { get; private set; }
+        public bool IsRevealing { get; private set; }
 
         readonly Queue<BattleCommand> queue = new Queue<BattleCommand>(8);
         readonly List<Collider2D> overlap = new List<Collider2D>(8);
         BattleContext ctx;
         InputService input;
         Vector2 dragStart;
+        float pressTime;
+        int lastFiredSlot = -1;
         AimMode aimMode;
         ContactFilter2D filter;
 
@@ -45,9 +52,13 @@ namespace TreeGuardians.Battle
             SpecialArmed = false;
             PendingTool = -1;
             IsAiming = false;
+            IsRevealing = false;
+            lastFiredSlot = -1;
             queue.Clear();
-            AutoSelectFirst();
+            if (!ctx.turnBased) AutoSelectFirst();
         }
+
+        bool CanAct => ctx != null && ctx.isPlaying && (ctx.turns == null || ctx.turns.IsPlayerActing);
 
         void AutoSelectFirst()
         {
@@ -60,10 +71,64 @@ namespace TreeGuardians.Battle
             }
         }
 
+        /// Player turn started: the guardian that fired last (or the first alive one) is pre-selected and ready; the player can switch.
+        public void BeginTurn()
+        {
+            SelectedSlot = -1;
+            SpecialArmed = false;
+            PendingTool = -1;
+            IsAiming = false;
+            aimView?.Hide();
+            ctx?.playerRoster?.SetPlayerControlled(-1);
+            SetReveal(false);
+            OnSelectionChanged?.Invoke();
+            int pick = AliveAimable(lastFiredSlot) ? lastFiredSlot : FirstAliveAimable();
+            if (pick >= 0) SelectSlot(pick);
+        }
+
+        bool AliveAimable(int slot)
+        {
+            var g = ctx?.playerRoster?.Get(slot);
+            return g != null && g.IsActive && g.IsAlive && g.Definition.playerAimable;
+        }
+
+        int FirstAliveAimable()
+        {
+            var roster = ctx?.playerRoster;
+            if (roster == null) return -1;
+            for (int i = 0; i < roster.Slots.Count; i++) if (AliveAimable(i)) return i;
+            return -1;
+        }
+
+        /// Shot fired or turn lost: hide the aim guide and restore the castle.
+        public void EndTurn()
+        {
+            IsAiming = false;
+            aimView?.Hide();
+            SetReveal(false);
+            if (ctx != null && ctx.turnBased)
+            {
+                SelectedSlot = -1;
+                SpecialArmed = false;
+                PendingTool = -1;
+                ctx.playerRoster?.SetPlayerControlled(-1);
+                OnSelectionChanged?.Invoke();
+            }
+        }
+
+        void SetReveal(bool on)
+        {
+            if (ctx == null || !ctx.turnBased || IsRevealing == on) return;
+            IsRevealing = on;
+            ctx.playerTree?.SetSilhouette(on);
+            ctx.playerRoster?.SetSortingOffset(on ? revealSortingOffset : 0);
+        }
+
         public void SelectSlot(int slot)
         {
             var roster = ctx?.playerRoster;
             if (roster == null) return;
+            if (ctx.turnBased && !CanAct) return;
             var g = roster.Get(slot);
             if (g == null || !g.IsActive || !g.IsAlive) return;
             if (SelectedSlot == slot)
@@ -78,6 +143,7 @@ namespace TreeGuardians.Battle
                 roster.SetPlayerControlled(slot);
                 queue.Enqueue(BattleCommand.Select(Side, slot));
                 Services.Get<AudioService>()?.PlaySfx(AudioEventId.AimStart);
+                SetReveal(true);
             }
             OnSelectionChanged?.Invoke();
         }
@@ -92,6 +158,7 @@ namespace TreeGuardians.Battle
         {
             var tools = ctx?.playerTools;
             if (tools == null || !tools.CanUse(index)) return;
+            if (ctx.turnBased && !CanAct) return;
             if (tools.RequiresAim(index))
             {
                 PendingTool = PendingTool == index ? -1 : index;
@@ -100,7 +167,8 @@ namespace TreeGuardians.Battle
             }
             else
             {
-                var target = ctx.enemyTree != null && ctx.enemyTree.Core != null ? (Vector2)ctx.enemyTree.Core.transform.position : Vector2.zero;
+                Vector2 target = Vector2.zero;
+                if (ctx.enemyTree != null) target = ctx.enemyTree.Core != null ? (Vector2)ctx.enemyTree.Core.transform.position : (Vector2)ctx.enemyTree.transform.position + Vector2.up * 3f;
                 queue.Enqueue(BattleCommand.Tool(Side, index, target));
                 PendingTool = -1;
             }
@@ -109,7 +177,8 @@ namespace TreeGuardians.Battle
 
         public void Tick(float dt)
         {
-            if (ctx == null || !ctx.isPlaying || input == null || worldCamera == null) return;
+            if (input == null || worldCamera == null) return;
+            if (!CanAct) { if (IsAiming) { IsAiming = false; aimView?.Hide(); } return; }
             Vector2 world = input.PointerWorldPosition(worldCamera);
             var roster = ctx.playerRoster;
 
@@ -137,18 +206,21 @@ namespace TreeGuardians.Battle
                 {
                     IsAiming = true;
                     dragStart = world;
+                    pressTime = Time.unscaledTime;
                 }
             }
 
             if (IsAiming && input.PointerHeld)
             {
-                UpdateAim(world, false);
+                if (Vector2.Distance(world, dragStart) >= tapDistance) UpdateAim(world, false);
             }
 
             if (IsAiming && (input.PointerUpThisFrame || !input.PointerHeld))
             {
                 IsAiming = false;
-                UpdateAim(world, true);
+                bool tap = Vector2.Distance(world, dragStart) < tapDistance && Time.unscaledTime - pressTime <= tapSeconds;
+                if (tap) FireAtPoint(dragStart);
+                else UpdateAim(world, true);
             }
         }
 
@@ -156,6 +228,28 @@ namespace TreeGuardians.Battle
         {
             for (int i = 0; i < roster.Slots.Count; i++) if (roster.Slots[i] == g) return i;
             return -1;
+        }
+
+        /// Fires the selected guardian at a world point (same path as a tap); used by tests and tutorials.
+        public void FireAt(Vector2 worldTarget) => FireAtPoint(worldTarget);
+
+        /// Tap on the enemy half: solve the launch so the projectile lands on the tapped point.
+        void FireAtPoint(Vector2 target)
+        {
+            var g = ctx.playerRoster?.Get(SelectedSlot);
+            aimView?.Hide();
+            if (g == null || !g.IsAlive || ctx.projectiles == null) return;
+            if (ctx.targeting != null && target.x <= ctx.targeting.MidlineX) return; // own half: not a shot
+            bool special = SpecialArmed && g.SpecialReady;
+            if (!g.CanFire(special)) return;
+            var def = special && g.Definition.specialProjectile != null ? g.Definition.specialProjectile : g.Definition.normalProjectile;
+            if (def == null) return;
+            var velocity = ctx.projectiles.LaunchVelocity(def, g.MuzzlePosition, target, 1f);
+            if (velocity.sqrMagnitude < 0.001f) return;
+            queue.Enqueue(BattleCommand.Fire(Side, SelectedSlot, velocity.normalized, 1f, special));
+            lastFiredSlot = SelectedSlot;
+            if (special) SpecialArmed = false;
+            OnSelectionChanged?.Invoke();
         }
 
         void UpdateAim(Vector2 world, bool release)
@@ -186,6 +280,7 @@ namespace TreeGuardians.Battle
                 aimView?.Hide();
                 if (!valid) return;
                 queue.Enqueue(BattleCommand.Fire(Side, SelectedSlot, dir, power, special));
+                lastFiredSlot = SelectedSlot;
                 if (special) SpecialArmed = false;
                 OnSelectionChanged?.Invoke();
                 return;
@@ -208,6 +303,7 @@ namespace TreeGuardians.Battle
         {
             IsAiming = false;
             aimView?.Hide();
+            SetReveal(false);
             queue.Clear();
         }
     }

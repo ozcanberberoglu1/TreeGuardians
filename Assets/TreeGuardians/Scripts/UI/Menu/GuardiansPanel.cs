@@ -91,6 +91,32 @@ namespace TreeGuardians.UI.Menu
         {
             selectedSlot = -1;
             Refresh();
+            MenuUIController.Instance?.CenterTree?.SetLoadoutMode(true, FreeAreaCenterWorldX());
+        }
+
+        protected override void OnClose()
+        {
+            base.OnClose();
+            MenuUIController.Instance?.CenterTree?.SetLoadoutMode(false);
+        }
+
+        /// World x of the middle of the screen area left of this panel, so the tree can slide next to it on any aspect ratio.
+        float? FreeAreaCenterWorldX()
+        {
+            var cam = Camera.main;
+            var rt = transform as RectTransform;
+            var canvas = GetComponentInParent<Canvas>();
+            if (cam == null || rt == null || canvas == null) return null;
+            var corners = new Vector3[4];
+            rt.GetWorldCorners(corners);
+            var uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            float panelLeftPx = RectTransformUtility.WorldToScreenPoint(uiCam, corners[0]).x;
+            float worldWidth = cam.orthographic ? cam.orthographicSize * 2f * cam.aspect : 0f;
+            if (worldWidth <= 0f || cam.pixelWidth <= 0) return null;
+            float screenLeftWorld = cam.transform.position.x - worldWidth * 0.5f;
+            float panelLeftWorld = screenLeftWorld + Mathf.Clamp01(panelLeftPx / cam.pixelWidth) * worldWidth;
+            if (panelLeftWorld - screenLeftWorld < 1f) return null;
+            return (screenLeftWorld + panelLeftWorld) * 0.5f;
         }
 
         void SetFilter(Filter f) { filter = f; Refresh(); }
@@ -103,15 +129,19 @@ namespace TreeGuardians.UI.Menu
             if (progress == null) return;
             palette = progress.Database.rarityPalette;
 
+            int slotCount = progress.Balance.guardianSlotCount;
             for (int i = 0; i < equippedSlots.Length; i++)
             {
                 var view = equippedSlots[i];
                 if (view == null) continue;
+                view.gameObject.SetActive(i < slotCount);
+                if (i >= slotCount) continue;
                 var id = progress.GetEquippedGuardianId(i);
                 var def = progress.Database.GetGuardian(id);
                 if (def == null) view.BindEmpty(); else view.Bind(def, progress, palette);
                 view.SetSelected(i == selectedSlot);
             }
+            MenuUIController.Instance?.CenterTree?.SetSelectedSlot(selectedSlot);
             if (equippedCountText != null) equippedCountText.text = $"{progress.EquippedGuardianCount}/{progress.Balance.guardianSlotCount}";
             if (hintText != null) hintText.text = selectedSlot >= 0 ? LocalizationService.Tr("guardian_equip") : "";
 

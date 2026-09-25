@@ -41,6 +41,7 @@ namespace TreeGuardians.Battle
 
         public BattleContext Context => ctx;
         public BattleStateMachine StateMachine => sm;
+        public BattleTurnController Turns => ctx?.turns;
 
         BattleContext ctx;
         readonly BattleStateMachine sm = new BattleStateMachine();
@@ -96,6 +97,13 @@ namespace TreeGuardians.Battle
             };
             ctx.damage = new DamageResolver(ctx);
             ctx.targeting = new TargetingController(ctx);
+            ctx.turnBased = cfg.Balance.turnBasedBattle;
+            if (ctx.turnBased)
+            {
+                ctx.turns = new BattleTurnController(ctx);
+                ctx.turns.OnPhaseChanged += OnTurnPhase;
+                ctx.turns.OnPlayerTimedOut += OnTurnTimedOut;
+            }
             if (playerTree != null && enemyTree != null) ctx.targeting.MidlineX = (playerTree.transform.position.x + enemyTree.transform.position.x) * 0.5f;
 
             vfx?.Initialize();
@@ -174,13 +182,15 @@ namespace TreeGuardians.Battle
                     {
                         sm.Set(BattleState.Playing);
                         ctx.isPlaying = true;
-                        hud?.ShowMessage("battle_fight", 0.9f);
+                        if (ctx.turns != null) ctx.turns.Start(BattleSide.Player);
+                        else hud?.ShowMessage("battle_fight", 0.9f);
                     }
                     break;
                 }
                 case BattleState.Playing:
                     ctx.elapsed += dt;
                     ctx.timeRemaining -= dt;
+                    ctx.turns?.Tick(dt);
                     TickSystems(dt);
                     DrainCommands(playerCommander, dt);
                     DrainCommands(botCommander, dt);
@@ -239,22 +249,49 @@ namespace TreeGuardians.Battle
                 case BattleCommandType.FireNormal:
                 case BattleCommandType.FireSpecial:
                 {
+                    if (ctx.turns != null && !ctx.turns.CanFire(cmd.side)) return;
                     var g = roster?.Get(cmd.slotIndex);
                     if (g == null) return;
-                    g.Fire(cmd.direction, cmd.power, cmd.type == BattleCommandType.FireSpecial);
+                    if (g.Fire(cmd.direction, cmd.power, cmd.type == BattleCommandType.FireSpecial)) ctx.turns?.OnShotFired(cmd.side);
                     break;
                 }
                 case BattleCommandType.UseTool:
+                    if (ctx.turns != null && !ctx.turns.CanUseTool(cmd.side)) return;
                     ctx.ToolsOf(cmd.side)?.Use(cmd.slotIndex, cmd.targetPoint);
                     break;
             }
         }
 
+        void OnTurnPhase(TurnPhase phase)
+        {
+            switch (phase)
+            {
+                case TurnPhase.PlayerAct:
+                    hud?.ShowMessage("battle_your_turn", 1f);
+                    playerCommander?.BeginTurn();
+                    break;
+                case TurnPhase.PlayerResolve:
+                    playerCommander?.EndTurn();
+                    break;
+                case TurnPhase.EnemyThink:
+                    hud?.ShowMessage("battle_enemy_turn", 1f);
+                    playerCommander?.EndTurn();
+                    botCommander?.BeginTurn();
+                    break;
+            }
+        }
+
+        void OnTurnTimedOut()
+        {
+            hud?.ShowMessage("battle_turn_timeout", 1f);
+            Services.Get<AudioService>()?.PlayUi(AudioEventId.UiError);
+        }
+
         void CheckWinConditions()
         {
             if (sm.State != BattleState.Playing) return;
-            if (enemyTree != null && enemyTree.IsCoreDestroyed) { End(BattleOutcome.Victory, BattleEndReason.CoreDestroyed); return; }
-            if (playerTree != null && playerTree.IsCoreDestroyed) { End(BattleOutcome.Defeat, BattleEndReason.CoreDestroyed); return; }
+            if (enemyTree != null && (enemyTree.IsCoreDestroyed || CastleFallen(enemyTree))) { End(BattleOutcome.Victory, BattleEndReason.CoreDestroyed); return; }
+            if (playerTree != null && (playerTree.IsCoreDestroyed || CastleFallen(playerTree))) { End(BattleOutcome.Defeat, BattleEndReason.CoreDestroyed); return; }
             if (enemyRoster != null && enemyRoster.ActiveCount > 0 && enemyRoster.AliveCount == 0) { End(BattleOutcome.Victory, BattleEndReason.AllGuardiansDown); return; }
             if (playerRoster != null && playerRoster.ActiveCount > 0 && playerRoster.AliveCount == 0) { End(BattleOutcome.Defeat, BattleEndReason.AllGuardiansDown); return; }
             if (ctx.timeRemaining <= 0f)
@@ -266,10 +303,13 @@ namespace TreeGuardians.Battle
             }
         }
 
+        /// Castle duel: all wall parts down, or the integrity bar (walls only) empty.
+        static bool CastleFallen(TreeController tree) => tree.IsDestructible && (tree.IsCastleDestroyed || tree.CorePercent <= 0.0005f);
+
         void ResolveTimeUp()
         {
-            if (enemyTree != null && enemyTree.IsCoreDestroyed) { End(BattleOutcome.Victory, BattleEndReason.CoreDestroyed); return; }
-            if (playerTree != null && playerTree.IsCoreDestroyed) { End(BattleOutcome.Defeat, BattleEndReason.CoreDestroyed); return; }
+            if (enemyTree != null && (enemyTree.IsCoreDestroyed || CastleFallen(enemyTree))) { End(BattleOutcome.Victory, BattleEndReason.CoreDestroyed); return; }
+            if (playerTree != null && (playerTree.IsCoreDestroyed || CastleFallen(playerTree))) { End(BattleOutcome.Defeat, BattleEndReason.CoreDestroyed); return; }
             float p = Score(BattleSide.Player);
             float e = Score(BattleSide.Enemy);
             if (Mathf.Abs(p - e) < 2f) End(BattleOutcome.Draw, BattleEndReason.TimeUp);
@@ -298,6 +338,8 @@ namespace TreeGuardians.Battle
             sm.Set(result == BattleOutcome.Victory ? BattleState.Victory : result == BattleOutcome.Defeat ? BattleState.Defeat : BattleState.Draw);
             playerCommander?.OnBattleEnded();
             botCommander?.OnBattleEnded();
+            playerTree?.SetSilhouette(false, true);
+            playerRoster?.SetSortingOffset(0);
             projectiles?.ReleaseAll();
             hud?.ShowMessage(result == BattleOutcome.Victory ? "battle_victory" : result == BattleOutcome.Defeat ? "battle_defeat" : "battle_draw", 3f);
             hud?.ShowPause(false);

@@ -36,6 +36,7 @@ MonoBehaviour:
     type: 2
     duration: 1.5
     magnitude: 1
+  holeRadius: 0
   impactVfxPrefab: {fileID: 0}
   launchSfx: 6
   impactSfx: 7

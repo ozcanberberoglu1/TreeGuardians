@@ -19,7 +19,7 @@ MonoBehaviour:
   tint: {r: 1, g: 0.85, b: 0.3, a: 1}
   visualScale: 1
   motion: 2
-  speed: 10
+  speed: 14
   gravityScale: 1
   lifetime: 4
   homingStrength: 6
@@ -36,6 +36,7 @@ MonoBehaviour:
     type: 0
     duration: 0
     magnitude: 0
+  holeRadius: 0
   impactVfxPrefab: {fileID: 0}
   launchSfx: 6
   impactSfx: 7

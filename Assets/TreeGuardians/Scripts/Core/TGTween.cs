@@ -69,6 +69,49 @@ namespace TreeGuardians.Core
             onDone?.Invoke();
         }
 
+        /// Generic float tween; 'apply' receives the eased value every frame (and the final value once).
+        public static Coroutine FloatTo(float from, float to, float duration, Action<float> apply, Ease ease = Ease.OutQuad, bool unscaled = true, Action onDone = null)
+        {
+            if (apply == null) return null;
+            if (duration <= 0f || TweenRunner.Instance == null) { apply(to); onDone?.Invoke(); return null; }
+            return Run(FloatRoutine(from, to, duration, apply, ease, unscaled, onDone));
+        }
+
+        static IEnumerator FloatRoutine(float from, float to, float duration, Action<float> apply, Ease ease, bool unscaled, Action onDone)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+                apply(Mathf.LerpUnclamped(from, to, Evaluate(ease, elapsed / duration)));
+                yield return null;
+            }
+            apply(to);
+            onDone?.Invoke();
+        }
+
+        public static Coroutine MoveLocal(Transform t, Vector3 target, float duration, Ease ease = Ease.OutCubic, bool unscaled = true, Action onDone = null)
+        {
+            if (t == null) return null;
+            if (duration <= 0f || TweenRunner.Instance == null) { t.localPosition = target; onDone?.Invoke(); return null; }
+            return Run(MoveLocalRoutine(t, target, duration, ease, unscaled, onDone));
+        }
+
+        static IEnumerator MoveLocalRoutine(Transform t, Vector3 target, float duration, Ease ease, bool unscaled, Action onDone)
+        {
+            Vector3 from = t.localPosition;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                if (t == null) yield break;
+                elapsed += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+                t.localPosition = Vector3.LerpUnclamped(from, target, Evaluate(ease, elapsed / duration));
+                yield return null;
+            }
+            if (t != null) t.localPosition = target;
+            onDone?.Invoke();
+        }
+
         public static Coroutine PunchScale(Transform t, float punch = 0.12f, float duration = 0.25f, bool unscaled = true)
         {
             if (t == null) return null;

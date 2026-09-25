@@ -99,6 +99,13 @@ namespace TreeGuardians.Guardians
 
         public bool IsPlayerControlling(GuardianController g) => g != null && playerControlledSlot >= 0 && g == slots[playerControlledSlot];
 
+        /// Draws every active guardian above (offset > 0) or back inside (0) the castle wall.
+        public void SetSortingOffset(int offset)
+        {
+            for (int i = 0; i < slots.Length; i++)
+                if (slots[i] != null && slots[i].IsActive) slots[i].ApplySortingOffset(offset);
+        }
+
         public void HealAll(float amount, GuardianController except)
         {
             for (int i = 0; i < slots.Length; i++)

@@ -70,6 +70,7 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] Image arenaProgressFill;
         [SerializeField] Button editLoadoutButton;
         [SerializeField] CenterTreeDisplay centerTree;
+        [Tooltip("Muhafız paneli açıkken sönen ana menü HUD kökleri (TopBar, raylar, orta HUD, BottomBar...). Paneller ve popup katmanı dahil edilmez.")] [SerializeField] CanvasGroup[] hudGroups = new CanvasGroup[0];
 
         [Header("Bottom")]
         [Tooltip("Başarımlar sekmesini açar; etiket = tamamlanan/toplam başarım.")] [SerializeField] Button rankButton;
@@ -115,6 +116,31 @@ namespace TreeGuardians.UI.Menu
                 GameEventBus.Unsubscribe<QuestClaimedEvent>(OnQuestClaimed);
                 GameEventBus.Unsubscribe<RewardAppliedEvent>(OnRewardApplied);
                 if (questService != null) questService.OnChanged -= RefreshQuestSummaries;
+                if (guardiansPanel != null)
+                {
+                    guardiansPanel.OnOpened -= OnGuardiansPanelOpened;
+                    guardiansPanel.OnClosed -= OnGuardiansPanelClosed;
+                }
+            }
+        }
+
+        void OnGuardiansPanelOpened() => SetHudVisible(false);
+        void OnGuardiansPanelClosed() => SetHudVisible(true);
+
+        Coroutine[] hudFades;
+        /// Fades the main-menu HUD (bars, rails, center info) so a side-docked panel is not cluttered by the background UI.
+        public void SetHudVisible(bool visible)
+        {
+            if (hudFades == null || hudFades.Length != hudGroups.Length) hudFades = new Coroutine[hudGroups.Length];
+            float dur = QualityApplier.ReduceMotion ? 0f : 0.2f;
+            for (int i = 0; i < hudGroups.Length; i++)
+            {
+                var g = hudGroups[i];
+                if (g == null) continue;
+                TGTween.Stop(hudFades[i]);
+                g.blocksRaycasts = visible;
+                g.interactable = visible;
+                hudFades[i] = TGTween.FadeCanvasGroup(g, visible ? 1f : 0f, dur);
             }
         }
 
@@ -168,6 +194,11 @@ namespace TreeGuardians.UI.Menu
             }
             questService = Services.Get<QuestService>();
             if (questService != null) questService.OnChanged += RefreshQuestSummaries;
+            if (guardiansPanel != null)
+            {
+                guardiansPanel.OnOpened += OnGuardiansPanelOpened;
+                guardiansPanel.OnClosed += OnGuardiansPanelClosed;
+            }
             if (debugButton != null) debugButton.gameObject.SetActive(Application.isEditor || Debug.isDebugBuild);
 
             GameEventBus.Subscribe<LoadoutChangedEvent>(OnLoadoutChanged);
@@ -242,6 +273,7 @@ namespace TreeGuardians.UI.Menu
         }
 
         public bool IsAnyPanelOpen => current != null;
+        public CenterTreeDisplay CenterTree => centerTree;
 
         /// Quests panel on the requested tab (Rank button = achievements, Quests button = quests).
         public void OpenQuests(bool achievements)

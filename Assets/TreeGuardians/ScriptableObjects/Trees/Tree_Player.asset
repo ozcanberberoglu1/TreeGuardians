@@ -14,232 +14,115 @@ MonoBehaviour:
   m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.TreeDefinition
   id: tree_player
   nameKey: tree_player_name
+  destructibleCastle: 1
   heartwoodBaseHealth: 1200
   heartwoodArmor: 10
   protectedDamageMultiplier: 0.15
   sections:
-  - sectionId: core
-    type: 0
-    baseHealth: 1200
-    armor: 10
+  - sectionId: base
+    type: 5
+    baseHealth: 900
+    armor: 40
     poisonResistance: 0
     parentSectionId: 
     protectsSectionIds: []
     guardianSlotIndex: -1
-    localPosition: {x: 0, y: 3.4}
-    size: {x: 1.1, y: 1.1}
-    initiallyTargetable: 0
-    breakBehavior: 2
-  - sectionId: trunk_low
-    type: 1
-    baseHealth: 520
-    armor: 8
-    poisonResistance: 0
-    parentSectionId: 
-    protectsSectionIds: []
-    guardianSlotIndex: -1
-    localPosition: {x: 0, y: 1.3}
-    size: {x: 1.9, y: 2.6}
+    localPosition: {x: 0, y: 0.71000004}
+    size: {x: 5.12, y: 1.43}
     initiallyTargetable: 1
     breakBehavior: 2
-  - sectionId: trunk_mid
-    type: 1
-    baseHealth: 460
-    armor: 8
-    poisonResistance: 0
-    parentSectionId: trunk_low
-    protectsSectionIds:
-    - core
-    guardianSlotIndex: -1
-    localPosition: {x: 0, y: 3.5}
-    size: {x: 1.7, y: 2.4}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: trunk_top
-    type: 1
-    baseHealth: 400
+    sprite: {fileID: -3389288673126976878, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part1
+    type: 3
+    baseHealth: 420
     armor: 6
     poisonResistance: 0
-    parentSectionId: trunk_mid
-    protectsSectionIds: []
-    guardianSlotIndex: -1
-    localPosition: {x: 0, y: 5.6}
-    size: {x: 1.5, y: 2.2}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: bark_low
-    type: 3
-    baseHealth: 220
-    armor: 4
-    poisonResistance: 0
-    parentSectionId: trunk_low
-    protectsSectionIds:
-    - trunk_low
-    guardianSlotIndex: -1
-    localPosition: {x: 1.15, y: 1.4}
-    size: {x: 0.9, y: 1.6}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: bark_mid
-    type: 3
-    baseHealth: 200
-    armor: 4
-    poisonResistance: 0
-    parentSectionId: trunk_mid
-    protectsSectionIds:
-    - core
-    - trunk_mid
-    guardianSlotIndex: -1
-    localPosition: {x: 1.05, y: 3.4}
-    size: {x: 0.9, y: 1.6}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: bark_top
-    type: 3
-    baseHealth: 180
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds:
-    - trunk_top
-    guardianSlotIndex: -1
-    localPosition: {x: 0.95, y: 5.4}
-    size: {x: 0.8, y: 1.4}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_low
-    type: 2
-    baseHealth: 260
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_low
+    parentSectionId: 
     protectsSectionIds: []
     guardianSlotIndex: 0
-    localPosition: {x: 2.1, y: 2.3}
-    size: {x: 2.4, y: 0.55}
+    localPosition: {x: -1.64, y: 1.8299999}
+    size: {x: 1.62, y: 1.38}
     initiallyTargetable: 1
     breakBehavior: 2
-  - sectionId: branch_mid
-    type: 2
-    baseHealth: 240
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_mid
-    protectsSectionIds: []
-    guardianSlotIndex: 1
-    localPosition: {x: 2.2, y: 4.2}
-    size: {x: 2.4, y: 0.55}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_high
-    type: 2
-    baseHealth: 220
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds: []
-    guardianSlotIndex: 2
-    localPosition: {x: 2, y: 6.1}
-    size: {x: 2.2, y: 0.5}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_top
-    type: 2
-    baseHealth: 200
-    armor: 2
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds: []
-    guardianSlotIndex: 3
-    localPosition: {x: 1.3, y: 7.6}
-    size: {x: 1.8, y: 0.5}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_back_low
-    type: 2
-    baseHealth: 260
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_low
-    protectsSectionIds: []
-    guardianSlotIndex: 4
-    localPosition: {x: -1.9, y: 2.7}
-    size: {x: 2.2, y: 0.55}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_back_mid
-    type: 2
-    baseHealth: 240
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_mid
-    protectsSectionIds: []
-    guardianSlotIndex: 5
-    localPosition: {x: -2, y: 4.6}
-    size: {x: 2.2, y: 0.55}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: branch_back_high
-    type: 2
-    baseHealth: 220
-    armor: 3
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds: []
-    guardianSlotIndex: 6
-    localPosition: {x: -1.7, y: 6.4}
-    size: {x: 2, y: 0.5}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: crown
-    type: 2
-    baseHealth: 200
-    armor: 2
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds: []
-    guardianSlotIndex: 7
-    localPosition: {x: -0.2, y: 8.3}
-    size: {x: 1.6, y: 0.5}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: canopy
-    type: 4
-    baseHealth: 300
-    armor: 2
-    poisonResistance: 0
-    parentSectionId: trunk_top
-    protectsSectionIds: []
-    guardianSlotIndex: -1
-    localPosition: {x: 0, y: 7.4}
-    size: {x: 3.4, y: 1.8}
-    initiallyTargetable: 1
-    breakBehavior: 2
-  - sectionId: root
-    type: 5
-    baseHealth: 400
-    armor: 10
+    sprite: {fileID: 7798568328114137051, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part2
+    type: 3
+    baseHealth: 420
+    armor: 6
     poisonResistance: 0
     parentSectionId: 
     protectsSectionIds: []
-    guardianSlotIndex: -1
-    localPosition: {x: 0, y: 0.15}
-    size: {x: 3.2, y: 1}
+    guardianSlotIndex: 1
+    localPosition: {x: 0.01, y: 1.8299999}
+    size: {x: 1.69, y: 1.38}
     initiallyTargetable: 1
     breakBehavior: 2
+    sprite: {fileID: -1233330031769197110, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part3
+    type: 3
+    baseHealth: 420
+    armor: 6
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: 2
+    localPosition: {x: 1.66, y: 1.8299999}
+    size: {x: 1.61, y: 1.38}
+    initiallyTargetable: 1
+    breakBehavior: 2
+    sprite: {fileID: -9078742966798144769, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part4
+    type: 3
+    baseHealth: 520
+    armor: 6
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: 3
+    localPosition: {x: -1.63, y: 4.63}
+    size: {x: 2.26, y: 4.28}
+    initiallyTargetable: 1
+    breakBehavior: 2
+    sprite: {fileID: -7900067295669237142, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part5
+    type: 3
+    baseHealth: 460
+    armor: 6
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: 4
+    localPosition: {x: 0.01, y: 3.62}
+    size: {x: 1.69, y: 2.21}
+    initiallyTargetable: 1
+    breakBehavior: 2
+    sprite: {fileID: -3293973767511436337, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
+  - sectionId: part6
+    type: 3
+    baseHealth: 520
+    armor: 6
+    poisonResistance: 0
+    parentSectionId: 
+    protectsSectionIds: []
+    guardianSlotIndex: 5
+    localPosition: {x: 1.63, y: 4.65}
+    size: {x: 2.22, y: 4.28}
+    initiallyTargetable: 1
+    breakBehavior: 2
+    sprite: {fileID: -6003497587482620997, guid: 9e712f7c73109416a81b33978f00460d, type: 3}
   guardianSlotPositions:
-  - {x: 3, y: 2.75}
-  - {x: 3.1, y: 4.65}
-  - {x: 2.8, y: 6.5}
-  - {x: 1.9, y: 8}
-  - {x: -2.7, y: 3.15}
-  - {x: -2.8, y: 5.05}
-  - {x: -2.4, y: 6.8}
-  - {x: -0.4, y: 8.75}
+  - {x: -1.64, y: 1.1800001}
+  - {x: 0.01, y: 1.1800001}
+  - {x: 1.66, y: 1.45}
+  - {x: -1.63, y: 2.81}
+  - {x: 0.01, y: 2.88}
+  - {x: 1.63, y: 2.82}
+  - {x: 0, y: 12}
+  - {x: 0, y: 12.5}
   toolMountPositions:
-  - {x: 1.6, y: 0.7}
-  - {x: -1.6, y: 0.7}
-  - {x: 0.9, y: 9.2}
+  - {x: -1.63, y: 6.83}
+  - {x: 0.01, y: 4.78}
+  - {x: 1.63, y: 6.83}
   visuals:
   - tier: 0
     trunk: {fileID: 21300000, guid: 0a4192804f5fa4a8c86de0cd6e010259, type: 3}

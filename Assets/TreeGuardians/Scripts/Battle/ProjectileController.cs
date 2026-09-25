@@ -90,7 +90,7 @@ namespace TreeGuardians.Battle
                         velocity = Vector2.Lerp(velocity, desired, Mathf.Clamp01(Def.homingStrength * dt));
                         if (velocity.sqrMagnitude > 0.01f) velocity = velocity.normalized * Def.speed;
                     }
-                    else velocity.y -= svc.Gravity * 0.15f * dt;
+                    // No target (aimed shot): keep the exact aimed direction, no droop.
                     break;
             }
             float deflect = svc.DeflectFor(Side);

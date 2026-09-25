@@ -19,6 +19,7 @@ namespace TreeGuardians.Data
         [Tooltip("SceneBuilder için görsel boyut.")] public Vector2 size = new Vector2(1.2f, 1.2f);
         [Tooltip("Başlangıçta hedeflenebilir mi.")] public bool initiallyTargetable = true;
         [Tooltip("Kırılınca üstteki muhafız davranışı (yalnız Branch).")] public BranchBreakBehavior breakBehavior = BranchBreakBehavior.FallToEmptySlot;
+        [Tooltip("Kale parçasının sprite'ı (destructibleCastle ağaçlar için).")] public Sprite sprite;
     }
 
     [Serializable]
@@ -41,6 +42,7 @@ namespace TreeGuardians.Data
         [Header("Identity")]
         public string id = "tree_player";
         public string nameKey = "tree_player_name";
+        [Tooltip("Parçalı kale: bölümler delinebilir duvarlardır, kalp özü yoktur; savaş sahnesi BattleSceneBuilder.BuildCastle ile kurulur.")] public bool destructibleCastle;
 
         [Header("Core")]
         public float heartwoodBaseHealth = 1200f;

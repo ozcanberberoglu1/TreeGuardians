@@ -14,11 +14,19 @@ namespace TreeGuardians.Battle
         [SerializeField] VfxSprite healPrefab;
         [SerializeField] VfxSprite poisonPrefab;
         [SerializeField] VfxSprite shardPrefab;
+        [SerializeField] VfxSprite smokePrefab;
+        [SerializeField] int maxSmokeSources = 10;
+        [SerializeField] Color smokeColor = new Color(0.2f, 0.18f, 0.17f, 0.85f);
+        [Tooltip("Kaynak başına puf aralığı (saniye).")] [SerializeField] Vector2 smokePuffInterval = new Vector2(0.05f, 0.1f);
+        [Tooltip("Puf ölçeği (başlangıç, bitiş) dünya birimi cinsinden sprite çarpanı.")] [SerializeField] Vector2 smokePuffScale = new Vector2(0.6f, 2.2f);
+        [SerializeField] int smokePuffsPerTick = 2;
         [SerializeField] DamageText damageTextPrefab;
         [SerializeField] int prewarm = 8;
         [SerializeField] bool showDamageNumbers = true;
 
-        ObjectPool<VfxSprite> bursts, hitsPool, heals, poisons, shards;
+        ObjectPool<VfxSprite> bursts, hitsPool, heals, poisons, shards, smokes;
+        struct SmokeSource { public Vector2 pos; public float until; public float next; }
+        readonly List<SmokeSource> smokeSources = new List<SmokeSource>(8);
         ObjectPool<DamageText> texts;
         readonly List<VfxSprite> active = new List<VfxSprite>(64);
         readonly List<DamageText> activeTexts = new List<DamageText>(32);
@@ -34,13 +42,43 @@ namespace TreeGuardians.Battle
             heals = Make(healPrefab, budget);
             poisons = Make(poisonPrefab, 2);
             shards = Make(shardPrefab, budget * 3);
+            smokes = Make(smokePrefab, budget * 5);
+            smokeSources.Clear();
             if (damageTextPrefab != null) texts = new ObjectPool<DamageText>(damageTextPrefab, textRoot, budget * 2, 64);
         }
 
         ObjectPool<VfxSprite> Make(VfxSprite prefab, int count) => prefab != null ? new ObjectPool<VfxSprite>(prefab, vfxRoot, count, 96) : null;
 
+        /// A hole that keeps smoking for a while (puffs rise from the point).
+        public void AddSmokeSource(Vector2 pos, float seconds)
+        {
+            if (smokes == null || QualityApplier.ReduceMotion) return;
+            if (smokeSources.Count >= maxSmokeSources) smokeSources.RemoveAt(0);
+            smokeSources.Add(new SmokeSource { pos = pos, until = Time.time + seconds, next = Time.time });
+        }
+
+        void TickSmoke()
+        {
+            for (int i = smokeSources.Count - 1; i >= 0; i--)
+            {
+                var s = smokeSources[i];
+                if (Time.time >= s.until) { smokeSources.RemoveAt(i); continue; }
+                if (Time.time < s.next) continue;
+                s.next = Time.time + Random.Range(smokePuffInterval.x, smokePuffInterval.y);
+                smokeSources[i] = s;
+                for (int k = 0; k < smokePuffsPerTick; k++)
+                {
+                    var pos = s.pos + new Vector2(Random.Range(-0.25f, 0.25f), Random.Range(-0.1f, 0.15f));
+                    var vel = new Vector2(Random.Range(-0.3f, 0.3f), Random.Range(0.55f, 1f));
+                    var tint = smokeColor; tint.a *= Random.Range(0.75f, 1f);
+                    Spawn(smokes, pos, tint, smokePuffScale.x * Random.Range(0.8f, 1.2f), smokePuffScale.y * Random.Range(0.8f, 1.2f), Random.Range(2f, 3f), vel, -0.2f, Random.Range(-40f, 40f));
+                }
+            }
+        }
+
         public void Tick(float dt)
         {
+            TickSmoke();
             for (int i = active.Count - 1; i >= 0; i--)
             {
                 var v = active[i];
@@ -90,6 +128,7 @@ namespace TreeGuardians.Battle
 
         public void ReleaseAll()
         {
+            smokeSources.Clear();
             for (int i = 0; i < active.Count; i++) active[i]?.ReleaseToPool();
             active.Clear();
             for (int i = 0; i < activeTexts.Count; i++) activeTexts[i]?.ReleaseToPool();

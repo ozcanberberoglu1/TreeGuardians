@@ -23,6 +23,14 @@ namespace TreeGuardians.Trees
         [SerializeField] SpriteRenderer[] leafRenderers = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer heartwoodGlow;
 
+        [Header("Castle (destructible)")]
+        [Tooltip("Parçalar delinebilir kale duvarlarıdır: paylaşılan maske, arkada siyah katman, önde maskeli duvar.")] [SerializeField] bool destructible;
+        [Tooltip("Ağaç kademesine göre renk uygula (kullanıcı sanatı için kapalı).")] [SerializeField] bool tintByTier = true;
+        [SerializeField] float maskPixelsPerUnit = 48f;
+        [SerializeField] float maskMargin = 0.4f;
+        [SerializeField] Color silhouetteColor = new Color(0.05f, 0.04f, 0.07f, 1f);
+        [SerializeField] float silhouetteFadeSeconds = 0.2f;
+
         [Header("World health bar")]
         [SerializeField] Transform healthBarFill;
         [SerializeField] SpriteRenderer healthBarFillRenderer;
@@ -35,7 +43,11 @@ namespace TreeGuardians.Trees
         public Transform[] GuardianSlots => guardianSlots;
         public Transform[] ToolMounts => toolMounts;
         public bool IsCoreDestroyed => core != null && core.IsDestroyed;
-        public float CorePercent => core != null ? core.HealthPercent : 0f;
+        /// Core health, or castle integrity (1 - structure damage) when the tree has no core.
+        public float CorePercent => core != null ? core.HealthPercent : 1f - StructureDamagePercent();
+        public bool IsDestructible => destructible && mask != null;
+        public DestructibleMask Mask => mask;
+        public bool Silhouetted => silhouetteTarget > 0.5f;
         public float RootDamageReduction { get; private set; }
         public float SapFlowBonus { get; private set; }
         public float StructureHealthTotal { get; private set; }
@@ -48,6 +60,16 @@ namespace TreeGuardians.Trees
         readonly List<TreeSection> targetable = new List<TreeSection>(32);
         float fillBaseScaleX = 1f;
         bool initialized;
+        DestructibleMask mask;
+        float silhouette;
+        float silhouetteTarget;
+        Coroutine silhouetteTween;
+
+        void OnDestroy()
+        {
+            mask?.Dispose();
+            mask = null;
+        }
 
         public void Initialize(int[] upgradeLevels, TreeVisualTier tier, BattleContext context)
         {
@@ -73,9 +95,10 @@ namespace TreeGuardians.Trees
                 s.OnDestroyedEvent -= HandleSectionDestroyed;
                 s.OnDestroyedEvent += HandleSectionDestroyed;
                 byId[s.SectionId] = s;
-                if (spec.type != TreeSectionType.HeartwoodCore) StructureHealthTotal += s.MaxHealth;
-                if (visuals != null) ApplyVisual(s, visuals);
+                if (CountsForStructure(spec.type)) StructureHealthTotal += s.MaxHealth;
+                if (visuals != null && tintByTier) ApplyVisual(s, visuals);
             }
+            if (destructible) SetupMask();
             foreach (var kv in byId)
             {
                 var s = kv.Value;
@@ -93,7 +116,7 @@ namespace TreeGuardians.Trees
             }
             foreach (var kv in byId) kv.Value.ResetProtectionState();
             if (core == null) foreach (var kv in byId) if (kv.Value.Type == TreeSectionType.HeartwoodCore) core = kv.Value;
-            if (visuals != null)
+            if (visuals != null && tintByTier)
             {
                 foreach (var r in barkRenderers) if (r != null) r.color = visuals.barkColor;
                 foreach (var r in leafRenderers) if (r != null) r.color = visuals.leafColor;
@@ -101,6 +124,101 @@ namespace TreeGuardians.Trees
             if (healthBarFill != null) fillBaseScaleX = healthBarFill.localScale.x == 0f ? 1f : Mathf.Abs(healthBarFill.localScale.x);
             initialized = true;
             UpdateHealthBar();
+        }
+
+        static bool IsCarvable(TreeSection s) => s != null && s.Type != TreeSectionType.RootStabilizer && s.Type != TreeSectionType.HeartwoodCore;
+
+        /// Castles: only the wall parts count for integrity (the base is solid scenery); legacy trees: everything but the core.
+        bool CountsForStructure(TreeSectionType type) => type != TreeSectionType.HeartwoodCore && !(destructible && type == TreeSectionType.RootStabilizer);
+
+        /// Castle duel: every wall part has lost all its health.
+        public bool IsCastleDestroyed
+        {
+            get
+            {
+                if (!destructible) return false;
+                bool any = false;
+                for (int i = 0; i < sections.Length; i++)
+                {
+                    var s = sections[i];
+                    if (s == null || !IsCarvable(s) || !s.gameObject.activeSelf) continue;
+                    any = true;
+                    if (!s.IsDestroyed) return false;
+                }
+                return any;
+            }
+        }
+
+        void SetupMask()
+        {
+            var rect = new Rect(0f, 0f, 0f, 0f);
+            bool any = false;
+            for (int i = 0; i < sections.Length; i++)
+            {
+                var s = sections[i];
+                if (s == null || !s.gameObject.activeSelf) continue;
+                var b = s.WorldBounds;
+                var r = Rect.MinMaxRect(b.min.x, b.min.y, b.max.x, b.max.y);
+                if (!any) { rect = r; any = true; }
+                else rect = Rect.MinMaxRect(Mathf.Min(rect.xMin, r.xMin), Mathf.Min(rect.yMin, r.yMin), Mathf.Max(rect.xMax, r.xMax), Mathf.Max(rect.yMax, r.yMax));
+            }
+            if (!any) return;
+            rect = Rect.MinMaxRect(rect.xMin - maskMargin, rect.yMin - maskMargin, rect.xMax + maskMargin, rect.yMax + maskMargin);
+            mask?.Dispose();
+            mask = new DestructibleMask(rect, maskPixelsPerUnit);
+            for (int i = 0; i < sections.Length; i++)
+            {
+                var s = sections[i];
+                if (s == null) continue;
+                s.SetMask(mask.Texture, mask.ShaderRect, IsCarvable(s));
+                s.SetSilhouette(0f);
+            }
+            silhouette = 0f;
+            silhouetteTarget = 0f;
+        }
+
+        /// Opens a hole in the wall at a world point (projectile impact).
+        public void Carve(Vector2 world, float radius)
+        {
+            if (mask == null || radius <= 0f) return;
+            mask.Carve(world, radius);
+            mask.Apply();
+        }
+
+        /// True when the wall is already open at this point (projectiles fly through).
+        public bool IsHoleAt(Vector2 world) => mask != null && mask.IsDestroyedAt(world);
+
+        /// True when an intact wall part still covers this point (guardians behind it cannot be hit).
+        public bool IsCoveredAt(Vector2 world)
+        {
+            if (!IsDestructible) return false;
+            for (int i = 0; i < sections.Length; i++)
+            {
+                var s = sections[i];
+                if (s == null || s.IsDestroyed || !IsCarvable(s)) continue;
+                if (!s.WorldBounds.Contains(new Vector3(world.x, world.y, s.WorldBounds.center.z))) continue;
+                return !mask.IsDestroyedAt(world);
+            }
+            return false;
+        }
+
+        /// Fades the carvable walls to a flat silhouette so the guardians inside can be seen (player aiming).
+        public void SetSilhouette(bool on, bool instant = false)
+        {
+            silhouetteTarget = on ? 1f : 0f;
+            TGTween.Stop(silhouetteTween);
+            silhouetteTween = TGTween.FloatTo(silhouette, silhouetteTarget, instant || QualityApplier.ReduceMotion ? 0f : silhouetteFadeSeconds, ApplySilhouette);
+        }
+
+        void ApplySilhouette(float value)
+        {
+            silhouette = value;
+            for (int i = 0; i < sections.Length; i++)
+            {
+                var s = sections[i];
+                if (s == null || !IsCarvable(s)) continue;
+                s.SetSilhouette(value);
+            }
         }
 
         void ApplyVisual(TreeSection s, TreeVisualSet v)
@@ -124,6 +242,12 @@ namespace TreeGuardians.Trees
 
         void HandleSectionDestroyed(TreeSection s)
         {
+            if (mask != null && IsCarvable(s))
+            {
+                var b = s.WorldBounds;
+                mask.ClearRect(Rect.MinMaxRect(b.min.x, b.min.y, b.max.x, b.max.y));
+                mask.Apply();
+            }
             OnSectionDestroyed?.Invoke(s);
             if (s.Type == TreeSectionType.Branch) OnBranchBroken?.Invoke(s);
             if (s.Type == TreeSectionType.HeartwoodCore) OnCoreDestroyed?.Invoke();
@@ -173,7 +297,7 @@ namespace TreeGuardians.Trees
             for (int i = 0; i < sections.Length; i++)
             {
                 var s = sections[i];
-                if (s == null || s.Type == TreeSectionType.HeartwoodCore) continue;
+                if (s == null || !CountsForStructure(s.Type)) continue;
                 t += s.Health;
             }
             return t;
@@ -195,7 +319,7 @@ namespace TreeGuardians.Trees
 
         public void UpdateHealthBar()
         {
-            if (healthBarFill == null || core == null) return;
+            if (healthBarFill == null) return;
             float p = Mathf.Clamp01(CorePercent);
             var s = healthBarFill.localScale;
             s.x = fillBaseScaleX * p;

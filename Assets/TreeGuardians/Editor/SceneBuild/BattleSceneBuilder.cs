@@ -24,6 +24,11 @@ namespace TreeGuardians.Editor.SceneBuild
         public const string VfxFolder = "Assets/TreeGuardians/Prefabs/VFX";
 
         static readonly Color BarBack = new Color(0.08f, 0.1f, 0.14f, 0.85f);
+        public const string CastleFrontMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_CastleWall.mat";
+        public const string CastleBackMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_CastleBack.mat";
+        const int CastleBackOrder = 0;   // black interior, behind the guardians (6..11)
+        const int CastleWallOrder = 12;  // masked wall in front of the guardians
+        const int CastleBaseOrder = 13;
         static TreeGuardians.Tutorial.BattleTutorialController tutorialController;
 
         public static void Build() => BuildScene("03_Battle", false);
@@ -49,6 +54,7 @@ namespace TreeGuardians.Editor.SceneBuild
 
             var projectilePrefab = BuildProjectilePrefab();
             BuildVfxPrefabs(out var burst, out var hit, out var heal, out var poison, out var shard, out var dmgText);
+            var smoke = VfxPrefab("Vfx_Smoke", ArtPaths.Vfx("poison"), 23); // 64 px soft cloud; glow was only 32 px
 
             var playerSide = F.Root("PlayerSide");
             var playerTree = BuildTree("PlayerTree", playerSide.transform, playerDef, BattleSide.Player, new Vector3(-TreeX, GroundY, 0f), false, out var playerRoster, out var playerTools);
@@ -79,6 +85,7 @@ namespace TreeGuardians.Editor.SceneBuild
             F.Set(vfx, "vfxRoot", vfxRoot.transform);
             F.Set(vfx, "textRoot", textRoot.transform);
             F.Set(vfx, "burstPrefab", burst); F.Set(vfx, "hitPrefab", hit); F.Set(vfx, "healPrefab", heal); F.Set(vfx, "poisonPrefab", poison); F.Set(vfx, "shardPrefab", shard); F.Set(vfx, "damageTextPrefab", dmgText);
+            F.Set(vfx, "smokePrefab", smoke);
 
             tutorialController = null;
             var hud = BuildHUD(cam, out var aimView);
@@ -343,8 +350,122 @@ namespace TreeGuardians.Editor.SceneBuild
         }
 
         // ------------------------------------------------------------------ trees
+        static Material LoadOrCreateMaterial(string path, string shaderName, System.Action<Material> setup = null)
+        {
+            var shader = Shader.Find(shaderName);
+            if (shader == null) { Debug.LogError("[TG] Shader missing: " + shaderName); return null; }
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                ContentBuilder.EnsureFolder(System.IO.Path.GetDirectoryName(path).Replace('\\', '/'));
+                mat = new Material(shader);
+                setup?.Invoke(mat);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            else if (mat.shader != shader) { mat.shader = shader; setup?.Invoke(mat); EditorUtility.SetDirty(mat); }
+            return mat;
+        }
+
+        /// Castle duel tree: base + wall parts (front = masked destructible sprite, back = black silhouette), guardian slots inside.
+        static TreeController BuildCastle(string name, Transform parent, TreeDefinition def, BattleSide side, Vector3 position, bool mirrored, out GuardianRoster roster, out ToolController tools)
+        {
+            var root = F.Child(name, parent, position);
+            if (mirrored) root.transform.localScale = new Vector3(-1f, 1f, 1f);
+            var tree = root.AddComponent<TreeController>();
+            roster = parent.gameObject.AddComponent<GuardianRoster>();
+            tools = parent.gameObject.AddComponent<ToolController>();
+            F.Set(roster, "side", (float)(int)side);
+            F.Set(tools, "side", (float)(int)side);
+            F.Set(tree, "definition", def);
+            F.Set(tree, "side", (float)(int)side);
+            var tso = new SerializedObject(tree);
+            tso.FindProperty("destructible").boolValue = true;
+            tso.FindProperty("tintByTier").boolValue = false;
+            tso.ApplyModifiedPropertiesWithoutUndo();
+
+            var frontMat = LoadOrCreateMaterial(CastleFrontMaterialPath, "Tree Guardians/2D/Sprite Destructible");
+            var backMat = LoadOrCreateMaterial(CastleBackMaterialPath, "Tree Guardians/2D/Sprite Silhouette", m => { m.SetFloat("_Silhouette", 1f); m.SetColor("_SilhouetteColor", new Color(0.05f, 0.04f, 0.07f, 1f)); });
+
+            var partsRoot = F.Child("CastleParts", root.transform);
+            var backRoot = F.Child("CastleBack", root.transform);
+            var sections = new List<Object>();
+            foreach (var spec in def.sections)
+            {
+                bool isBase = spec.type == TreeSectionType.RootStabilizer;
+                var go = F.Child(spec.sectionId, partsRoot.transform, new Vector3(spec.localPosition.x, spec.localPosition.y, 0f));
+                var section = go.AddComponent<TreeSection>();
+                var col = go.AddComponent<BoxCollider2D>();
+                col.isTrigger = true;
+                col.size = spec.size;
+                var visual = F.WorldSprite("Visual", go.transform, spec.sprite, Color.white, isBase ? CastleBaseOrder : CastleWallOrder, Vector3.zero);
+                if (frontMat != null) visual.sharedMaterial = frontMat;
+                if (spec.sprite != null)
+                {
+                    var b = spec.sprite.bounds.size;
+                    visual.transform.localScale = new Vector3(spec.size.x / Mathf.Max(0.001f, b.x), spec.size.y / Mathf.Max(0.001f, b.y), 1f);
+                }
+                if (!isBase)
+                {
+                    var back = F.WorldSprite(spec.sectionId + "_Back", backRoot.transform, spec.sprite, Color.white, CastleBackOrder, new Vector3(spec.localPosition.x, spec.localPosition.y, 0f));
+                    back.transform.localScale = visual.transform.localScale;
+                    if (backMat != null) back.sharedMaterial = backMat;
+                }
+                F.Set(section, "sectionId", spec.sectionId);
+                F.Set(section, "type", (float)(int)spec.type);
+                F.Set(section, "guardianSlotIndex", (float)spec.guardianSlotIndex);
+                F.SetArray(section, "renderers", new Object[] { visual });
+                F.SetArray(section, "damageStateSprites", new Object[0]);
+                F.Set(section, "sectionCollider", col);
+                var sso = new SerializedObject(section);
+                sso.FindProperty("keepVisualsOnDestroy").boolValue = true;
+                sso.ApplyModifiedPropertiesWithoutUndo();
+                sections.Add(section);
+            }
+
+            var slotsRoot = F.Child("GuardianSlots_01_08", root.transform);
+            var slots = new Object[8];
+            var guardians = new Object[8];
+            for (int i = 0; i < 8; i++)
+            {
+                Vector2 pos = def.guardianSlotPositions[i];
+                var slot = F.Child($"Slot_{i + 1:00}", slotsRoot.transform, new Vector3(pos.x, pos.y, 0f));
+                slots[i] = slot.transform;
+                guardians[i] = BuildGuardianView($"Guardian_{i + 1:00}", slot.transform);
+            }
+            var mountsRoot = F.Child("ToolMounts_01_03", root.transform);
+            var mounts = new Object[3];
+            for (int i = 0; i < 3; i++)
+            {
+                Vector2 pos = def.toolMountPositions[i];
+                var m = F.Child($"Mount_{i + 1:00}", mountsRoot.transform, new Vector3(pos.x, pos.y, 0f));
+                var ms = F.WorldSprite("Marker", m.transform, F.Sprite(ArtPaths.TreePart("platform")), new Color(0.45f, 0.35f, 0.25f), 14, Vector3.zero);
+                ms.transform.localScale = new Vector3(0.4f, 0.4f, 1f);
+                mounts[i] = m.transform;
+            }
+
+            var barRoot = F.Child("TreeHealthWorldBar", root.transform, new Vector3(0f, 7.6f, 0f));
+            var barBack = F.WorldSprite("Back", barRoot.transform, F.Ui("white"), BarBack, 40, Vector3.zero);
+            barBack.transform.localScale = new Vector3(90f, 8f, 1f);
+            var fillPivot = F.Child("FillPivot", barRoot.transform, new Vector3(-1.72f, 0f, 0f));
+            var barFill = F.WorldSprite("Fill", fillPivot.transform, F.Ui("white"), F.Green, 41, new Vector3(1.72f, 0f, 0f));
+            barFill.transform.localScale = new Vector3(86f, 5.5f, 1f);
+            var heartIcon = F.WorldSprite("Icon", barRoot.transform, F.Icon("heart"), F.Red, 42, new Vector3(-2.15f, 0f, 0f));
+            heartIcon.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
+
+            F.SetArray(tree, "sections", sections.ToArray());
+            F.SetArray(tree, "guardianSlots", slots);
+            F.SetArray(tree, "toolMounts", mounts);
+            F.Set(tree, "healthBarFill", fillPivot.transform);
+            F.Set(tree, "healthBarFillRenderer", barFill);
+            SetGradient(tree, "healthGradient");
+            F.SetArray(roster, "slots", guardians);
+            F.SetArray(tools, "mounts", mounts);
+            return tree;
+        }
+
         static TreeController BuildTree(string name, Transform parent, TreeDefinition def, BattleSide side, Vector3 position, bool mirrored, out GuardianRoster roster, out ToolController tools)
         {
+            if (def != null && def.destructibleCastle) return BuildCastle(name, parent, def, side, position, mirrored, out roster, out tools);
             var root = F.Child(name, parent, position);
             if (mirrored) root.transform.localScale = new Vector3(-1f, 1f, 1f);
             var tree = root.AddComponent<TreeController>();
@@ -608,7 +729,18 @@ namespace TreeGuardians.Editor.SceneBuild
             var tButtons = new Object[3];
             for (int i = 0; i < 3; i++) tButtons[i] = ToolActionButton("ToolButton_" + i, toolBar);
             var hint = F.OutlinedText("HintText", safe, null, 26f, F.Honey, TextAlignmentOptions.Center, "");
-            F.Anchor((RectTransform)hint.transform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(1200f, 40f), new Vector2(0.5f, 0f));
+            F.Anchor((RectTransform)hint.transform, new Vector2(0.5f, 0f), new Vector2(0f, 262f), new Vector2(1200f, 40f), new Vector2(0.5f, 0f));
+
+            // Turn banner + countdown (castle duel)
+            var turnPill = F.Image("TurnPill", safe, F.Ui("pill"), F.PanelDark, true, false);
+            F.Anchor((RectTransform)turnPill.transform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(520f, 64f), new Vector2(0.5f, 0f));
+            var turnText = F.OutlinedText("Text", turnPill.transform, null, 30f, F.TextLight, TextAlignmentOptions.Center, "");
+            F.Stretch((RectTransform)turnText.transform, 16f, 14f, 16f, 4f);
+            var turnFillBack = F.Image("TimerBack", turnPill.transform, F.Ui("bar_back"), F.PanelMid, true, false);
+            F.Anchor((RectTransform)turnFillBack.transform, new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(460f, 12f), new Vector2(0.5f, 0f));
+            var turnFill = F.Image("Fill", turnFillBack.transform, F.Ui("bar_fill"), F.Green, true, false);
+            F.Stretch((RectTransform)turnFill.transform, 2f, 2f, 2f, 2f);
+            turnFill.type = Image.Type.Filled; turnFill.fillMethod = Image.FillMethod.Horizontal;
 
             // Battle message
             var msg = F.Rect("BattleMessage", safe);
@@ -660,6 +792,7 @@ namespace TreeGuardians.Editor.SceneBuild
             F.Set(hud, "playerNameText", pName); F.Set(hud, "enemyNameText", eName); F.Set(hud, "playerCoreFill", pFill); F.Set(hud, "enemyCoreFill", eFill);
             F.Set(hud, "timerText", timer); F.Set(hud, "arenaText", arena); F.Set(hud, "offlineBadge", offline.gameObject);
             F.SetArray(hud, "guardianButtons", gButtons); F.SetArray(hud, "toolButtons", tButtons); F.Set(hud, "hintText", hint);
+            F.Set(hud, "turnGroup", turnPill.gameObject); F.Set(hud, "turnText", turnText); F.Set(hud, "turnTimerFill", turnFill);
             F.Set(hud, "messageGroup", msgGroup); F.Set(hud, "messageText", msgText);
             F.Set(hud, "pauseButton", pause); F.Set(hud, "pausePopup", pausePanel); F.Set(hud, "resumeButton", resume); F.Set(hud, "forfeitButton", forfeit); F.Set(hud, "transition", transition);
             return hud;
