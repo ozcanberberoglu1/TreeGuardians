@@ -158,7 +158,7 @@ namespace TreeGuardians.Battle
                         {
                             var def = progress.Database.GetGuardian(result.unlockedGuardianIds[0]);
                             if (unlockText != null) unlockText.text = LocalizationService.Tr("results_unlocked") + " " + (def != null ? LocalizationService.Tr(def.nameKey) : "");
-                            if (unlockIcon != null && def != null) unlockIcon.sprite = def.portrait;
+                            if (unlockIcon != null && def != null) { unlockIcon.sprite = def.portrait; unlockIcon.preserveAspect = true; }
                         }
                         else if (result.unlockedToolIds.Count > 0)
                         {

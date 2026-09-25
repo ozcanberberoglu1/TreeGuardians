@@ -96,7 +96,7 @@ namespace TreeGuardians.UI.Menu
             int next = Mathf.Min(balance.guardianMaxLevel, level + 1);
             bool atMax = level >= balance.guardianMaxLevel;
 
-            if (portrait != null) portrait.sprite = def.portrait;
+            if (portrait != null) { portrait.sprite = def.portrait; portrait.preserveAspect = true; }
             if (frame != null) frame.color = palette != null ? palette.GetColor(def.rarity) : Color.white;
             if (cornerIcon != null) cornerIcon.sprite = palette != null ? palette.GetIcon(def.rarity) : null;
             if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);

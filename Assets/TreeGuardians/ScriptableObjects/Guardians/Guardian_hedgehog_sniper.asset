@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_hedgehog_sniper_name
   descriptionKey: g_hedgehog_sniper_desc
   rarity: 3
-  portrait: {fileID: 21300000, guid: 5b39ebb3ca0274b6f9a1e111708fe7a4, type: 3}
-  cardArt: {fileID: 21300000, guid: 5b39ebb3ca0274b6f9a1e111708fe7a4, type: 3}
+  portrait: {fileID: 21300000, guid: b6155dfe278864ede953d4f6787d16c3, type: 3}
+  cardArt: {fileID: 21300000, guid: b6155dfe278864ede953d4f6787d16c3, type: 3}
   worldSprite: {fileID: 21300000, guid: b63c541256de94ec8ad63c36ade6b058, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 4120492600655557999, guid: 01016bb00d1fc4cb39dc45754010fb16, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 540
   baseAttack: 30
   baseStructureDamage: 45

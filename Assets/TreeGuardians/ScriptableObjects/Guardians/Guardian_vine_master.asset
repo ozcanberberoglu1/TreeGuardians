@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_vine_master_name
   descriptionKey: g_vine_master_desc
   rarity: 1
-  portrait: {fileID: 21300000, guid: ab593f5f581794cec9e8151817416d8e, type: 3}
-  cardArt: {fileID: 21300000, guid: ab593f5f581794cec9e8151817416d8e, type: 3}
+  portrait: {fileID: 21300000, guid: bf34a39e56c7441639bf1699d07a0e5e, type: 3}
+  cardArt: {fileID: 21300000, guid: bf34a39e56c7441639bf1699d07a0e5e, type: 3}
   worldSprite: {fileID: 21300000, guid: a5e63a23aaf3e4d42be76fb68a77f128, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 7443759373407056670, guid: d0a875da4b8c94138b4e59753555d254, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 570
   baseAttack: 36
   baseStructureDamage: 80

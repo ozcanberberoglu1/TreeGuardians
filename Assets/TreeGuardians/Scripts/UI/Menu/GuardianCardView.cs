@@ -65,7 +65,7 @@ namespace TreeGuardians.UI.Menu
             var state = progress.GetGuardianState(def.id);
             bool unlocked = state.unlocked;
             if (emptyState != null) emptyState.SetActive(false);
-            if (portrait != null) { portrait.enabled = true; portrait.sprite = def.portrait; portrait.color = unlocked ? Color.white : new Color(0.45f, 0.45f, 0.5f); }
+            if (portrait != null) { portrait.enabled = true; portrait.sprite = def.portrait; portrait.preserveAspect = true; portrait.color = unlocked ? Color.white : new Color(0.45f, 0.45f, 0.5f); }
             if (frame != null) frame.color = palette != null ? palette.GetColor(def.rarity) : Color.white;
             if (cornerIcon != null) { cornerIcon.enabled = true; cornerIcon.sprite = palette != null ? palette.GetIcon(def.rarity) : null; cornerIcon.color = Color.white; }
             if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);

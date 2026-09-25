@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_owl_scout_name
   descriptionKey: g_owl_scout_desc
   rarity: 2
-  portrait: {fileID: 21300000, guid: bc94b4c9e6e23449fbcd313cf39441ca, type: 3}
-  cardArt: {fileID: 21300000, guid: bc94b4c9e6e23449fbcd313cf39441ca, type: 3}
+  portrait: {fileID: 21300000, guid: bfc30343bd80f460fab2c90284611d61, type: 3}
+  cardArt: {fileID: 21300000, guid: bfc30343bd80f460fab2c90284611d61, type: 3}
   worldSprite: {fileID: 21300000, guid: 49e535fcd301d4cc69f8077c6a0a2095, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 5580345401237166751, guid: 75cb8c2649eb741de86385257aa70e32, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 420
   baseAttack: 46
   baseStructureDamage: 40

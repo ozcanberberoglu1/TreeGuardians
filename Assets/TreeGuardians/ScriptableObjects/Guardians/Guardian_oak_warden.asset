@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_oak_warden_name
   descriptionKey: g_oak_warden_desc
   rarity: 2
-  portrait: {fileID: 21300000, guid: cce0425d7b66e47d5a21ba611006ca70, type: 3}
-  cardArt: {fileID: 21300000, guid: cce0425d7b66e47d5a21ba611006ca70, type: 3}
+  portrait: {fileID: 21300000, guid: cae01ae139d044ca79f313491698e4fb, type: 3}
+  cardArt: {fileID: 21300000, guid: cae01ae139d044ca79f313491698e4fb, type: 3}
   worldSprite: {fileID: 21300000, guid: a1469fc887f564baa8c340e0b5e0a3d3, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 5733903081466696735, guid: 8218d55c8403745d6b05eea35ecdca6e, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 1050
   baseAttack: 30
   baseStructureDamage: 60

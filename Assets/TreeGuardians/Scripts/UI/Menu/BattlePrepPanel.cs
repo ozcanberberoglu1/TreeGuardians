@@ -63,14 +63,14 @@ namespace TreeGuardians.UI.Menu
             {
                 if (playerPortraits[i] == null) continue;
                 var def = progress.Database.GetGuardian(progress.GetEquippedGuardianId(i));
-                playerPortraits[i].sprite = def != null ? def.portrait : null;
+                playerPortraits[i].sprite = def != null ? def.portrait : null; playerPortraits[i].preserveAspect = true;
                 playerPortraits[i].color = def != null ? Color.white : emptyPortrait;
             }
             for (int i = 0; i < enemyPortraits.Length; i++)
             {
                 if (enemyPortraits[i] == null) continue;
                 var def = arena != null && i < arena.botGuardianIds.Length ? progress.Database.GetGuardian(arena.botGuardianIds[i]) : null;
-                enemyPortraits[i].sprite = def != null ? def.portrait : null;
+                enemyPortraits[i].sprite = def != null ? def.portrait : null; enemyPortraits[i].preserveAspect = true;
                 enemyPortraits[i].color = def != null ? Color.white : emptyPortrait;
             }
             Highlight(easyButton, difficulty == BotDifficulty.Easy);

@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_spore_alchemist_name
   descriptionKey: g_spore_alchemist_desc
   rarity: 2
-  portrait: {fileID: 21300000, guid: e79733fb0869e4282b45afe7e00ade79, type: 3}
-  cardArt: {fileID: 21300000, guid: e79733fb0869e4282b45afe7e00ade79, type: 3}
+  portrait: {fileID: 21300000, guid: f508015b3453a4711bb356a6efc7f5e7, type: 3}
+  cardArt: {fileID: 21300000, guid: f508015b3453a4711bb356a6efc7f5e7, type: 3}
   worldSprite: {fileID: 21300000, guid: a897c81d8ff2e42f8b2d93aa1b558235, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 941432273883597491, guid: b22f489fdc6ba48889c8e52b9f5c452d, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 450
   baseAttack: 28
   baseStructureDamage: 40

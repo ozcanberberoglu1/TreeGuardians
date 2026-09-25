@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_firefly_mage_name
   descriptionKey: g_firefly_mage_desc
   rarity: 2
-  portrait: {fileID: 21300000, guid: dcec479fabb4349e49b378139b3163fe, type: 3}
-  cardArt: {fileID: 21300000, guid: dcec479fabb4349e49b378139b3163fe, type: 3}
+  portrait: {fileID: 21300000, guid: 3f043f16c7ee640d4a152aac44d593be, type: 3}
+  cardArt: {fileID: 21300000, guid: 3f043f16c7ee640d4a152aac44d593be, type: 3}
   worldSprite: {fileID: 21300000, guid: 146dd4e111307472ebccc492f998bd42, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 7160373922666104682, guid: 77b25826090e34e04a09977036bbab05, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 390
   baseAttack: 40
   baseStructureDamage: 30

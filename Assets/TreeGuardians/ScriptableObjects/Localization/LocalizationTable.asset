@@ -363,77 +363,77 @@ MonoBehaviour:
     en: Legendary
     tr: Efsanevi
   - key: g_thorn_archer_name
-    en: Thorn Archer
-    tr: "Diken Ok\xE7u"
+    en: Chicken
+    tr: Tavuk
   - key: g_thorn_archer_desc
     en: Balanced ranger with straight thorn shots and a rapid volley.
     tr: "D\xFCz diken at\u0131\u015Flar\u0131 ve h\u0131zl\u0131 yayl\u0131m ate\u015Fiyle
       dengeli bir korucu."
   - key: g_cone_bomber_name
-    en: Cone Bomber
-    tr: "Kozalak Bombac\u0131"
+    en: Rooster
+    tr: Horoz
   - key: g_cone_bomber_desc
     en: Lobs heavy cones that splash on impact.
     tr: "\xC7arp\u0131nca alan hasar\u0131 veren a\u011F\u0131r kozalaklar f\u0131rlat\u0131r."
   - key: g_bark_knight_name
-    en: Bark Knight
-    tr: "Kabuk \u015E\xF6valyesi"
+    en: Turtle
+    tr: "Kaplumba\u011Fa"
   - key: g_bark_knight_desc
     en: Short range, brutal against structures. Shields itself.
     tr: "K\u0131sa menzil, yap\u0131lara kar\u015F\u0131 ac\u0131mas\u0131z. Kendine
       kalkan a\xE7ar."
   - key: g_dew_fairy_name
-    en: Dew Fairy
-    tr: "\xC7iy Perisi"
+    en: Duck
+    tr: "\xD6rdek"
   - key: g_dew_fairy_desc
     en: Heals allies and fires gently homing dew drops.
     tr: "M\xFCttefikleri iyile\u015Ftirir ve hafif y\xF6nlenen \xE7iy damlalar\u0131
       atar."
   - key: g_vine_master_name
-    en: Vine Master
-    tr: "Sarma\u015F\u0131k Ustas\u0131"
+    en: Monkey
+    tr: Maymun
   - key: g_vine_master_desc
     en: Piercing spears that root enemies and split bark.
     tr: "D\xFC\u015Fman\u0131 k\xF6kleyen ve kabu\u011Fu yaran delici m\u0131zraklar."
   - key: g_spore_alchemist_name
-    en: Spore Alchemist
-    tr: "Mantar Simyac\u0131"
+    en: Parrot
+    tr: "Papa\u011Fan"
   - key: g_spore_alchemist_desc
     en: Leaves poison clouds that linger.
     tr: "Kal\u0131c\u0131 zehir bulutlar\u0131 b\u0131rak\u0131r."
   - key: g_owl_scout_name
-    en: Owl Scout
-    tr: "Bayku\u015F G\xF6zc\xFC"
+    en: Owl
+    tr: "Bayku\u015F"
   - key: g_owl_scout_desc
     en: Fires from above with a high critical chance.
     tr: "Y\xFCksekten ate\u015F eder; kritik \u015Fans\u0131 y\xFCksektir."
   - key: g_oak_warden_name
-    en: Oak Warden
-    tr: "Me\u015Fe Muhaf\u0131z\u0131"
+    en: Bear
+    tr: "Ay\u0131"
   - key: g_oak_warden_desc
     en: A living wall that armors nearby allies.
     tr: "Yak\u0131ndaki m\xFCttefiklere z\u0131rh veren ya\u015Fayan bir duvar."
   - key: g_firefly_mage_name
-    en: Firefly Mage
-    tr: "Ate\u015Fb\xF6ce\u011Fi B\xFCy\xFCc\xFCs\xFC"
+    en: Cat
+    tr: Kedi
   - key: g_firefly_mage_desc
     en: Chains energy between targets.
     tr: "Enerjiyi hedefler aras\u0131nda zincirler."
   - key: g_beaver_engineer_name
-    en: Beaver Engineer
-    tr: "Kunduz M\xFChendis"
+    en: Penguin
+    tr: Penguen
   - key: g_beaver_engineer_desc
     en: Shortens tool cooldowns for the whole tree.
     tr: "T\xFCm a\u011Fac\u0131n ara\xE7 bekleme s\xFCrelerini k\u0131salt\u0131r."
   - key: g_hedgehog_sniper_name
-    en: Hedgehog Sniper
-    tr: "Kirpi Ni\u015Fanc\u0131"
+    en: Eagle
+    tr: Kartal
   - key: g_hedgehog_sniper_desc
     en: Unleashes a salvo of quills.
     tr: "Bir diken salvosu f\u0131rlat\u0131r."
   - key: g_ancient_sprout_name
-    en: Ancient Sprout
-    tr: Kadim Filiz
+    en: Wild Boar
+    tr: Yaban Domuzu
   - key: g_ancient_sprout_desc
     en: Blesses the team and returns once from defeat.
     tr: "Tak\u0131m\u0131 kutsar ve bir kez yeniden do\u011Far."

@@ -5,7 +5,9 @@
         "Unity.TextMeshPro",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.Runtime",
-        "Unity.RenderPipelines.Core.Runtime"
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.2D.Animation.Runtime",
+        "Unity.2D.Common.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

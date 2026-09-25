@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_ancient_sprout_name
   descriptionKey: g_ancient_sprout_desc
   rarity: 3
-  portrait: {fileID: 21300000, guid: 9583fd4b3d67f4ad6b5b1363719e97c0, type: 3}
-  cardArt: {fileID: 21300000, guid: 9583fd4b3d67f4ad6b5b1363719e97c0, type: 3}
+  portrait: {fileID: 21300000, guid: 1216010b1d51d4cdb89ad51c610dc2b1, type: 3}
+  cardArt: {fileID: 21300000, guid: 1216010b1d51d4cdb89ad51c610dc2b1, type: 3}
   worldSprite: {fileID: 21300000, guid: c4e068429efe54bb4ac6cfc238765171, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 3238781448300668783, guid: 5fd2f36120cb7cd409fb2e4c0f16999e, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 750
   baseAttack: 38
   baseStructureDamage: 55

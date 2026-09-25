@@ -29,7 +29,7 @@ namespace TreeGuardians.Battle
             bool active = g != null && g.IsActive;
             gameObject.SetActive(active);
             if (!active) return;
-            if (portrait != null) portrait.sprite = g.Definition.portrait;
+            if (portrait != null) { portrait.sprite = g.Definition.portrait; portrait.preserveAspect = true; }
             Refresh(g, false, false);
         }
 

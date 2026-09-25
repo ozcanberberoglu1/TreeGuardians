@@ -31,7 +31,7 @@ namespace TreeGuardians.UI.Popups
         {
             onDone = done;
             if (titleText != null) titleText.text = LocalizationService.Tr("popup_unlock_title");
-            if (portrait != null) portrait.sprite = def.portrait;
+            if (portrait != null) { portrait.sprite = def.portrait; portrait.preserveAspect = true; }
             if (frame != null && palette != null) frame.color = palette.GetColor(def.rarity);
             if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);
             if (rarityText != null) rarityText.text = palette != null ? LocalizationService.Tr(palette.GetNameKey(def.rarity)) : def.rarity.ToString();

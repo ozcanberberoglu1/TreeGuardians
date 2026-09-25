@@ -175,6 +175,7 @@ namespace TreeGuardians.Editor
             var g = GetOrCreate<GuardianDefinition>($"{SO}/Guardians/Guardian_{id}.asset");
             g.id = id; g.nameKey = "g_" + id + "_name"; g.descriptionKey = "g_" + id + "_desc"; g.rarity = rarity;
             g.portrait = S(ArtPaths.Portrait(id)); g.cardArt = g.portrait; g.worldSprite = S(ArtPaths.WorldSprite(id)); g.worldPrefab = null;
+            TreeGuardians.Editor.Animals.AnimalGuardianSetup.ApplyVisuals(g); // rigged animal prefab + card art when available
             g.baseHealth = hp * 1.5f; g.baseAttack = atk; g.baseStructureDamage = str; g.baseArmor = armor; g.critChance = crit; g.critMultiplier = 1.5f;
             g.normalProjectile = projectiles.TryGetValue(normalProj, out var np) ? np : null;
             g.attackCooldown = cd; g.range = range; g.preferredTarget = pref; g.isFlying = flying; g.autoAttack = true; g.playerAimable = true;
@@ -506,7 +507,7 @@ namespace TreeGuardians.Editor
             return lib;
         }
 
-        static LocalizationTable BuildLocalization()
+        public static LocalizationTable BuildLocalization()
         {
             var t = GetOrCreate<LocalizationTable>(LocalizationPath);
             var existing = new Dictionary<string, LocalizationEntry>();

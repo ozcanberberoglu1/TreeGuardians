@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_bark_knight_name
   descriptionKey: g_bark_knight_desc
   rarity: 1
-  portrait: {fileID: 21300000, guid: 815433032fb8f4ffb94ce66000d51498, type: 3}
-  cardArt: {fileID: 21300000, guid: 815433032fb8f4ffb94ce66000d51498, type: 3}
+  portrait: {fileID: 21300000, guid: 49820c2794116461a8faaae94838dedc, type: 3}
+  cardArt: {fileID: 21300000, guid: 49820c2794116461a8faaae94838dedc, type: 3}
   worldSprite: {fileID: 21300000, guid: 3ae6de9a6fe044ab3bafe69aea1e443b, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 8732954008420631437, guid: 791976077ad8244a3a9cae480efdfa6a, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 780
   baseAttack: 30
   baseStructureDamage: 95

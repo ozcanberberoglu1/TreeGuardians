@@ -51,9 +51,7 @@ namespace TreeGuardians.UI.Menu
                     foreach (var r in prefabInstance.GetComponentsInChildren<Renderer>(true)) r.sortingOrder += sortingOrder;
                 }
                 prefabInstance.SetActive(true);
-                prefabInstance.transform.localPosition = Vector3.zero;
-                prefabInstance.transform.localRotation = Quaternion.identity;
-                prefabInstance.transform.localScale = new Vector3(prefabBaseScale.x * (faceLeft ? -scale : scale), prefabBaseScale.y * scale, prefabBaseScale.z);
+                TreeGuardians.Guardians.AnimalVisual.FitToAnchor(prefabInstance, prefabBaseScale, scale, faceLeft);
                 return;
             }
             if (prefabInstance != null) prefabInstance.SetActive(false);

@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_dew_fairy_name
   descriptionKey: g_dew_fairy_desc
   rarity: 1
-  portrait: {fileID: 21300000, guid: f535bb9b029404bf88a49cf51be13f86, type: 3}
-  cardArt: {fileID: 21300000, guid: f535bb9b029404bf88a49cf51be13f86, type: 3}
+  portrait: {fileID: 21300000, guid: b5ae8ed9997a64cf598b3ea9fcdda4db, type: 3}
+  cardArt: {fileID: 21300000, guid: b5ae8ed9997a64cf598b3ea9fcdda4db, type: 3}
   worldSprite: {fileID: 21300000, guid: c7bddf73c689f4ecb81878bf0782bc29, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 7928997759578155402, guid: 4d5f9e4d1ab2ba844aeb861e2977451c, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 390
   baseAttack: 22
   baseStructureDamage: 25

@@ -46,6 +46,7 @@ namespace TreeGuardians.Data
         [Tooltip("GuardianView içeren prefab; boşsa varsayılan görünüm kullanılır.")] public GameObject worldPrefab;
         public Color tintColor = Color.white;
         [Tooltip("Ana menü ağacındaki görsel ölçek çarpanı (GuardianSpawnPoint.visualScale ile çarpılır).")] public float menuVisualScale = 1f;
+        [Tooltip("Savaşta worldPrefab ölçeği (prefab'ın kendi ölçeğiyle çarpılır).")] public float battleVisualScale = 0.55f;
 
         [Header("Base Stats (Level 1)")]
         public float baseHealth = 300f;

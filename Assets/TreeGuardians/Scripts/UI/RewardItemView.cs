@@ -16,7 +16,7 @@ namespace TreeGuardians.UI
 
         public void Bind(in RewardItem item)
         {
-            if (icon != null) { icon.sprite = item.icon; icon.color = item.tint; icon.enabled = item.icon != null; }
+            if (icon != null) { icon.sprite = item.icon; icon.color = item.tint; icon.enabled = item.icon != null; icon.preserveAspect = true; }
             if (label != null) label.text = item.label;
             if (sub != null) sub.text = item.sub;
             if (newBadge != null) newBadge.SetActive(item.isNew);

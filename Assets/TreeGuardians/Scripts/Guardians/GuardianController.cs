@@ -72,6 +72,9 @@ namespace TreeGuardians.Guardians
         float fillBaseScaleX = 1f;
         float energyBaseScaleX = 1f;
         GameObject customVisual;
+        Animator customAnimator;
+        SpriteRenderer[] customRenderers;
+        static readonly Color HurtFlash = new Color(1f, 0.55f, 0.55f, 1f);
 
         public void Setup(GuardianDefinition def, int level, BattleSide side, int slot, BattleContext context, GuardianRoster owner)
         {
@@ -104,7 +107,7 @@ namespace TreeGuardians.Guardians
             for (int i = 0; i < statuses.Length; i++) statuses[i] = default;
             bobPhase = ctx.NextFloat() * 6.28f;
 
-            if (customVisual != null) { Destroy(customVisual); customVisual = null; }
+            if (customVisual != null) { Destroy(customVisual); customVisual = null; customAnimator = null; customRenderers = null; }
             if (sprite != null)
             {
                 sprite.enabled = def.worldPrefab == null;
@@ -115,7 +118,10 @@ namespace TreeGuardians.Guardians
             if (def.worldPrefab != null && visualRoot != null)
             {
                 customVisual = Instantiate(def.worldPrefab, visualRoot);
-                customVisual.transform.localPosition = Vector3.zero;
+                customVisual.name = "AnimalVisual";
+                AnimalVisual.FitToAnchor(customVisual, def.worldPrefab.transform.localScale, Mathf.Max(0.01f, def.battleVisualScale), false);
+                customAnimator = customVisual.GetComponentInChildren<Animator>(true);
+                customRenderers = customVisual.GetComponentsInChildren<SpriteRenderer>(true);
                 foreach (var r in customVisual.GetComponentsInChildren<Renderer>(true)) r.sortingOrder += sprite != null ? sprite.sortingOrder : 8;
             }
             CacheSortingOrders();
@@ -196,7 +202,7 @@ namespace TreeGuardians.Guardians
             if (Time.time > buffArmorUntil) BuffArmorBonus = 0f;
             if (Time.time > buffAttackUntil) BuffAttackMultiplier = 1f;
 
-            if (flashUntil > 0f && Time.time >= flashUntil) { flashUntil = 0f; if (sprite != null) sprite.color = baseColor; }
+            if (flashUntil > 0f && Time.time >= flashUntil) { flashUntil = 0f; if (sprite != null) sprite.color = baseColor; TintCustom(Color.white); }
             if (visualRoot != null && !QualityApplier.ReduceMotion)
             {
                 float bob = IsStunned ? 0f : Mathf.Sin(Time.time * 2.2f + bobPhase) * 0.035f;
@@ -254,6 +260,7 @@ namespace TreeGuardians.Guardians
             float mult = (crit ? CritMultiplier : 1f) * BuffAttackMultiplier * (auto ? ctx.balance.autoAttackDamageMultiplier : 1f);
             var p = ctx.projectiles.Fire(proj, MuzzlePosition, velocity, Side, this, special, false, mult, homing);
             if (p != null) p.IsCrit = crit;
+            AnimalVisual.PlayAttack(customAnimator);
             Cooldown = CooldownDuration * (auto ? ctx.balance.autoAttackCooldownMultiplier : 1f);
             Services.Get<AudioService>()?.PlaySfx(Definition.attackSfx);
             return true;
@@ -322,6 +329,7 @@ namespace TreeGuardians.Guardians
                     break;
             }
             if (!fired) return false;
+            AnimalVisual.PlayAttack(customAnimator);
             SpecialEnergy = 0f;
             Services.Get<AudioService>()?.PlaySfx(Definition.attackSfx);
             OnStateChanged?.Invoke(this);
@@ -402,6 +410,13 @@ namespace TreeGuardians.Guardians
         {
             flashUntil = Time.time + 0.08f;
             if (sprite != null) sprite.color = Color.white;
+            TintCustom(HurtFlash);
+        }
+
+        void TintCustom(Color c)
+        {
+            if (customRenderers == null) return;
+            for (int i = 0; i < customRenderers.Length; i++) if (customRenderers[i] != null) customRenderers[i].color = c;
         }
 
         void Die()

@@ -16,11 +16,13 @@ MonoBehaviour:
   nameKey: g_beaver_engineer_name
   descriptionKey: g_beaver_engineer_desc
   rarity: 1
-  portrait: {fileID: 21300000, guid: 9fd60e89fa3474f0480d094313fa8f3b, type: 3}
-  cardArt: {fileID: 21300000, guid: 9fd60e89fa3474f0480d094313fa8f3b, type: 3}
+  portrait: {fileID: 21300000, guid: 6234dfb71c7734f70ad75c605ef47909, type: 3}
+  cardArt: {fileID: 21300000, guid: 6234dfb71c7734f70ad75c605ef47909, type: 3}
   worldSprite: {fileID: 21300000, guid: 9907990553f044f9f92cd2c76ecc2908, type: 3}
-  worldPrefab: {fileID: 0}
+  worldPrefab: {fileID: 2677194130252504042, guid: 66bcdea4a1827440486c0de9b0eee930, type: 3}
   tintColor: {r: 1, g: 1, b: 1, a: 1}
+  menuVisualScale: 1
+  battleVisualScale: 0.55
   baseHealth: 630
   baseAttack: 32
   baseStructureDamage: 85
