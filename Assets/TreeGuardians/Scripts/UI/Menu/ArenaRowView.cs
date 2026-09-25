@@ -17,7 +17,7 @@ namespace TreeGuardians.UI.Menu
         {
             if (badge != null) badge.sprite = sprite;
             if (nameText != null) nameText.text = LocalizationService.Tr(nameKey);
-            if (trophiesText != null) trophiesText.text = unlock.ToString();
+            if (trophiesText != null) trophiesText.text = LocalizationService.Number(unlock);
             if (currentMarker != null) currentMarker.SetActive(current);
             if (lockedOverlay != null) lockedOverlay.SetActive(locked);
             gameObject.SetActive(true);

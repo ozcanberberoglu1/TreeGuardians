@@ -46,6 +46,12 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] TMP_Text equipLabel;
         [SerializeField] Button closeButton;
         [SerializeField] RectTransform punchTarget;
+        [Tooltip("Açıksa arka planı popup karartıcısıyla karartır. Yalnızca panel PopupLayer altına taşındıysa açın (Panels altındayken karartıcı panelin üstünde kalır).")]
+        [SerializeField] bool dimBackground;
+        [Tooltip("Çıkarma sesinin perde çarpanı: aynı Equip sesi bu çarpanla çalar (1'in altı = daha pes).")]
+        [SerializeField] float unequipPitch = 0.85f;
+
+        bool dimRetained;
 
         string guardianId;
         int slotIndex = -1;
@@ -74,6 +80,18 @@ namespace TreeGuardians.UI.Menu
         void OnCurrency(CurrencyChangedEvent e) { if (IsOpen) Refresh(); }
         void OnLanguage(LanguageChangedEvent e) { if (IsOpen) Refresh(); }
 
+        protected override void OnOpen()
+        {
+            // Opened on top of the Guardians panel (outside MenuUIController.current): always draw above the other panels.
+            transform.SetAsLastSibling();
+            if (dimBackground && !dimRetained && PopupDimmer.Instance != null) { PopupDimmer.Instance.Retain(); dimRetained = true; }
+        }
+
+        protected override void OnClose()
+        {
+            if (dimRetained) { PopupDimmer.Instance?.Release(); dimRetained = false; }
+        }
+
         public void Show(string id, int equippedSlot)
         {
             guardianId = id;
@@ -100,17 +118,22 @@ namespace TreeGuardians.UI.Menu
             if (frame != null) frame.color = palette != null ? palette.GetColor(def.rarity) : Color.white;
             if (cornerIcon != null) cornerIcon.sprite = palette != null ? palette.GetIcon(def.rarity) : null;
             if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);
-            if (rarityText != null) rarityText.text = palette != null ? LocalizationService.Tr(palette.GetNameKey(def.rarity)) : def.rarity.ToString();
+            if (rarityText != null)
+            {
+                rarityText.text = palette != null ? LocalizationService.Tr(palette.GetNameKey(def.rarity)) : def.rarity.ToString();
+                if (palette != null) rarityText.color = palette.GetColor(def.rarity);
+            }
             if (levelText != null) levelText.text = unlocked ? string.Format(LocalizationService.Tr("menu_level"), level) : LocalizationService.Tr("guardian_locked_label");
             if (descriptionText != null) descriptionText.text = LocalizationService.Tr(def.descriptionKey);
-            if (powerText != null) powerText.text = LocalizationService.Tr("guardian_power") + ": " + def.GetPower(level, balance);
+            if (powerText != null) powerText.text = LocalizationService.Tr("guardian_power") + ": " + LocalizationService.Number(def.GetPower(level, balance));
 
             SetStat(healthText, "guardian_health", def.GetHealth(level, balance), def.GetHealth(next, balance), atMax || !unlocked);
             SetStat(attackText, "guardian_attack", def.GetAttack(level, balance), def.GetAttack(next, balance), atMax || !unlocked);
             SetStat(structureText, "guardian_structure", def.GetStructureDamage(level, balance), def.GetStructureDamage(next, balance), atMax || !unlocked);
             SetStat(armorText, "guardian_armor", def.GetArmor(level), def.GetArmor(next), atMax || !unlocked);
-            if (critText != null) critText.text = $"{LocalizationService.Tr("guardian_crit")}: {Mathf.RoundToInt(def.critChance * 100f)}%";
-            if (cooldownText != null) cooldownText.text = $"{LocalizationService.Tr("guardian_cooldown")}: {def.attackCooldown:0.0}s   {LocalizationService.Tr("guardian_range")}: {def.range:0}";
+            if (critText != null) critText.text = LocalizationService.Tr("guardian_crit") + ": " + LocalizationService.Tr("fmt_percent", Mathf.RoundToInt(def.critChance * 100f));
+            if (cooldownText != null) cooldownText.text = LocalizationService.Tr("guardian_cooldown") + ": " + LocalizationService.Tr("fmt_seconds", def.attackCooldown)
+                + "   " + LocalizationService.Tr("guardian_range") + ": " + LocalizationService.Number(Mathf.RoundToInt(def.range));
             if (specialText != null) specialText.text = $"{LocalizationService.Tr("guardian_special")}: {LocalizationService.Tr(def.specialNameKey)}";
             if (passiveText != null) passiveText.text = $"{LocalizationService.Tr("guardian_passive")}: {PassiveDescription(def)}";
 
@@ -119,7 +142,7 @@ namespace TreeGuardians.UI.Menu
             {
                 int need = Mathf.Max(1, balance.GetUpgradeCost(def.rarity).cardsToUnlock);
                 if (cardsCostText != null) { cardsCostText.text = $"{state.shards}/{need}"; cardsCostText.color = state.shards >= need ? okColor : missingColor; }
-                if (cardsFill != null) cardsFill.fillAmount = Mathf.Clamp01(state.shards / (float)need);
+                FillBar.Set(cardsFill, Mathf.Clamp01(state.shards / (float)need));
                 if (coinsCostText != null) coinsCostText.text = "";
                 if (upgradeButton != null) upgradeButton.interactable = false;
                 if (upgradeLabel != null) upgradeLabel.text = LocalizationService.Tr("guardian_locked_label");
@@ -127,7 +150,7 @@ namespace TreeGuardians.UI.Menu
             else if (atMax)
             {
                 if (cardsCostText != null) { cardsCostText.text = LocalizationService.Tr("ui_max"); cardsCostText.color = okColor; }
-                if (cardsFill != null) cardsFill.fillAmount = 1f;
+                FillBar.Set(cardsFill, 1f);
                 if (coinsCostText != null) coinsCostText.text = "";
                 if (upgradeButton != null) upgradeButton.interactable = false;
                 if (upgradeLabel != null) upgradeLabel.text = LocalizationService.Tr("ui_max");
@@ -135,8 +158,8 @@ namespace TreeGuardians.UI.Menu
             else
             {
                 if (cardsCostText != null) { cardsCostText.text = $"{state.shards}/{cards}"; cardsCostText.color = state.shards >= cards ? okColor : missingColor; }
-                if (cardsFill != null) cardsFill.fillAmount = Mathf.Clamp01(state.shards / (float)Mathf.Max(1, cards));
-                if (coinsCostText != null) { coinsCostText.text = coins.ToString("N0"); coinsCostText.color = progress.Wallet.CanAfford(CurrencyType.Coins, coins) ? okColor : missingColor; }
+                FillBar.Set(cardsFill, Mathf.Clamp01(state.shards / (float)Mathf.Max(1, cards)));
+                if (coinsCostText != null) { coinsCostText.text = LocalizationService.Number(coins); coinsCostText.color = progress.Wallet.CanAfford(CurrencyType.Coins, coins) ? okColor : missingColor; }
                 if (upgradeButton != null) upgradeButton.interactable = canUpgrade;
                 if (upgradeLabel != null) upgradeLabel.text = LocalizationService.Tr("guardian_upgrade");
             }
@@ -149,10 +172,10 @@ namespace TreeGuardians.UI.Menu
         static void SetStat(TMP_Text t, string key, float current, float next, bool hideNext)
         {
             if (t == null) return;
-            string c = Mathf.RoundToInt(current).ToString();
+            string c = LocalizationService.Number(Mathf.RoundToInt(current));
             t.text = hideNext || Mathf.Approximately(current, next)
                 ? $"{LocalizationService.Tr(key)}: {c}"
-                : $"{LocalizationService.Tr(key)}: {c} <color=#7CE07C>→ {Mathf.RoundToInt(next)}</color>";
+                : $"{LocalizationService.Tr(key)}: {c} <color=#7CE07C>→ {LocalizationService.Number(Mathf.RoundToInt(next))}</color>";
         }
 
         static string PassiveDescription(GuardianDefinition def)
@@ -194,18 +217,18 @@ namespace TreeGuardians.UI.Menu
             if (progress == null) return;
             if (slotIndex >= 0)
             {
-                progress.UnequipGuardian(slotIndex);
+                if (progress.UnequipGuardian(slotIndex)) Services.Get<AudioService>()?.PlayUi(AudioEventId.Equip, 1f, unequipPitch);
             }
             else
             {
                 int free = progress.FirstFreeGuardianSlot();
                 if (free < 0)
                 {
-                    MenuUIController.Instance?.Toast("guardian_equipped_slots");
+                    MenuUIController.Instance?.Toast("loadout_full");
                     equipButton?.GetComponent<UIButtonFeedback>()?.ShakeInvalid();
                     return;
                 }
-                progress.EquipGuardian(guardianId, free);
+                if (progress.EquipGuardian(guardianId, free)) Services.Get<AudioService>()?.PlayUi(AudioEventId.Equip);
             }
             Refresh();
         }

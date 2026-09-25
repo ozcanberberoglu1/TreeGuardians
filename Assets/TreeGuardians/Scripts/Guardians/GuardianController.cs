@@ -19,12 +19,17 @@ namespace TreeGuardians.Guardians
         [SerializeField] Transform healthBarFill;
         [SerializeField] SpriteRenderer healthBarFillRenderer;
         [SerializeField] Transform energyBarFill;
+        [Tooltip("Can/enerji çubuğu renderer'ları: sıra modunda yalnızca nişan alırken ya da hasar sonrası kısa süre görünür.")]
+        [SerializeField] SpriteRenderer[] barRenderers = new SpriteRenderer[0];
+        [SerializeField] float barsShowAfterHit = 1.6f;
         [SerializeField] SpriteRenderer selectionRing;
         [SerializeField] SpriteRenderer shieldVisual;
         [SerializeField] SpriteRenderer statusIcon;
         [SerializeField] Collider2D bodyCollider;
         [SerializeField] SpriteRenderer platform;
         [SerializeField] Gradient healthGradient;
+        [Tooltip("Vuruşta beyaz flaş için rig renderer'larına atanan materyal (Tree Guardians/2D/Sprite Silhouette).")] [SerializeField] Material flashMaterial;
+        [SerializeField] bool showPlatform = true;
 
         public GuardianDefinition Definition { get; private set; }
         public int Level { get; private set; }
@@ -47,6 +52,8 @@ namespace TreeGuardians.Guardians
         public float ShieldHealth { get; private set; }
         public float BuffArmorBonus { get; private set; }
         public float BuffAttackMultiplier { get; private set; } = 1f;
+        /// Armor from allied auras; set exactly by GuardianRoster.RecomputeAuras (0 when the aura guardian is gone).
+        public float AuraArmorBonus { get; set; }
         public bool IsStunned => statuses[(int)StatusEffectType.Stun].remaining > 0f;
         public bool IsRooted => statuses[(int)StatusEffectType.Root].remaining > 0f;
         public bool IsSlowed => statuses[(int)StatusEffectType.Slow].remaining > 0f || externalSlow > 0f;
@@ -67,6 +74,10 @@ namespace TreeGuardians.Guardians
         float flashUntil;
         float buffArmorUntil;
         float buffAttackUntil;
+        int buffArmorTurn = int.MinValue, buffAttackTurn = int.MinValue;
+        bool TurnMode => ctx != null && ctx.turnBased && ctx.turns != null;
+        /// Last turn index that still counts for an effect cast now: through the owner's next own turn.
+        int NextOwnTurn => ctx.turns.TurnIndex + (ctx.turns.CurrentSide == Side ? 2 : 1);
         float externalSlow;
         float bobPhase;
         float fillBaseScaleX = 1f;
@@ -74,7 +85,12 @@ namespace TreeGuardians.Guardians
         GameObject customVisual;
         Animator customAnimator;
         SpriteRenderer[] customRenderers;
-        static readonly Color HurtFlash = new Color(1f, 0.55f, 0.55f, 1f);
+        MaterialPropertyBlock flashBlock;
+        float flashAmount;
+        float squashT = -1f;
+        float dyingT = -1f;
+        static readonly int SilhouetteId = Shader.PropertyToID("_Silhouette");
+        static readonly int SilhouetteColorId = Shader.PropertyToID("_SilhouetteColor");
 
         public void Setup(GuardianDefinition def, int level, BattleSide side, int slot, BattleContext context, GuardianRoster owner)
         {
@@ -103,6 +119,7 @@ namespace TreeGuardians.Guardians
             ShieldHealth = 0f;
             BuffArmorBonus = 0f;
             BuffAttackMultiplier = 1f;
+            buffArmorTurn = buffAttackTurn = int.MinValue;
             externalSlow = 0f;
             for (int i = 0; i < statuses.Length; i++) statuses[i] = default;
             bobPhase = ctx.NextFloat() * 6.28f;
@@ -122,6 +139,7 @@ namespace TreeGuardians.Guardians
                 AnimalVisual.FitToAnchor(customVisual, def.worldPrefab.transform.localScale, Mathf.Max(0.01f, def.battleVisualScale), false);
                 customAnimator = customVisual.GetComponentInChildren<Animator>(true);
                 customRenderers = customVisual.GetComponentsInChildren<SpriteRenderer>(true);
+                if (flashMaterial != null) foreach (var r in customRenderers) r.sharedMaterial = flashMaterial;
                 foreach (var r in customVisual.GetComponentsInChildren<Renderer>(true)) r.sortingOrder += sprite != null ? sprite.sortingOrder : 8;
             }
             CacheSortingOrders();
@@ -132,7 +150,10 @@ namespace TreeGuardians.Guardians
             if (selectionRing != null) selectionRing.enabled = false;
             if (shieldVisual != null) shieldVisual.enabled = false;
             if (statusIcon != null) statusIcon.enabled = false;
-            if (platform != null) platform.enabled = true;
+            if (platform != null) platform.enabled = showPlatform;
+            flashAmount = 0f; squashT = -1f; dyingT = -1f; AuraArmorBonus = 0f;
+            if (visualRoot != null) visualRoot.localScale = Vector3.one;
+            ApplyFlash(0f);
             gameObject.SetActive(true);
             UpdateBars();
         }
@@ -172,19 +193,62 @@ namespace TreeGuardians.Guardians
 
         public void SetExternalSlow(float strength) => externalSlow = Mathf.Clamp01(strength);
 
-        public void Tick(float dt)
+        /// Hit flash, squash and the death pop run even when the guardian is no longer alive.
+        void TickVisuals(float dt)
         {
+            if (flashAmount > 0f) { flashAmount = Mathf.Max(0f, flashAmount - dt / 0.14f); ApplyFlash(flashAmount * flashAmount); }
+            if (visualRoot == null) return;
+            if (dyingT >= 0f)
+            {
+                dyingT += dt;
+                float s = dyingT < 0.08f ? Mathf.Lerp(1f, 1.2f, dyingT / 0.08f) : Mathf.Lerp(1.2f, 0f, (dyingT - 0.08f) / 0.14f);
+                visualRoot.localScale = new Vector3(s, s, 1f);
+                if (dyingT >= 0.22f) { dyingT = -1f; if (customVisual != null) customVisual.SetActive(false); if (sprite != null) sprite.enabled = false; visualRoot.localScale = Vector3.one; }
+                return;
+            }
+            if (squashT >= 0f)
+            {
+                squashT += dt;
+                float k = Mathf.Clamp01(squashT / 0.16f);
+                float a = Mathf.Sin(k * Mathf.PI) * (1f - k);
+                visualRoot.localScale = new Vector3(1f + 0.14f * a, 1f - 0.12f * a, 1f);
+                if (k >= 1f) { squashT = -1f; visualRoot.localScale = Vector3.one; }
+            }
+        }
+
+        void ApplyFlash(float amount)
+        {
+            if (customRenderers == null || flashMaterial == null) return;
+            if (flashBlock == null) flashBlock = new MaterialPropertyBlock();
+            for (int i = 0; i < customRenderers.Length; i++)
+            {
+                var r = customRenderers[i];
+                if (r == null) continue;
+                r.GetPropertyBlock(flashBlock);
+                flashBlock.SetFloat(SilhouetteId, amount);
+                flashBlock.SetColor(SilhouetteColorId, Color.white);
+                r.SetPropertyBlock(flashBlock);
+            }
+        }
+
+        public void Tick(float dt) => Tick(dt, dt);
+
+        /// statusDt: time that counts down statuses (in the turn-based duel only on the owner's own turn).
+        public void Tick(float dt, float statusDt)
+        {
+            TickVisuals(dt);
             if (!IsActive || !IsAlive) return;
             float speed = IsSlowed ? 1f - Mathf.Max(externalSlow, statuses[(int)StatusEffectType.Slow].magnitude) * 0.6f : 1f;
             if (Cooldown > 0f) Cooldown = Mathf.Max(0f, Cooldown - dt * speed);
 
             float regen = ctx.balance.specialEnergyPerSecond * (1f + (roster != null ? roster.SapFlowBonus : 0f));
             SpecialEnergy = Mathf.Min(SpecialEnergyMax, SpecialEnergy + regen * dt);
+            CheckSpecialReadyCue();
 
             for (int i = 0; i < statuses.Length; i++)
             {
                 if (statuses[i].remaining <= 0f) continue;
-                statuses[i].remaining -= dt;
+                statuses[i].remaining -= statusDt;
                 if ((StatusEffectType)i == StatusEffectType.Poison)
                 {
                     statuses[i].tick += dt;
@@ -199,11 +263,11 @@ namespace TreeGuardians.Guardians
             }
             if (Definition.passiveKind == GuardianPassiveKind.HealOverTime && Health < MaxHealth)
                 Health = Mathf.Min(MaxHealth, Health + Definition.passiveMagnitude * dt);
-            if (Time.time > buffArmorUntil) BuffArmorBonus = 0f;
-            if (Time.time > buffAttackUntil) BuffAttackMultiplier = 1f;
+            if (Time.time > buffArmorUntil && !(TurnMode && ctx.turns.TurnIndex <= buffArmorTurn)) BuffArmorBonus = 0f;
+            if (Time.time > buffAttackUntil && !(TurnMode && ctx.turns.TurnIndex <= buffAttackTurn)) BuffAttackMultiplier = 1f;
 
-            if (flashUntil > 0f && Time.time >= flashUntil) { flashUntil = 0f; if (sprite != null) sprite.color = baseColor; TintCustom(Color.white); }
-            if (visualRoot != null && !QualityApplier.ReduceMotion)
+            if (flashUntil > 0f && Time.time >= flashUntil) { flashUntil = 0f; if (sprite != null) sprite.color = baseColor; }
+            if (visualRoot != null && !QualityApplier.ReduceMotion && squashT < 0f)
             {
                 float bob = IsStunned ? 0f : Mathf.Sin(Time.time * 2.2f + bobPhase) * 0.035f;
                 var p = visualRoot.localPosition; p.y = bob; visualRoot.localPosition = p;
@@ -261,6 +325,7 @@ namespace TreeGuardians.Guardians
             var p = ctx.projectiles.Fire(proj, MuzzlePosition, velocity, Side, this, special, false, mult, homing);
             if (p != null) p.IsCrit = crit;
             AnimalVisual.PlayAttack(customAnimator);
+            ctx.vfx?.Muzzle(MuzzlePosition, velocity, proj.tint, special);
             Cooldown = CooldownDuration * (auto ? ctx.balance.autoAttackCooldownMultiplier : 1f);
             Services.Get<AudioService>()?.PlaySfx(Definition.attackSfx);
             return true;
@@ -307,22 +372,27 @@ namespace TreeGuardians.Guardians
                     break;
                 case GuardianSpecialKind.ChainEnergy:
                     fired = ctx.targeting != null && ctx.targeting.ChainStrike(this, Mathf.Max(1, Mathf.RoundToInt(def.specialMagnitude)), Attack * 1.2f * BuffAttackMultiplier);
+                    if (fired) Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.LaunchMagic, MuzzlePosition);
                     break;
                 case GuardianSpecialKind.ShieldSelf:
                     ShieldHealth += def.specialMagnitude;
                     ctx.vfx?.Burst(transform.position, new Color(0.6f, 0.9f, 1f), 1.2f);
+                    Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.ShieldUp, transform.position);
                     break;
                 case GuardianSpecialKind.ArmorAllies:
                     roster?.ApplyArmorBuff(def.specialMagnitude, def.specialDuration);
                     ctx.vfx?.Burst(transform.position, new Color(0.7f, 0.85f, 1f), 1.4f);
+                    Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.SpecialBuff, transform.position);
                     break;
                 case GuardianSpecialKind.ReduceToolCooldowns:
                     ctx.ToolsOf(Side)?.ReduceCooldowns(def.specialMagnitude);
                     ctx.vfx?.Burst(transform.position, new Color(1f, 0.9f, 0.5f), 1.2f);
+                    Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.SpecialBuff, transform.position);
                     break;
                 case GuardianSpecialKind.TeamBuff:
                     roster?.ApplyAttackBuff(1f + def.specialMagnitude, def.specialDuration);
                     ctx.vfx?.Burst(transform.position, new Color(1f, 0.95f, 0.6f), 1.6f);
+                    Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.SpecialBuff, transform.position);
                     break;
                 default:
                     fired = false;
@@ -330,6 +400,7 @@ namespace TreeGuardians.Guardians
             }
             if (!fired) return false;
             AnimalVisual.PlayAttack(customAnimator);
+            ctx.vfx?.Muzzle(MuzzlePosition, dir, proj != null ? proj.tint : new Color(1f, 0.9f, 0.5f), true);
             SpecialEnergy = 0f;
             Services.Get<AudioService>()?.PlaySfx(Definition.attackSfx);
             OnStateChanged?.Invoke(this);
@@ -340,6 +411,17 @@ namespace TreeGuardians.Guardians
         {
             if (!IsAlive) return;
             SpecialEnergy = Mathf.Min(SpecialEnergyMax, SpecialEnergy + amount);
+            CheckSpecialReadyCue();
+        }
+
+        bool specialReadyCued;
+
+        /// A short chime the moment a player guardian's special fills (once per fill).
+        void CheckSpecialReadyCue()
+        {
+            bool ready = SpecialReady;
+            if (ready && !specialReadyCued && Side == BattleSide.Player) Services.Get<AudioService>()?.PlayUi(AudioEventId.SpecialReady);
+            specialReadyCued = ready;
         }
 
         public void OnOwnProjectileHit()
@@ -393,12 +475,14 @@ namespace TreeGuardians.Guardians
         {
             BuffArmorBonus = Mathf.Max(BuffArmorBonus, bonus);
             buffArmorUntil = Mathf.Max(buffArmorUntil, Time.time + duration);
+            if (TurnMode) buffArmorTurn = Mathf.Max(buffArmorTurn, NextOwnTurn);
         }
 
         public void ApplyAttackBuff(float multiplier, float duration)
         {
             BuffAttackMultiplier = Mathf.Max(BuffAttackMultiplier, multiplier);
             buffAttackUntil = Mathf.Max(buffAttackUntil, Time.time + duration);
+            if (TurnMode) buffAttackTurn = Mathf.Max(buffAttackTurn, NextOwnTurn);
         }
 
         public void Stun(float seconds)
@@ -410,13 +494,9 @@ namespace TreeGuardians.Guardians
         {
             flashUntil = Time.time + 0.08f;
             if (sprite != null) sprite.color = Color.white;
-            TintCustom(HurtFlash);
-        }
-
-        void TintCustom(Color c)
-        {
-            if (customRenderers == null) return;
-            for (int i = 0; i < customRenderers.Length; i++) if (customRenderers[i] != null) customRenderers[i].color = c;
+            flashAmount = 1f;
+            ApplyFlash(1f);
+            if (!QualityApplier.ReduceMotion) squashT = 0f;
         }
 
         void Die()
@@ -428,6 +508,7 @@ namespace TreeGuardians.Guardians
                 ShieldHealth = 0f;
                 for (int i = 0; i < statuses.Length; i++) statuses[i] = default;
                 ctx.vfx?.Burst(transform.position, new Color(0.7f, 1f, 0.7f), 1.8f);
+                Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.Heal, transform.position, 1f, 1.2f);
                 return;
             }
             IsAlive = false;
@@ -436,9 +517,13 @@ namespace TreeGuardians.Guardians
             if (selectionRing != null) selectionRing.enabled = false;
             if (shieldVisual != null) shieldVisual.enabled = false;
             if (statusIcon != null) statusIcon.enabled = false;
-            if (customVisual != null) customVisual.SetActive(false);
-            ctx.vfx?.Burst(transform.position, new Color(1f, 0.5f, 0.4f), 1.2f);
-            Services.Get<AudioService>()?.PlaySfx(Definition.hurtSfx);
+            if (platform != null) platform.enabled = false;
+            // Pop then vanish (driven in TickVisuals), with a poof at the body.
+            if (customVisual != null || sprite != null) dyingT = QualityApplier.ReduceMotion ? 0.3f : 0f;
+            var center = bodyCollider != null ? (Vector2)bodyCollider.bounds.center : (Vector2)transform.position;
+            ctx.vfx?.GuardianPoof(center, Definition.tintColor);
+            Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.GuardianDeath, transform.position);
+            if (Side == BattleSide.Player) Services.Get<HapticService>()?.Medium();
             roster?.NotifyDefeated(this);
             GameEventBus.Publish(new GuardianDefeatedEvent { side = Side, guardianId = Definition.id });
             OnStateChanged?.Invoke(this);
@@ -492,8 +577,19 @@ namespace TreeGuardians.Guardians
             OnStateChanged?.Invoke(this);
         }
 
+        float barsAlpha = -1f, barsUntil, lastBarHealth = -1f;
+
         void UpdateBars()
         {
+            float hp = HealthPercent;
+            if (lastBarHealth >= 0f && hp < lastBarHealth - 0.0001f) barsUntil = Time.time + barsShowAfterHit;
+            lastBarHealth = hp;
+            if (barRenderers != null && barRenderers.Length > 0)
+            {
+                bool show = IsAlive && (ctx == null || !ctx.turnBased || sortingOffset != 0 || Time.time < barsUntil);
+                float target = show ? 1f : 0f;
+                barsAlpha = barsAlpha < 0f ? target : Mathf.MoveTowards(barsAlpha, target, Time.deltaTime * 6f);
+            }
             if (healthBarFill != null)
             {
                 var s = healthBarFill.localScale; s.x = fillBaseScaleX * HealthPercent; healthBarFill.localScale = s;
@@ -503,6 +599,14 @@ namespace TreeGuardians.Guardians
             {
                 var s = energyBarFill.localScale; s.x = energyBaseScaleX * EnergyPercent; energyBarFill.localScale = s;
             }
+            if (barsAlpha >= 0f && barRenderers != null)
+                for (int i = 0; i < barRenderers.Length; i++)
+                {
+                    var r = barRenderers[i];
+                    if (r == null) continue;
+                    var c = r.color;
+                    if (!Mathf.Approximately(c.a, barsAlpha)) { c.a = barsAlpha; r.color = c; }
+                }
         }
     }
 }

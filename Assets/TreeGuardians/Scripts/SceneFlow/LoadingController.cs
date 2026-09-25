@@ -94,7 +94,8 @@ namespace TreeGuardians.SceneFlow
             if (pct != lastPercent && percentText != null)
             {
                 lastPercent = pct;
-                percentText.SetText("{0}%", pct);
+                // Localized percent ("45%" EN / "%45" TR); only rebuilt when the integer value changes.
+                percentText.text = LocalizationService.Tr("fmt_percent", pct);
             }
         }
 

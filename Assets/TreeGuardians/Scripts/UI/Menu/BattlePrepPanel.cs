@@ -24,6 +24,8 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] Button closeButton;
         [SerializeField] TMP_Text offlineNoteText;
         [SerializeField] Color emptyPortrait = new Color(1f, 1f, 1f, 0.15f);
+        [Tooltip("İsteğe bağlı: boş ama kullanılabilir kadro yuvasında gösterilen ikon (ör. yeşil artı). Boşsa portre gizlenir ve sadece çerçeve kalır.")]
+        [SerializeField] Sprite emptySlotSprite;
 
         BotDifficulty difficulty = BotDifficulty.Normal;
 
@@ -57,26 +59,56 @@ namespace TreeGuardians.UI.Menu
             var arena = progress.CurrentArena;
             if (arenaNameText != null) arenaNameText.text = arena != null ? LocalizationService.Tr(arena.nameKey) : "";
             if (arenaBadge != null && arena != null) arenaBadge.sprite = arena.badge;
-            if (recommendedPowerText != null) recommendedPowerText.text = LocalizationService.Tr("arena_recommended_power") + ": " + (arena != null ? arena.recommendedPower : 0);
-            if (yourPowerText != null) yourPowerText.text = LocalizationService.Tr("menu_tree_power") + ": " + progress.GetTreePower();
+            if (recommendedPowerText != null) recommendedPowerText.text = LocalizationService.Tr("arena_recommended_power") + ": " + LocalizationService.Number(arena != null ? arena.recommendedPower : 0);
+            if (yourPowerText != null) yourPowerText.text = LocalizationService.Tr("menu_tree_power") + ": " + LocalizationService.Number(progress.GetTreePower());
+            // Only the castle's real guardian slots are shown (the scene authors 8 cards per row; the castle has guardianSlotCount).
+            int slotCount = progress.Balance.guardianSlotCount;
             for (int i = 0; i < playerPortraits.Length; i++)
             {
                 if (playerPortraits[i] == null) continue;
-                var def = progress.Database.GetGuardian(progress.GetEquippedGuardianId(i));
-                playerPortraits[i].sprite = def != null ? def.portrait : null; playerPortraits[i].preserveAspect = true;
-                playerPortraits[i].color = def != null ? Color.white : emptyPortrait;
+                bool used = i < slotCount;
+                SetSlotActive(playerPortraits[i], used);
+                if (!used) continue;
+                BindPortrait(playerPortraits[i], progress.Database.GetGuardian(progress.GetEquippedGuardianId(i)));
             }
             for (int i = 0; i < enemyPortraits.Length; i++)
             {
                 if (enemyPortraits[i] == null) continue;
-                var def = arena != null && i < arena.botGuardianIds.Length ? progress.Database.GetGuardian(arena.botGuardianIds[i]) : null;
-                enemyPortraits[i].sprite = def != null ? def.portrait : null; enemyPortraits[i].preserveAspect = true;
-                enemyPortraits[i].color = def != null ? Color.white : emptyPortrait;
+                bool used = i < slotCount;
+                SetSlotActive(enemyPortraits[i], used);
+                if (!used) continue;
+                BindPortrait(enemyPortraits[i], arena != null && i < arena.botGuardianIds.Length ? progress.Database.GetGuardian(arena.botGuardianIds[i]) : null);
             }
             Highlight(easyButton, difficulty == BotDifficulty.Easy);
             Highlight(normalButton, difficulty == BotDifficulty.Normal);
             Highlight(hardButton, difficulty == BotDifficulty.Hard);
             if (offlineNoteText != null) offlineNoteText.text = LocalizationService.Tr("prep_offline_bot");
+        }
+
+        void BindPortrait(Image portrait, GuardianDefinition def)
+        {
+            portrait.preserveAspect = true;
+            if (def != null)
+            {
+                portrait.enabled = true;
+                portrait.sprite = def.portrait;
+                portrait.color = Color.white;
+            }
+            else
+            {
+                // An Image without a sprite renders a flat white quad: show the empty-slot icon or nothing.
+                portrait.sprite = emptySlotSprite;
+                portrait.color = emptyPortrait;
+                portrait.enabled = emptySlotSprite != null;
+            }
+        }
+
+        /// Hides the whole slot card (the portrait's parent, e.g. P_6) unless the parent is the row layout itself.
+        static void SetSlotActive(Image portrait, bool active)
+        {
+            var slot = portrait.transform.parent;
+            var target = slot != null && slot.GetComponent<LayoutGroup>() == null ? slot.gameObject : portrait.gameObject;
+            if (target.activeSelf != active) target.SetActive(active);
         }
 
         static void Highlight(Button b, bool on)

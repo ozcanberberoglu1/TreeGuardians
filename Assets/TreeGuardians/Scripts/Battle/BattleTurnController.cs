@@ -14,6 +14,8 @@ namespace TreeGuardians.Battle
         readonly GameBalanceConfig balance;
 
         public TurnPhase Phase { get; private set; } = TurnPhase.None;
+        /// Increments at every act phase (player act or enemy think). Turn-based effects last until TurnIndex passes a stored value.
+        public int TurnIndex { get; private set; }
         public float PhaseTime { get; private set; }
         public float TimeLeft { get; private set; }
         public int Round { get; private set; }
@@ -36,7 +38,15 @@ namespace TreeGuardians.Battle
         public void Start(BattleSide first)
         {
             Round = 1;
+            TurnIndex = 0;
             SetPhase(first == BattleSide.Player ? TurnPhase.PlayerAct : TurnPhase.EnemyThink);
+        }
+
+        /// A side that cannot act this turn (every guardian stunned/rooted/dead, or no aim) passes the turn immediately.
+        public void Skip(BattleSide side)
+        {
+            if (side == BattleSide.Enemy && Phase == TurnPhase.EnemyThink) { Round++; SetPhase(TurnPhase.PlayerAct); }
+            else if (side == BattleSide.Player && Phase == TurnPhase.PlayerAct) SetPhase(TurnPhase.EnemyThink);
         }
 
         public bool CanFire(BattleSide side) => side == BattleSide.Player ? Phase == TurnPhase.PlayerAct : Phase == TurnPhase.EnemyThink;
@@ -86,6 +96,7 @@ namespace TreeGuardians.Battle
         {
             Phase = next;
             PhaseTime = 0f;
+            if (next == TurnPhase.PlayerAct || next == TurnPhase.EnemyThink) TurnIndex++;
             if (next == TurnPhase.PlayerAct) TimeLeft = balance.turnSeconds;
             OnPhaseChanged?.Invoke(next);
         }

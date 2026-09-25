@@ -39,6 +39,9 @@ namespace TreeGuardians.Battle
         ContactFilter2D filter;
 
         public event System.Action OnSelectionChanged;
+        /// A tap/drag was refused because the selected guardian is stunned, rooted or otherwise unable to fire.
+        public event System.Action OnFireRejected;
+        bool aimSoundPlayed;
 
         public void Initialize(BattleContext context)
         {
@@ -82,8 +85,19 @@ namespace TreeGuardians.Battle
             ctx?.playerRoster?.SetPlayerControlled(-1);
             SetReveal(false);
             OnSelectionChanged?.Invoke();
-            int pick = AliveAimable(lastFiredSlot) ? lastFiredSlot : FirstAliveAimable();
-            if (pick >= 0) SelectSlot(pick);
+            int pick = Ready(lastFiredSlot) ? lastFiredSlot : FirstReady();
+            if (pick < 0) pick = AliveAimable(lastFiredSlot) ? lastFiredSlot : FirstAliveAimable();
+            if (pick >= 0) SelectSlot(pick, true);
+        }
+
+        bool Ready(int slot) => AliveAimable(slot) && ctx.playerRoster.Get(slot).CanFire(false);
+
+        int FirstReady()
+        {
+            var roster = ctx?.playerRoster;
+            if (roster == null) return -1;
+            for (int i = 0; i < roster.Slots.Count; i++) if (Ready(i)) return i;
+            return -1;
         }
 
         bool AliveAimable(int slot)
@@ -124,7 +138,10 @@ namespace TreeGuardians.Battle
             ctx.playerRoster?.SetSortingOffset(on ? revealSortingOffset : 0);
         }
 
-        public void SelectSlot(int slot)
+        public void SelectSlot(int slot) => SelectSlot(slot, false);
+
+        /// silent = automatic pre-selection (turn start, re-pick after a death): no card sound.
+        public void SelectSlot(int slot, bool silent)
         {
             var roster = ctx?.playerRoster;
             if (roster == null) return;
@@ -133,7 +150,7 @@ namespace TreeGuardians.Battle
             if (g == null || !g.IsActive || !g.IsAlive) return;
             if (SelectedSlot == slot)
             {
-                if (g.SpecialReady) { SpecialArmed = !SpecialArmed; Services.Get<AudioService>()?.PlayUi(AudioEventId.UiClick); }
+                if (g.SpecialReady) { SpecialArmed = !SpecialArmed; if (!silent) Services.Get<AudioService>()?.PlayUi(SpecialArmed ? AudioEventId.CardSelect : AudioEventId.UiClick); }
             }
             else
             {
@@ -142,7 +159,7 @@ namespace TreeGuardians.Battle
                 PendingTool = -1;
                 roster.SetPlayerControlled(slot);
                 queue.Enqueue(BattleCommand.Select(Side, slot));
-                Services.Get<AudioService>()?.PlaySfx(AudioEventId.AimStart);
+                if (!silent) Services.Get<AudioService>()?.PlayUi(AudioEventId.CardSelect);
                 SetReveal(true);
             }
             OnSelectionChanged?.Invoke();
@@ -181,6 +198,22 @@ namespace TreeGuardians.Battle
             if (!CanAct) { if (IsAiming) { IsAiming = false; aimView?.Hide(); } return; }
             Vector2 world = input.PointerWorldPosition(worldCamera);
             var roster = ctx.playerRoster;
+            if (SelectedSlot >= 0)
+            {
+                var sel = roster?.Get(SelectedSlot);
+                if (sel == null || !sel.IsAlive)
+                {
+                    // Selected guardian died mid-turn (poison): move the selection to one that can act.
+                    SelectedSlot = -1;
+                    SpecialArmed = false;
+                    IsAiming = false;
+                    aimView?.Hide();
+                    roster?.SetPlayerControlled(-1);
+                    int p = FirstReady();
+                    if (p < 0) p = FirstAliveAimable();
+                    if (p >= 0) SelectSlot(p, true); else OnSelectionChanged?.Invoke();
+                }
+            }
 
             if (input.PointerDownThisFrame && !input.PointerOverUI)
             {
@@ -205,6 +238,7 @@ namespace TreeGuardians.Battle
                 if (SelectedSlot >= 0)
                 {
                     IsAiming = true;
+                    aimSoundPlayed = false;
                     dragStart = world;
                     pressTime = Time.unscaledTime;
                 }
@@ -212,7 +246,11 @@ namespace TreeGuardians.Battle
 
             if (IsAiming && input.PointerHeld)
             {
-                if (Vector2.Distance(world, dragStart) >= tapDistance) UpdateAim(world, false);
+                if (Vector2.Distance(world, dragStart) >= tapDistance)
+                {
+                    if (!aimSoundPlayed) { aimSoundPlayed = true; Services.Get<AudioService>()?.PlaySfx(AudioEventId.AimStart, 0.7f); }
+                    UpdateAim(world, false);
+                }
             }
 
             if (IsAiming && (input.PointerUpThisFrame || !input.PointerHeld))
@@ -241,7 +279,7 @@ namespace TreeGuardians.Battle
             if (g == null || !g.IsAlive || ctx.projectiles == null) return;
             if (ctx.targeting != null && target.x <= ctx.targeting.MidlineX) return; // own half: not a shot
             bool special = SpecialArmed && g.SpecialReady;
-            if (!g.CanFire(special)) return;
+            if (!g.CanFire(special)) { OnFireRejected?.Invoke(); return; }
             var def = special && g.Definition.specialProjectile != null ? g.Definition.specialProjectile : g.Definition.normalProjectile;
             if (def == null) return;
             var velocity = ctx.projectiles.LaunchVelocity(def, g.MuzzlePosition, target, 1f);
@@ -278,7 +316,7 @@ namespace TreeGuardians.Battle
             if (release)
             {
                 aimView?.Hide();
-                if (!valid) return;
+                if (!valid) { if (g.IsStunned || g.IsRooted) OnFireRejected?.Invoke(); return; }
                 queue.Enqueue(BattleCommand.Fire(Side, SelectedSlot, dir, power, special));
                 lastFiredSlot = SelectedSlot;
                 if (special) SpecialArmed = false;

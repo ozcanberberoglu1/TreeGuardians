@@ -694,9 +694,29 @@ MonoBehaviour:
     en: Pick a guardian card
     tr: "Bir muhaf\u0131z kart\u0131 se\xE7"
   - key: battle_tap_to_fire
-    en: Tap the enemy castle to fire (or drag to aim)
-    tr: "Ate\u015F etmek i\xE7in rakip kaleye dokun (ya da s\xFCr\xFCkleyerek ni\u015Fan
-      al)"
+    en: Tap or drag on the enemy castle
+    tr: "Rakip kaleye dokun ya da s\xFCr\xFCkle"
+  - key: battle_tool_tap_target
+    en: Tap where the tool should land
+    tr: "Arac\u0131n inece\u011Fi yere dokun"
+  - key: battle_guardian_cannot_fire
+    en: This guardian can't act right now
+    tr: "Bu muhaf\u0131z \u015Fu an hareket edemez"
+  - key: battle_crit
+    en: CRIT!
+    tr: "KR\u0130T\u0130K!"
+  - key: fmt_percent
+    en: '{0}%'
+    tr: '%{0}'
+  - key: time_hm
+    en: '{0}h {1}m'
+    tr: '{0}sa {1}dk'
+  - key: time_ms
+    en: '{0}m {1}s'
+    tr: '{0}dk {1}sn'
+  - key: time_s
+    en: '{0}s'
+    tr: '{0}sn'
   - key: results_title_victory
     en: Victory!
     tr: Zafer!
@@ -710,8 +730,35 @@ MonoBehaviour:
     en: Damage dealt
     tr: Verilen hasar
   - key: results_core_left
-    en: Heartwood left
-    tr: "Kalan Kalp \xD6z\xFC"
+    en: Castle integrity
+    tr: "Kale sa\u011Flaml\u0131\u011F\u0131"
+  - key: results_castle_left
+    en: Castle integrity
+    tr: "Kale sa\u011Flaml\u0131\u011F\u0131"
+  - key: results_stats
+    en: Battle Stats
+    tr: "Sava\u015F \u0130statistikleri"
+  - key: fmt_seconds
+    en: '{0:0.#}s'
+    tr: '{0:0.#}sn'
+  - key: profile_win_rate
+    en: 'Win rate: {0}'
+    tr: "Kazanma oran\u0131: {0}"
+  - key: profile_default_name
+    en: Guardian {0}
+    tr: "Muhaf\u0131z {0}"
+  - key: tools_select_hint
+    en: Select a tool to see its details.
+    tr: "Ayr\u0131nt\u0131lar\u0131n\u0131 g\xF6rmek i\xE7in bir ara\xE7 se\xE7."
+  - key: chest_info_cards
+    en: '{0} cards'
+    tr: '{0} kart'
+  - key: chest_panel_title
+    en: Chest
+    tr: "Sand\u0131k"
+  - key: loadout_full
+    en: All slots are full. Remove one first.
+    tr: "T\xFCm yuvalar dolu. \xD6nce birini \xE7\u0131kar."
   - key: results_guardians_alive
     en: Guardians alive
     tr: "Ya\u015Fayan muhaf\u0131z"

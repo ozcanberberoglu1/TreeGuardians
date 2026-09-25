@@ -38,8 +38,8 @@ MonoBehaviour:
     magnitude: 0
   holeRadius: 0
   impactVfxPrefab: {fileID: 0}
-  launchSfx: 6
-  impactSfx: 7
+  launchSfx: 38
+  impactSfx: 21
   shake:
     amplitude: 0.2
     duration: 0.2

@@ -1,5 +1,6 @@
 using TreeGuardians.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace TreeGuardians.UI
 {
@@ -13,6 +14,7 @@ namespace TreeGuardians.UI
         [SerializeField] float fade = 0.15f;
 
         CanvasGroup group;
+        Coroutine fadeRoutine;
         int count;
 
         void Awake()
@@ -21,6 +23,9 @@ namespace TreeGuardians.UI
             group = GetComponent<CanvasGroup>();
             group.alpha = 0f;
             group.blocksRaycasts = false;
+            // A full-screen dimmer must stretch: Preserve Aspect on a square sprite only darkens a centred square.
+            var image = GetComponent<Image>();
+            if (image != null) image.preserveAspect = false;
         }
 
         void OnDestroy()
@@ -34,16 +39,19 @@ namespace TreeGuardians.UI
             if (count == 1)
             {
                 group.blocksRaycasts = true;
-                TGTween.FadeCanvasGroup(group, alpha, fade);
+                TGTween.Stop(fadeRoutine);
+                fadeRoutine = TGTween.FadeCanvasGroup(group, alpha, fade);
             }
         }
 
         public void Release()
         {
-            count = Mathf.Max(0, count - 1);
+            if (count <= 0) return;
+            count--;
             if (count == 0)
             {
-                TGTween.FadeCanvasGroup(group, 0f, fade, true, () => { if (count == 0) group.blocksRaycasts = false; });
+                TGTween.Stop(fadeRoutine);
+                fadeRoutine = TGTween.FadeCanvasGroup(group, 0f, fade, true, () => { if (count == 0) group.blocksRaycasts = false; });
             }
         }
     }

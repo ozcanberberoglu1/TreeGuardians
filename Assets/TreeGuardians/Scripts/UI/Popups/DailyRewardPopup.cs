@@ -23,6 +23,7 @@ namespace TreeGuardians.UI.Popups
         [SerializeField] RewardSprites sprites = new RewardSprites();
 
         readonly System.Collections.Generic.List<RewardItem> items = new System.Collections.Generic.List<RewardItem>(4);
+        float nextTick;
 
         protected override void Awake()
         {
@@ -32,6 +33,21 @@ namespace TreeGuardians.UI.Popups
         }
 
         public override void Show()
+        {
+            var progress = Services.Get<PlayerProgressService>();
+            if (Services.Get<QuestService>() == null || progress == null || progress.Database.dailyRewards == null) return;
+            Open();
+        }
+
+        /// Binds on every open, whichever path opened it (Show, the Quests panel, the base UIPanel.Open), so the
+        /// authored placeholder tiles (no icon, NEW badge on, empty labels) are never visible.
+        protected override void OnOpen()
+        {
+            base.OnOpen();
+            Bind();
+        }
+
+        void Bind()
         {
             var quests = Services.Get<QuestService>();
             var progress = Services.Get<PlayerProgressService>();
@@ -50,12 +66,25 @@ namespace TreeGuardians.UI.Popups
                 }
                 else dayTiles[i].Hide();
                 if (i < dayHighlights.Length && dayHighlights[i] != null) dayHighlights[i].enabled = i == today;
-                if (i < dayLabels.Length && dayLabels[i] != null) dayLabels[i].text = string.Format(LocalizationService.Tr("daily_day"), i + 1);
+                if (i < dayLabels.Length && dayLabels[i] != null) dayLabels[i].text = LocalizationService.Tr("daily_day", i + 1);
             }
+            RefreshClaim(quests);
+        }
+
+        void RefreshClaim(QuestService quests)
+        {
             bool can = quests.CanClaimDailyReward();
             if (claimButton != null) claimButton.interactable = can;
-            if (claimLabel != null) claimLabel.text = can ? LocalizationService.Tr("ui_claim") : string.Format(LocalizationService.Tr("daily_next_in"), ChestSlotView.FormatTime(quests.TimeUntilDailyReward().TotalSeconds));
-            Open();
+            if (claimLabel != null) claimLabel.text = can ? LocalizationService.Tr("ui_claim") : LocalizationService.Tr("daily_next_in", ChestSlotView.FormatTime(quests.TimeUntilDailyReward().TotalSeconds));
+        }
+
+        void Update()
+        {
+            // Keeps the "Next: 3h 05m" countdown live while the popup stays open.
+            if (!IsOpen || Time.unscaledTime < nextTick) return;
+            nextTick = Time.unscaledTime + 1f;
+            var quests = Services.Get<QuestService>();
+            if (quests != null) RefreshClaim(quests);
         }
 
         void OnClaim()

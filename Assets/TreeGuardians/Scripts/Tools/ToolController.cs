@@ -31,6 +31,8 @@ namespace TreeGuardians.Tools
         BattleContext ctx;
         TreeController tree;
         float deflectUntil;
+        int deflectTurn = int.MinValue, shieldTurn = int.MinValue;
+        TreeSection shieldSection;
         float deflectStrength;
         float slowUntil;
         Vector2 slowCenter;
@@ -40,13 +42,18 @@ namespace TreeGuardians.Tools
 
         public BattleSide Side => side;
         public int Count => slots.Length;
-        public float DeflectStrength => Time.time < deflectUntil ? deflectStrength : 0f;
+        bool TurnMode => ctx != null && ctx.turnBased && ctx.turns != null;
+
+        /// Turn mode: a tool cast on turn T protects through the opponent's next turn (T+1); real time keeps the seconds timer.
+        public float DeflectStrength => (Time.time < deflectUntil || (TurnMode && ctx.turns.TurnIndex <= deflectTurn + 1)) ? deflectStrength : 0f;
 
         public void Initialize(string[] ids, int[] levels, BattleContext context, TreeController ownTree)
         {
             ctx = context;
             tree = ownTree;
             deflectUntil = 0f;
+            deflectTurn = shieldTurn = int.MinValue;
+            shieldSection = null;
             slowUntil = 0f;
             for (int i = 0; i < slots.Length; i++)
             {
@@ -63,6 +70,7 @@ namespace TreeGuardians.Tools
         {
             for (int i = 0; i < slots.Length; i++)
                 if (slots[i].def != null && slots[i].cooldown > 0f) slots[i].cooldown = Mathf.Max(0f, slots[i].cooldown - dt);
+            if (shieldSection != null && TurnMode && ctx.turns.TurnIndex > shieldTurn + 1) { shieldSection.ClearShield(); shieldSection = null; }
         }
 
         public bool CanUse(int i) => i >= 0 && i < slots.Length && slots[i].IsReady;
@@ -92,7 +100,7 @@ namespace TreeGuardians.Tools
                 {
                     Vector2 center = ctx.targeting != null && ctx.targeting.SideAt(target) == side ? target : (tree != null && tree.Core != null ? (Vector2)tree.Core.transform.position : mount);
                     ctx.damage.HealArea(center, def.effectRadius, magnitude, side);
-                    Services.Get<AudioService>()?.PlaySfx(AudioEventId.Heal);
+                    Services.Get<AudioService>()?.PlaySfxAt(AudioEventId.Heal, center);
                     used = true;
                     break;
                 }
@@ -119,6 +127,7 @@ namespace TreeGuardians.Tools
                 }
                 case ToolEffectType.DeflectField:
                     deflectUntil = Time.time + def.effectDuration;
+                    if (TurnMode) deflectTurn = ctx.turns.TurnIndex;
                     deflectStrength = magnitude;
                     ctx.vfx?.Burst(tree != null && tree.Core != null ? (Vector2)tree.Core.transform.position : mount, new Color(0.7f, 0.9f, 1f), 2.2f);
                     used = true;
@@ -128,6 +137,14 @@ namespace TreeGuardians.Tools
                     slowCenter = target;
                     slowRadius = def.effectRadius;
                     slowStrength = Mathf.Clamp01(magnitude);
+                    if (TurnMode)
+                    {
+                        // Turn mode has no cooldown race, so the net roots enemy guardians inside it for part of their next turn.
+                        ctx.RosterOf(BattleContext.Opponent(side))?.GetAlive(tmpGuardians);
+                        for (int k = 0; k < tmpGuardians.Count; k++)
+                            if (Vector2.Distance(tmpGuardians[k].transform.position, target) <= def.effectRadius)
+                                tmpGuardians[k].ApplyStatus(new StatusEffectSpec { type = StatusEffectType.Root, duration = Mathf.Max(2.5f, def.effectDuration * 0.5f), magnitude = 1f });
+                    }
                     ctx.vfx?.Poison(target, def.effectRadius);
                     used = true;
                     break;
@@ -143,7 +160,14 @@ namespace TreeGuardians.Tools
                         if (d < bd) { bd = d; best = tmpSections[k]; }
                     }
                     if (best == null) return false;
-                    best.AddShield(magnitude, def.effectDuration);
+                    if (TurnMode)
+                    {
+                        shieldSection?.ClearShield();
+                        best.AddShield(magnitude, 1e6f);
+                        shieldSection = best;
+                        shieldTurn = ctx.turns.TurnIndex;
+                    }
+                    else best.AddShield(magnitude, def.effectDuration);
                     ctx.vfx?.Burst(best.transform.position, new Color(0.6f, 1f, 0.6f), 1.4f);
                     used = true;
                     break;
@@ -156,7 +180,7 @@ namespace TreeGuardians.Tools
             slots[i].cooldownDuration = def.GetCooldown(slots[i].level) * cooldownMultiplier;
             slots[i].cooldown = slots[i].cooldownDuration;
             ctx.StatsOf(side).toolsUsed++;
-            Services.Get<AudioService>()?.PlaySfx(def.useSfx);
+            Services.Get<AudioService>()?.PlaySfxAt(def.useSfx, mount);
             GameEventBus.Publish(new ToolUsedEvent { toolId = def.id, side = side });
             return true;
         }

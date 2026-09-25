@@ -71,8 +71,11 @@ namespace TreeGuardians.Trees
             mask = null;
         }
 
+        BattleContext battle;
+
         public void Initialize(int[] upgradeLevels, TreeVisualTier tier, BattleContext context)
         {
+            battle = context;
             if (definition == null) { TGLog.Error($"TreeController ({side}) has no TreeDefinition."); return; }
             int Lvl(TreeUpgradePath p) => upgradeLevels != null && (int)p < upgradeLevels.Length ? Mathf.Max(0, upgradeLevels[(int)p]) : 0;
             float coreMult = 1f + definition.heartwoodHealthPerLevel * Lvl(TreeUpgradePath.HeartwoodLevel);
@@ -244,9 +247,9 @@ namespace TreeGuardians.Trees
         {
             if (mask != null && IsCarvable(s))
             {
-                var b = s.WorldBounds;
-                mask.ClearRect(Rect.MinMaxRect(b.min.x, b.min.y, b.max.x, b.max.y));
-                mask.Apply();
+                var wb = s.WorldBounds;
+                mask.ClearRect(Rect.MinMaxRect(wb.min.x, wb.min.y, wb.max.x, wb.max.y)); // logical opening only; the part fades out itself
+                CollapseDebris(s);
             }
             OnSectionDestroyed?.Invoke(s);
             if (s.Type == TreeSectionType.Branch) OnBranchBroken?.Invoke(s);
@@ -259,6 +262,23 @@ namespace TreeGuardians.Trees
                 child.ApplyDamage(child.Health + 1f, cascade);
             }
             UpdateHealthBar();
+        }
+
+        /// Debris falls out of the destroyed part in bands, top to bottom (visual only; gameplay already treats it as gone).
+        void CollapseDebris(TreeSection s)
+        {
+            if (battle == null || battle.vfx == null) return;
+            var b = s.WorldBounds;
+            const int bands = 4;
+            float h = b.size.y / bands;
+            float cx = transform.position.x;
+            for (int i = 0; i < bands; i++)
+            {
+                var band = new Rect(b.min.x, b.max.y - h * (i + 1), b.size.x, h);
+                bool first = i == 0;
+                if (i == 0) battle.vfx.CollapseBand(band, cx, true);
+                else TGTween.Delay(0.06f * i, () => { if (this != null && battle != null && battle.vfx != null) battle.vfx.CollapseBand(band, cx, first); }, false);
+            }
         }
 
         public TreeSection GetSection(string id) => byId.TryGetValue(id, out var s) ? s : null;

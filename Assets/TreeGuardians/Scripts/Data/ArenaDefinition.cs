@@ -46,6 +46,15 @@ namespace TreeGuardians.Data
         public bool fireflyParticles;
         public bool mist;
 
+        [Header("Battle tints & weather")]
+        [Tooltip("Boyalı arka plan rengi (ambientTint ile çarpılır).")] public Color backdropTint = Color.white;
+        [Tooltip("Kalelerin durduğu adaların rengi.")] public Color platformTint = Color.white;
+        [Tooltip("Kale parçalarının rengi (beyaz = orijinal). Nişan alırken siluet yine tam siyahtır.")] public Color castleTint = Color.white;
+        [Tooltip("Savaş başında yağmur yağma ve her açık havadan sonra sağanak gelme ihtimali.")] [Range(0f, 1f)] public float rainChance = 0.3f;
+        [Tooltip("Sağanaklarda şimşek çakar.")] public bool lightning;
+        [Tooltip("Rüzgârla uçuşan yaprakların renk aralığı (beyaz = orijinal yaprak sanatı).")] public Color leafTintA = Color.white;
+        public Color leafTintB = Color.white;
+
         [Header("Music")]
         public MusicTrackId music = MusicTrackId.BattleSunny;
 

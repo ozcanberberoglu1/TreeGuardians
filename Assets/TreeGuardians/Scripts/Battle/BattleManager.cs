@@ -52,6 +52,10 @@ namespace TreeGuardians.Battle
         bool resultSent;
         int lastCountdown = -1;
         bool coreExposedShown;
+        bool suppressEnemyBanner;
+        int battleStartFrame = -1;
+        float hitStopUntil;
+        float savedFixedDelta = 0.02f;
 
         void Start()
         {
@@ -61,7 +65,17 @@ namespace TreeGuardians.Battle
         void OnDestroy()
         {
             Time.timeScale = 1f;
+            if (started) Time.fixedDeltaTime = savedFixedDelta;
+            Services.Get<AudioService>()?.SetGameplayPaused(false);
             GameEventBus.Unsubscribe<CoreExposedEvent>(OnCoreExposed);
+            GameEventBus.Unsubscribe<HitStopEvent>(OnHitStop);
+        }
+
+        void OnHitStop(HitStopEvent e)
+        {
+            if (QualityApplier.ReduceMotion || sm.State == BattleState.Paused || sm.IsFinished) return;
+            hitStopUntil = Mathf.Max(hitStopUntil, Time.unscaledTime + Mathf.Min(e.seconds, 0.1f));
+            Time.timeScale = 0.05f;
         }
 
         void Begin()
@@ -106,8 +120,12 @@ namespace TreeGuardians.Battle
             }
             if (playerTree != null && enemyTree != null) ctx.targeting.MidlineX = (playerTree.transform.position.x + enemyTree.transform.position.x) * 0.5f;
 
-            vfx?.Initialize();
             projectiles?.Initialize(ctx);
+            vfx?.Initialize(projectiles != null ? projectiles.GroundY : -100f);
+            // Projectiles step at fixed rate; 60 Hz matches the render rate so flights do not judder.
+            savedFixedDelta = Time.fixedDeltaTime;
+            Time.fixedDeltaTime = 1f / 60f;
+            GameEventBus.Subscribe<HitStopEvent>(OnHitStop);
 
             var enemyUpgrades = new int[6];
             for (int i = 0; i < 6; i++) enemyUpgrades[i] = Mathf.Clamp(setup.enemyTreeUpgradeLevel / 2, 0, cfg.Balance.treeUpgradeMaxLevel);
@@ -166,6 +184,11 @@ namespace TreeGuardians.Battle
 
         void Update()
         {
+            if (hitStopUntil > 0f && Time.unscaledTime >= hitStopUntil)
+            {
+                hitStopUntil = 0f;
+                if (sm.State != BattleState.Paused) Time.timeScale = 1f;
+            }
             if (ctx == null) return;
             float dt = Time.deltaTime;
             if (sm.State != BattleState.Paused) sm.Tick(dt);
@@ -182,6 +205,8 @@ namespace TreeGuardians.Battle
                     {
                         sm.Set(BattleState.Playing);
                         ctx.isPlaying = true;
+                        battleStartFrame = Time.frameCount;
+                        Services.Get<AudioService>()?.PlayUi(AudioEventId.BattleStart);
                         if (ctx.turns != null) ctx.turns.Start(BattleSide.Player);
                         else hud?.ShowMessage("battle_fight", 0.9f);
                     }
@@ -267,14 +292,17 @@ namespace TreeGuardians.Battle
             switch (phase)
             {
                 case TurnPhase.PlayerAct:
-                    hud?.ShowMessage("battle_your_turn", 1f);
+                    hud?.ShowTurnBanner(true);
+                    if (Time.frameCount != battleStartFrame) Services.Get<AudioService>()?.PlayUi(AudioEventId.TurnStart); // the start horn covers turn 1
+                    Services.Get<HapticService>()?.Light();
                     playerCommander?.BeginTurn();
                     break;
                 case TurnPhase.PlayerResolve:
                     playerCommander?.EndTurn();
                     break;
                 case TurnPhase.EnemyThink:
-                    hud?.ShowMessage("battle_enemy_turn", 1f);
+                    if (!suppressEnemyBanner) { hud?.ShowTurnBanner(false); Services.Get<AudioService>()?.PlayUi(AudioEventId.EnemyTurn); }
+                    suppressEnemyBanner = false;
                     playerCommander?.EndTurn();
                     botCommander?.BeginTurn();
                     break;
@@ -283,8 +311,9 @@ namespace TreeGuardians.Battle
 
         void OnTurnTimedOut()
         {
-            hud?.ShowMessage("battle_turn_timeout", 1f);
-            Services.Get<AudioService>()?.PlayUi(AudioEventId.UiError);
+            suppressEnemyBanner = true; // keep 'time's up' readable; the turn pill already says enemy turn
+            hud?.ShowMessage("battle_turn_timeout", 1.1f);
+            Services.Get<AudioService>()?.PlayUi(AudioEventId.TurnTimeout);
         }
 
         void CheckWinConditions()
@@ -299,6 +328,8 @@ namespace TreeGuardians.Battle
                 ctx.timeRemaining = 0f;
                 ctx.isPlaying = false;
                 sm.Set(BattleState.ResolvingFinalHit);
+                playerCommander?.EndTurn();
+                hud?.OnBattleEnded(BattleOutcome.None);
                 hud?.ShowMessage("battle_time_up", 1.5f);
             }
         }
@@ -334,6 +365,7 @@ namespace TreeGuardians.Battle
             outcome = result;
             endReason = reason;
             ctx.isPlaying = false;
+            hitStopUntil = 0f;
             Time.timeScale = 1f;
             sm.Set(result == BattleOutcome.Victory ? BattleState.Victory : result == BattleOutcome.Defeat ? BattleState.Defeat : BattleState.Draw);
             playerCommander?.OnBattleEnded();
@@ -341,9 +373,24 @@ namespace TreeGuardians.Battle
             playerTree?.SetSilhouette(false, true);
             playerRoster?.SetSortingOffset(0);
             projectiles?.ReleaseAll();
-            hud?.ShowMessage(result == BattleOutcome.Victory ? "battle_victory" : result == BattleOutcome.Defeat ? "battle_defeat" : "battle_draw", 3f);
+            // The losing castle crumbles (debris bands + dust along its base) before the end banner.
+            if (reason == BattleEndReason.CoreDestroyed && result != BattleOutcome.Draw) vfx?.CastleCollapse(result == BattleOutcome.Victory ? enemyTree : playerTree);
+            hud?.OnBattleEnded(result);
+            if (result == BattleOutcome.Victory) vfx?.PlayConfetti();
+            GameEventBus.Publish(new ScreenShakeEvent { amplitude = 0.6f, duration = 0.4f });
             hud?.ShowPause(false);
-            Services.Get<AudioService>()?.PlaySfx(result == BattleOutcome.Victory ? AudioEventId.Victory : AudioEventId.Defeat);
+            // One stinger only (Results no longer plays one): music out, a collapse crash when a castle fell, then the stinger.
+            var endAudio = Services.Get<AudioService>();
+            endAudio?.SetGameplayPaused(false);
+            endAudio?.StopMusic(true);
+            var stinger = result == BattleOutcome.Victory ? AudioEventId.Victory : AudioEventId.Defeat;
+            var fallen = reason == BattleEndReason.CoreDestroyed ? (result == BattleOutcome.Victory ? ctx.enemyTree : ctx.playerTree) : null;
+            if (fallen != null)
+            {
+                endAudio?.PlaySfxAt(AudioEventId.CastleCollapse, fallen.transform.position);
+                TGTween.Delay(0.6f, () => Services.Get<AudioService>()?.PlaySfx(stinger));
+            }
+            else endAudio?.PlaySfx(stinger);
             Services.Get<HapticService>()?.Heavy();
             GameEventBus.Publish(new BattleFinishedEvent { outcome = result, reason = reason });
             ApplyResult();
@@ -461,10 +508,12 @@ namespace TreeGuardians.Battle
         public void Pause()
         {
             if (sm.IsFinished) return;
+            hitStopUntil = 0f;
             sm.Pause();
             if (sm.State != BattleState.Paused) return;
             ctx.isPlaying = false;
             Time.timeScale = 0f;
+            Services.Get<AudioService>()?.SetGameplayPaused(true);
             hud?.ShowPause(true);
         }
 
@@ -473,12 +522,14 @@ namespace TreeGuardians.Battle
             if (sm.State != BattleState.Paused) return;
             sm.Resume();
             Time.timeScale = 1f;
+            Services.Get<AudioService>()?.SetGameplayPaused(false);
             ctx.isPlaying = sm.State == BattleState.Playing;
             hud?.ShowPause(false);
         }
 
         public void Forfeit()
         {
+            Services.Get<AudioService>()?.SetGameplayPaused(false);
             Time.timeScale = 1f;
             if (sm.State == BattleState.Paused) sm.Resume();
             End(BattleOutcome.Defeat, BattleEndReason.Forfeit);

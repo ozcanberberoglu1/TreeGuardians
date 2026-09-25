@@ -22,6 +22,10 @@ namespace TreeGuardians.Tutorial
         [SerializeField] RectTransform guardianBarAnchor;
         [SerializeField] RectTransform toolBarAnchor;
         [SerializeField] string[] stepKeys = { "tut_step_1", "tut_step_2", "tut_step_3", "tut_step_4", "tut_step_5", "tut_step_6" };
+        [Tooltip("Hasar olaylarıyla ilerleyen adımlar (duvarı vur / delikten muhafız vurulur) en az bu kadar ekranda kalır; tek bir sıçramalı atış iki adımı birden atlatamaz.")]
+        [SerializeField] float minDamageStepSeconds = 2f;
+
+        const int StepSelect = 0, StepFire = 1, StepHitWall = 2, StepHoleInfo = 3, StepTool = 4;
 
         int step = -1;
         bool running;
@@ -29,6 +33,9 @@ namespace TreeGuardians.Tutorial
         bool shown;
         PlayerProgressService progress;
         float pulse;
+        float stepShownAt;
+        int lastAdvanceFrame = -1;
+        int pendingFromStep = -1;
 
         void Awake()
         {
@@ -52,6 +59,12 @@ namespace TreeGuardians.Tutorial
             }
             if (!running) return;
             if (!shown && manager.StateMachine.State == BattleState.Playing) Show(step);
+            // A damage event arrived while the current step was still too fresh: advance once it has been readable long enough.
+            if (pendingFromStep >= 0)
+            {
+                if (pendingFromStep != step) pendingFromStep = -1;
+                else if (Time.unscaledTime - stepShownAt >= minDamageStepSeconds) { pendingFromStep = -1; Advance(); }
+            }
             if (spotlight != null && spotlight.gameObject.activeSelf && !QualityApplier.ReduceMotion)
             {
                 pulse += Time.unscaledDeltaTime * 3f;
@@ -73,6 +86,7 @@ namespace TreeGuardians.Tutorial
             GameEventBus.Subscribe<ProjectileFiredEvent>(OnFired);
             GameEventBus.Subscribe<SectionDamagedEvent>(OnSectionDamaged);
             GameEventBus.Subscribe<SectionDestroyedEvent>(OnSectionDestroyed);
+            GameEventBus.Subscribe<GuardianDamagedEvent>(OnGuardianDamaged);
             GameEventBus.Subscribe<ToolUsedEvent>(OnToolUsed);
             GameEventBus.Subscribe<BattleFinishedEvent>(OnFinished);
             if (commander != null) commander.OnSelectionChanged += OnSelectionChanged;
@@ -83,6 +97,7 @@ namespace TreeGuardians.Tutorial
             GameEventBus.Unsubscribe<ProjectileFiredEvent>(OnFired);
             GameEventBus.Unsubscribe<SectionDamagedEvent>(OnSectionDamaged);
             GameEventBus.Unsubscribe<SectionDestroyedEvent>(OnSectionDestroyed);
+            GameEventBus.Unsubscribe<GuardianDamagedEvent>(OnGuardianDamaged);
             GameEventBus.Unsubscribe<ToolUsedEvent>(OnToolUsed);
             GameEventBus.Unsubscribe<BattleFinishedEvent>(OnFinished);
             if (commander != null) commander.OnSelectionChanged -= OnSelectionChanged;
@@ -91,6 +106,7 @@ namespace TreeGuardians.Tutorial
         void Show(int index)
         {
             shown = true;
+            stepShownAt = Time.unscaledTime;
             if (overlayRoot != null) overlayRoot.SetActive(true);
             if (overlayGroup != null) { overlayGroup.alpha = 0f; TGTween.FadeCanvasGroup(overlayGroup, 1f, 0.2f); }
             if (stepText != null) stepText.text = LocalizationService.Tr(stepKeys[index]);
@@ -116,6 +132,8 @@ namespace TreeGuardians.Tutorial
         {
             if (!running) return;
             step++;
+            lastAdvanceFrame = Time.frameCount;
+            pendingFromStep = -1;
             if (progress != null) progress.Data.tutorial.lastStep = step;
             if (step >= stepKeys.Length) { Complete(); return; }
             Show(step);
@@ -153,11 +171,41 @@ namespace TreeGuardians.Tutorial
             else if (overlayRoot != null) overlayRoot.SetActive(false);
         }
 
-        void OnSelectionChanged() { if (running && shown && step == 0) Advance(); }
-        void OnFired(ProjectileFiredEvent e) { if (running && e.side == BattleSide.Player && step == 1) Advance(); }
-        void OnSectionDamaged(SectionDamagedEvent e) { if (running && e.side == BattleSide.Enemy && (step == 2 || step == 3)) Advance(); }
-        void OnSectionDestroyed(SectionDestroyedEvent e) { if (running && e.side == BattleSide.Enemy && step == 3) Advance(); }
-        void OnToolUsed(ToolUsedEvent e) { if (running && e.side == BattleSide.Player && step == 4) Advance(); }
+        /// Step 0 only counts a real player action on the player's own turn:
+        /// - EndTurn (timeout/shot) and the BeginTurn reset report SelectedSlot == -1 and happen outside PlayerAct.
+        /// - The BeginTurn auto pre-selection happens in the same call that switched the phase (PhaseTime is still 0).
+        void OnSelectionChanged()
+        {
+            if (!running || !shown || step != StepSelect || commander == null || commander.SelectedSlot < 0) return;
+            var turns = manager != null && manager.Context != null ? manager.Context.turns : null;
+            if (turns != null && (!turns.IsPlayerActing || turns.PhaseTime <= 0f)) return;
+            Advance();
+        }
+
+        void OnFired(ProjectileFiredEvent e) { if (running && e.side == BattleSide.Player && step == StepFire) Advance(); }
+
+        /// Enemy wall damage completes "hit the walls"; a later wall hit also moves past the hole hint.
+        void OnSectionDamaged(SectionDamagedEvent e)
+        {
+            if (!running || e.side != BattleSide.Enemy) return;
+            if (step == StepHitWall || step == StepHoleInfo) RequestDamageAdvance();
+        }
+
+        void OnSectionDestroyed(SectionDestroyedEvent e) { if (running && e.side == BattleSide.Enemy && step == StepHoleInfo) RequestDamageAdvance(); }
+
+        /// "Guardians behind a hole can be hit!" completes when an enemy guardian actually takes damage.
+        void OnGuardianDamaged(GuardianDamagedEvent e) { if (running && e.side == BattleSide.Enemy && step == StepHoleInfo) RequestDamageAdvance(); }
+
+        /// One impact can publish several damage events in the same frame (splash, chip damage): the events of the impact that
+        /// just advanced a step are ignored, and a damage-driven step stays on screen for minDamageStepSeconds before moving on.
+        void RequestDamageAdvance()
+        {
+            if (!shown || Time.frameCount == lastAdvanceFrame) return;
+            if (Time.unscaledTime - stepShownAt >= minDamageStepSeconds) Advance();
+            else pendingFromStep = step;
+        }
+
+        void OnToolUsed(ToolUsedEvent e) { if (running && e.side == BattleSide.Player && step == StepTool) Advance(); }
         void OnFinished(BattleFinishedEvent e) { if (running) Complete(); }
     }
 }

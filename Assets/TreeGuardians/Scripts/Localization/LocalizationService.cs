@@ -58,6 +58,7 @@ namespace TreeGuardians.Localization
         {
             Current = lang;
             active = lang == Language.Turkish ? tr : en;
+            TGTween.NumberCulture = Culture;
             if (persist && settings != null)
             {
                 settings.language = (int)lang;
@@ -84,6 +85,39 @@ namespace TreeGuardians.Localization
         {
             var s = Services.Get<LocalizationService>();
             return s != null ? s.Get(key) : "[" + key + "]";
+        }
+
+        /// Culture-aware number format for the active language ("1,234" EN / "1.234" TR).
+        public System.Globalization.CultureInfo Culture => Current == Language.Turkish ? TurkishCulture : System.Globalization.CultureInfo.InvariantCulture;
+        static readonly System.Globalization.CultureInfo TurkishCulture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+
+        public static string Tr(string key, object arg0)
+        {
+            var s = Services.Get<LocalizationService>();
+            return s != null ? string.Format(s.Culture, s.Get(key), arg0) : "[" + key + "]";
+        }
+
+        public static string Tr(string key, object arg0, object arg1)
+        {
+            var s = Services.Get<LocalizationService>();
+            return s != null ? string.Format(s.Culture, s.Get(key), arg0, arg1) : "[" + key + "]";
+        }
+
+        /// Formats a count with the active language's thousands separator.
+        public static string Number(long value)
+        {
+            var s = Services.Get<LocalizationService>();
+            return value.ToString("N0", s != null ? s.Culture : System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// Localized short duration: "1h 05m" / "1sa 05dk", "4m 09s" / "4dk 09sn", "12s" / "12sn".
+        public static string Duration(double seconds)
+        {
+            if (seconds < 0) seconds = 0;
+            var ts = System.TimeSpan.FromSeconds(System.Math.Ceiling(seconds));
+            if (ts.TotalHours >= 1) return Tr("time_hm", (int)ts.TotalHours, ts.Minutes.ToString("00"));
+            if (ts.TotalMinutes >= 1) return Tr("time_ms", ts.Minutes, ts.Seconds.ToString("00"));
+            return Tr("time_s", ts.Seconds);
         }
     }
 }

@@ -17,6 +17,13 @@ namespace TreeGuardians.UI
         [SerializeField] bool haptic = true;
         [SerializeField] Graphic selectedGraphic;
         [SerializeField] Color selectedColor = new Color(1f, 0.85f, 0.35f);
+        [Tooltip("Seçiliyken rengi değişen etiket (boşsa selectedGraphic altındaki ilk metin). Sarı zeminde koyu yazı okunur.")]
+        [SerializeField] TMPro.TMP_Text selectedLabel;
+        [SerializeField] Color selectedLabelColor = new Color(0.29f, 0.17f, 0.06f, 1f);
+        [SerializeField] Sprite selectedSprite;
+        Color selectedLabelBaseColor;
+        Image selectedImage;
+        Sprite baseSprite;
 
         Button button;
         Vector3 baseScale;
@@ -28,7 +35,21 @@ namespace TreeGuardians.UI
         {
             button = GetComponent<Button>();
             baseScale = transform.localScale;
+            InitSelection();
+        }
+
+        bool selectionInited;
+
+        /// SetSelected can run before Awake (inactive panels), so the base colours are captured lazily.
+        void InitSelection()
+        {
+            if (selectionInited) return;
+            selectionInited = true;
             if (selectedGraphic != null) selectedGraphicBaseColor = selectedGraphic.color;
+            if (selectedLabel == null && selectedGraphic != null) selectedLabel = GetComponentInChildren<TMPro.TMP_Text>(true);
+            if (selectedLabel != null) selectedLabelBaseColor = selectedLabel.color;
+            selectedImage = selectedGraphic as Image;
+            if (selectedImage != null) baseSprite = selectedImage.sprite;
         }
 
         void OnDisable()
@@ -69,8 +90,11 @@ namespace TreeGuardians.UI
 
         public void SetSelected(bool value)
         {
+            InitSelection();
             selected = value;
             if (selectedGraphic != null) selectedGraphic.color = value ? selectedColor : selectedGraphicBaseColor;
+            if (selectedLabel != null) selectedLabel.color = value ? selectedLabelColor : selectedLabelBaseColor;
+            if (selectedImage != null && selectedSprite != null) selectedImage.sprite = value ? selectedSprite : baseSprite;
         }
 
         public bool IsSelected => selected;

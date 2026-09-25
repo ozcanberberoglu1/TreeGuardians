@@ -77,7 +77,7 @@ namespace TreeGuardians.UI.Menu
             if (shardsFill != null)
             {
                 shardsFill.transform.parent.gameObject.SetActive(needed > 0);
-                shardsFill.fillAmount = needed > 0 ? Mathf.Clamp01(state.shards / (float)needed) : 1f;
+                FillBar.Set(shardsFill, needed > 0 ? Mathf.Clamp01(state.shards / (float)needed) : 1f);
             }
             if (shardsText != null) shardsText.text = needed > 0 ? $"{state.shards}/{needed}" : LocalizationService.Tr("ui_max");
 

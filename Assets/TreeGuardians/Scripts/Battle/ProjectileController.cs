@@ -11,6 +11,9 @@ namespace TreeGuardians.Battle
     {
         [SerializeField] SpriteRenderer sprite;
         [SerializeField] TrailRenderer trail;
+        [Tooltip("Merminin etrafındaki parıltı (isabette gizlenir).")] [SerializeField] SpriteRenderer glow;
+        [Tooltip("İz parçacıkları (duman / pırıltı). İsabette emisyon durur, mevcut parçacıklar söner.")] [SerializeField] ParticleSystem trailFx;
+        [Tooltip("İsabetten sonra iz ve parçacıkların sönmesi için en az bekleme (saniye).")] [SerializeField] float minLingerSeconds = 0.25f;
 
         public ProjectileDefinition Def { get; private set; }
         public BattleSide Side { get; private set; }
@@ -21,6 +24,8 @@ namespace TreeGuardians.Battle
         public float DamageMultiplier { get; private set; } = 1f;
         public Vector2 Position => position;
         public Vector2 Velocity => velocity;
+        /// Time (Time.time) at which a finished projectile goes back to the pool (its trail has faded by then).
+        public float ReleaseAt { get; private set; }
 
         Vector2 position;
         Vector2 velocity;
@@ -57,12 +62,34 @@ namespace TreeGuardians.Battle
                 sprite.color = def.tint;
                 sprite.enabled = def.icon != null;
             }
+            if (glow != null) glow.enabled = true;
             if (trail != null) { trail.Clear(); trail.startColor = def.tint; trail.endColor = new Color(def.tint.r, def.tint.g, def.tint.b, 0f); trail.emitting = true; }
+            if (trailFx != null) { trailFx.Clear(true); trailFx.Play(true); }
+            ReleaseAt = 0f;
+        }
+
+        /// Finished flight: hides the body and stops emitting, so the trail and trail particles fade out in place.
+        /// Returns the Time.time at which it is safe to return the projectile to the pool.
+        public float BeginFade()
+        {
+            if (sprite != null) sprite.enabled = false;
+            if (glow != null) glow.enabled = false;
+            float linger = Mathf.Max(0f, minLingerSeconds);
+            if (trail != null) { trail.emitting = false; linger = Mathf.Max(linger, trail.time); }
+            if (trailFx != null)
+            {
+                trailFx.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                linger = Mathf.Max(linger, trailFx.main.startLifetime.constantMax);
+            }
+            homingTarget = null;
+            ReleaseAt = Time.time + linger;
+            return ReleaseAt;
         }
 
         public override void OnDespawned()
         {
             if (trail != null) { trail.emitting = false; trail.Clear(); }
+            if (trailFx != null) { trailFx.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); }
             homingTarget = null;
             Source = null;
         }

@@ -87,7 +87,7 @@ namespace TreeGuardians.UI.Menu
                 if (r.levelText != null) r.levelText.text = $"{level}/{progress.Balance.treeUpgradeMaxLevel}";
                 if (r.costText != null)
                 {
-                    r.costText.text = max ? LocalizationService.Tr("ui_max") : cost.ToString("N0");
+                    r.costText.text = max ? LocalizationService.Tr("ui_max") : LocalizationService.Number(cost);
                     r.costText.color = max || progress.Wallet.CanAfford(CurrencyType.Sap, cost) ? okColor : missingColor;
                 }
                 if (r.upgradeButton != null) r.upgradeButton.interactable = can;

@@ -27,6 +27,7 @@ namespace TreeGuardians.Core
         readonly Stack<T> free;
         readonly List<T> all;
         readonly int maxSize;
+        bool warned;
 
         public int CountAll => all.Count;
         public int CountFree => free.Count;
@@ -64,7 +65,7 @@ namespace TreeGuardians.Core
             else if (all.Count < maxSize) item = CreateNew();
             else
             {
-                Debug.LogWarning($"[ObjectPool] {prefab.name} exceeded max size {maxSize}; reusing oldest active.");
+                if (!warned) { warned = true; Debug.LogWarning($"[ObjectPool] {prefab.name} exceeded max size {maxSize}; reusing oldest active."); }
                 item = all[0];
                 item.OnDespawned();
             }
@@ -72,6 +73,14 @@ namespace TreeGuardians.Core
             item.gameObject.SetActive(true);
             item.OnSpawned();
             return item;
+        }
+
+        /// Non-stealing get: returns false when the pool is saturated (effects simply skip instead of recycling live items).
+        public bool TryGet(out T item)
+        {
+            if (free.Count == 0 && all.Count >= maxSize) { item = null; return false; }
+            item = Get();
+            return true;
         }
 
         public T Get(Vector3 position, Quaternion rotation)

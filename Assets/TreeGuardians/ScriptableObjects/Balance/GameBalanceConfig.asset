@@ -64,7 +64,7 @@ MonoBehaviour:
   battleDurationSeconds: 300
   readyCountdownSeconds: 3
   introSeconds: 1.2
-  resultRevealDelaySeconds: 1.5
+  resultRevealDelaySeconds: 2.8
   autoAttackDamageMultiplier: 0.5
   autoAttackCooldownMultiplier: 1.6
   branchBreakDamagePercent: 0.35

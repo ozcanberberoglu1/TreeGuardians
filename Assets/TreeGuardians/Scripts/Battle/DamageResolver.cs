@@ -23,24 +23,26 @@ namespace TreeGuardians.Battle
         public static float ArmorReduce(float raw, float armor) => raw * 100f / (100f + Mathf.Max(0f, armor));
 
         static readonly Color CastleDebris = new Color(0.55f, 0.4f, 0.28f);
-        static readonly Color CastleSmoke = new Color(0.22f, 0.2f, 0.19f, 0.85f);
+
+        static void Shake(float trauma) => GameEventBus.Publish(new ScreenShakeEvent { amplitude = trauma, duration = 0.3f });
+        static void HitStop(float seconds) => GameEventBus.Publish(new HitStopEvent { seconds = seconds });
 
         /// Opens a hole (with debris) in every destructible castle that has a wall part at the point.
-        public void CarveAt(Vector2 point, float radius, BattleSide source, bool hitOwnSide)
+        public void CarveAt(Vector2 point, float radius, BattleSide source, bool hitOwnSide, Vector2 direction = default)
         {
             if (radius <= 0f) return;
-            CarveOn(ctx.playerTree, point, radius, source, hitOwnSide);
-            CarveOn(ctx.enemyTree, point, radius, source, hitOwnSide);
+            CarveOn(ctx.playerTree, point, radius, source, hitOwnSide, direction);
+            CarveOn(ctx.enemyTree, point, radius, source, hitOwnSide, direction);
         }
 
-        void CarveOn(TreeSection s, Vector2 point, float radius)
+        void CarveOn(TreeSection s, Vector2 point, float radius, Vector2 direction = default, bool crit = false)
         {
             var tree = s.Tree;
             if (tree == null || !tree.IsDestructible || s.Type == TreeSectionType.RootStabilizer) return;
             float armorFactor = Mathf.Clamp(100f / (100f + s.Armor), 0.6f, 1f);
             tree.Carve(point, radius * armorFactor);
-            ctx.vfx?.Shards(point, 6, CastleDebris);
-            ctx.vfx?.Burst(point, CastleSmoke, Mathf.Clamp(radius * 1.8f, 0.8f, 2.2f));
+            ctx.vfx?.WallImpact(point, direction, radius * armorFactor, crit);
+            Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.Debris, point, 0.6f);
             if (ctx.NextFloat() < ctx.balance.holeSmokeChance) ctx.vfx?.AddSmokeSource(point, ctx.Range(ctx.balance.holeSmokeSecondsMin, ctx.balance.holeSmokeSecondsMax));
         }
 
@@ -57,12 +59,12 @@ namespace TreeGuardians.Battle
                 hi.hitPoint = point;
                 hi.holeRadius = radius;
                 if (rawStructure > 0f) HitSection(s, rawStructure, hi);
-                else CarveOn(s, point, radius);
+                else CarveOn(s, point, radius, info.direction);
                 return;
             }
         }
 
-        void CarveOn(TreeController tree, Vector2 point, float radius, BattleSide source, bool hitOwnSide)
+        void CarveOn(TreeController tree, Vector2 point, float radius, BattleSide source, bool hitOwnSide, Vector2 direction)
         {
             if (tree == null || !tree.IsDestructible) return;
             if (tree.Side == source && !hitOwnSide) return;
@@ -71,7 +73,7 @@ namespace TreeGuardians.Battle
                 var s = tree.Sections[i];
                 if (s == null || s.IsDestroyed || s.Type == TreeSectionType.RootStabilizer) continue;
                 if (!s.WorldBounds.Contains(new Vector3(point.x, point.y, s.WorldBounds.center.z))) continue;
-                CarveOn(s, point, radius);
+                CarveOn(s, point, radius, direction);
                 return;
             }
         }
@@ -85,6 +87,7 @@ namespace TreeGuardians.Battle
             if (info.status.type == StatusEffectType.Poison) dmg *= 1f - s.PoisonResistance;
             bool wasAlive = !s.IsDestroyed;
             float applied = s.ApplyDamage(dmg, info);
+            if (applied <= 0f && dmg > 0f) Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.ShieldBlock, info.hitPoint == Vector2.zero ? (Vector2)s.transform.position : info.hitPoint);
             if (applied > 0f)
             {
                 var stats = ctx.StatsOf(info.source);
@@ -92,15 +95,21 @@ namespace TreeGuardians.Battle
                 if (s.Type != TreeSectionType.HeartwoodCore) stats.structureDamage += applied;
                 if (info.isSpecial) { stats.specialDamage += applied; GameEventBus.Publish(new SpecialDamageEvent { amount = applied, side = info.source }); }
                 GameEventBus.Publish(new SectionDamagedEvent { side = s.Side, amount = applied, isCore = s.Type == TreeSectionType.HeartwoodCore });
-                ctx.vfx?.DamageNumber(info.hitPoint == Vector2.zero ? (Vector2)s.transform.position : info.hitPoint, applied, info.isCrit ? new Color(1f, 0.85f, 0.3f) : Color.white, info.isCrit);
-                if (info.holeRadius > 0f) CarveOn(s, info.hitPoint == Vector2.zero ? (Vector2)s.transform.position : info.hitPoint, info.holeRadius);
+                ctx.vfx?.Number(info.hitPoint == Vector2.zero ? (Vector2)s.transform.position : info.hitPoint, applied, info.isCrit ? BattleVFX.NumberStyle.Crit : BattleVFX.NumberStyle.Structure);
+                if (info.holeRadius > 0f) CarveOn(s, info.hitPoint == Vector2.zero ? (Vector2)s.transform.position : info.hitPoint, info.holeRadius, info.direction, info.isCrit);
+                if (info.isCrit) { HitStop(0.05f); Shake(0.45f); Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.CritHit, info.hitPoint); }
+                else if (applied >= s.MaxHealth * 0.25f) HitStop(0.035f);
                 if (wasAlive && s.IsDestroyed)
                 {
                     if (s.Type == TreeSectionType.BarkArmor) stats.barkBroken++;
                     else if (s.Type == TreeSectionType.Branch) stats.branchesBroken++;
                     stats.sectionsBroken++;
-                    ctx.vfx?.Shards(s.transform.position, s.Type == TreeSectionType.HeartwoodCore ? 14 : 7, s.Type == TreeSectionType.CanopyShield ? new Color(0.5f, 0.8f, 0.4f) : new Color(0.6f, 0.45f, 0.3f));
-                    GameEventBus.Publish(new ScreenShakeEvent { amplitude = s.Type == TreeSectionType.HeartwoodCore ? 0.35f : 0.14f, duration = 0.2f });
+                    if (s.Tree == null || !s.Tree.IsDestructible)
+                        ctx.vfx?.Shards(s.transform.position, s.Type == TreeSectionType.HeartwoodCore ? 14 : 7, s.Type == TreeSectionType.CanopyShield ? new Color(0.5f, 0.8f, 0.4f) : CastleDebris);
+                    Shake(s.Type == TreeSectionType.HeartwoodCore ? 0.9f : 0.65f);
+                    HitStop(0.07f);
+                    Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.BranchBreak, s.transform.position); // wall part break
+                    if (s.Side == BattleSide.Player) Services.Get<Audio.HapticService>()?.Medium();
                 }
             }
             return applied;
@@ -109,15 +118,26 @@ namespace TreeGuardians.Battle
         public float HitGuardian(GuardianController g, float raw, in DamageInfo info, bool silent = false)
         {
             if (g == null || !g.IsAlive || raw <= 0f) return 0f;
-            float dmg = ArmorReduce(raw, g.Armor + g.BuffArmorBonus);
+            float dmg = ArmorReduce(raw, g.Armor + g.BuffArmorBonus + g.AuraArmorBonus);
+            bool wasAlive = g.IsAlive;
             float applied = g.ApplyDamage(dmg, info);
+            if (applied <= 0f && dmg > 0f && !silent) Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.ShieldBlock, g.transform.position);
             if (info.status.type != StatusEffectType.None) g.ApplyStatus(info.status);
             if (applied > 0f)
             {
                 var stats = ctx.StatsOf(info.source);
                 stats.damageDealt += applied;
                 if (info.isSpecial) { stats.specialDamage += applied; GameEventBus.Publish(new SpecialDamageEvent { amount = applied, side = info.source }); }
-                if (!silent) ctx.vfx?.DamageNumber(info.hitPoint == Vector2.zero ? (Vector2)g.transform.position : info.hitPoint, applied, info.isCrit ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.6f, 0.6f), info.isCrit);
+                if (!silent) ctx.vfx?.Number(info.hitPoint == Vector2.zero ? (Vector2)g.transform.position : info.hitPoint, applied, info.isCrit ? BattleVFX.NumberStyle.Crit : BattleVFX.NumberStyle.Guardian);
+                bool killed = wasAlive && !g.IsAlive;
+                GameEventBus.Publish(new GuardianDamagedEvent { side = g.Side, amount = applied, killed = killed });
+                if (!silent)
+                {
+                    if (killed) { HitStop(0.06f); Shake(0.35f); }
+                    else if (info.isCrit) { HitStop(0.05f); Shake(0.4f); Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.CritHit, info.hitPoint); }
+                    else Shake(0.2f);
+                    if (!killed) Services.Get<Audio.AudioService>()?.PlaySfxAt(g.Definition.hurtSfx, info.hitPoint == Vector2.zero ? (Vector2)g.transform.position : info.hitPoint);
+                }
             }
             return applied;
         }
@@ -150,7 +170,9 @@ namespace TreeGuardians.Battle
                     HitGuardian(guardian, rawGuardian * mult, hi);
                 }
             }
-            ctx.vfx?.Burst(center, new Color(1f, 0.8f, 0.5f), Mathf.Clamp(radius * 0.8f, 0.6f, 2.5f));
+            ctx.vfx?.Explosion(center, radius, new Color(1f, 0.8f, 0.5f), info.status.type == StatusEffectType.Poison);
+            Shake(Mathf.Clamp(0.3f + radius * 0.1f, 0.35f, 0.6f));
+            if (info.status.type != StatusEffectType.Poison) Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.Explosion, center);
         }
 
         /// Heals own sections and guardians in an area.

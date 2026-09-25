@@ -38,7 +38,7 @@ MonoBehaviour:
     magnitude: 0
   holeRadius: 0
   impactVfxPrefab: {fileID: 0}
-  launchSfx: 6
+  launchSfx: 37
   impactSfx: 7
   shake:
     amplitude: 0.05

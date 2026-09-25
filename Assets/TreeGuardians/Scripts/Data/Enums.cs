@@ -108,8 +108,42 @@ namespace TreeGuardians.Data
         CoinCount = 17,
         ToolUse = 18,
         Heal = 19,
-        Countdown = 20
+        Countdown = 20,
+        Explosion = 21,
+        Debris = 22,
+        GuardianDeath = 23,
+        CritHit = 24,
+        TurnStart = 25,
+        EnemyTurn = 26,
+        TimerTick = 27,
+        CardSelect = 28,
+        WindGust = 29,
+        Thunder = 30,
+        TurnTimeout = 31,
+        BattleStart = 32,
+        CastleCollapse = 33,
+        WallCrack = 34,
+        GroundThud = 35,
+        ShieldBlock = 36,
+        LaunchLight = 37,
+        LaunchHeavy = 38,
+        LaunchMagic = 39,
+        MagicImpact = 40,
+        PoisonHiss = 41,
+        SpecialReady = 42,
+        SpecialBuff = 43,
+        Equip = 44,
+        ChestShake = 45,
+        Transition = 46,
+        Unlock = 47,
+        StarPop = 48,
+        BeeBuzz = 49,
+        VineWhip = 50,
+        WindChime = 51,
+        ShieldUp = 52
     }
+
+    public enum AmbienceTrackId { None = 0, Forest = 1, Rain = 2 }
 
     public enum MusicTrackId { None = 0, MainMenu = 1, BattleSunny = 2, BattleSwamp = 3, BattleAutumn = 4, BattleMoon = 5, Results = 6 }
 }

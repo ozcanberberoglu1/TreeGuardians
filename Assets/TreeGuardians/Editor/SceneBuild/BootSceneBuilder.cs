@@ -19,6 +19,9 @@ namespace TreeGuardians.Editor.SceneBuild
     public static class BootSceneBuilder
     {
         public const string BootRootPrefabPath = "Assets/TreeGuardians/Resources/TG_BootRoot.prefab";
+        const int SfxVoices = 12;
+        const int UiVoices = 5;
+        const int AmbienceVoices = 2;
 
         public static void Build()
         {
@@ -48,17 +51,23 @@ namespace TreeGuardians.Editor.SceneBuild
             UIFactory.Set(provider, "balance", balance);
             UIFactory.Set(provider, "database", db);
 
-            // Audio voices pre-created so nothing is spawned at runtime.
-            var musicA = CreateVoice("Music_A", audioGo.transform, true);
-            var musicB = CreateVoice("Music_B", audioGo.transform, true);
-            var sfx = new Object[8];
-            for (int i = 0; i < 8; i++) sfx[i] = CreateVoice("Sfx_" + i, audioGo.transform, false);
-            var ui = new Object[3];
-            for (int i = 0; i < 3; i++) ui[i] = CreateVoice("Ui_" + i, audioGo.transform, false);
+            // Audio voices pre-created so nothing is spawned at runtime. Music/UI ignore AudioListener.pause, SFX/ambience follow it;
+            // engine priority: music 0, ambience 32, UI 64, SFX 128 (AudioService re-applies per-event priority on play).
+            var musicA = CreateVoice("Music_A", audioGo.transform, true, true, 0);
+            var musicB = CreateVoice("Music_B", audioGo.transform, true, true, 0);
+            var sfx = new Object[SfxVoices];
+            for (int i = 0; i < SfxVoices; i++) sfx[i] = CreateVoice("Sfx_" + i, audioGo.transform, false, false, 128);
+            var ui = new Object[UiVoices];
+            for (int i = 0; i < UiVoices; i++) ui[i] = CreateVoice("Ui_" + i, audioGo.transform, false, true, 64);
+            var amb = new Object[AmbienceVoices];
+            for (int i = 0; i < AmbienceVoices; i++) amb[i] = CreateVoice("Ambience_" + i, audioGo.transform, true, false, 32);
             UIFactory.Set(audio, "musicSourceA", musicA);
             UIFactory.Set(audio, "musicSourceB", musicB);
             UIFactory.SetArray(audio, "sfxSources", sfx);
             UIFactory.SetArray(audio, "uiSources", ui);
+            UIFactory.SetArray(audio, "ambienceSources", amb);
+            UIFactory.Set(audio, "sfxVoiceCount", (float)SfxVoices);
+            UIFactory.Set(audio, "uiVoiceCount", (float)UiVoices);
 
             UIFactory.Set(bootstrapper, "configProvider", provider);
             UIFactory.Set(bootstrapper, "saveService", save);
@@ -103,13 +112,15 @@ namespace TreeGuardians.Editor.SceneBuild
             SceneBuildUtility.Save(scene, "00_Boot");
         }
 
-        static AudioSource CreateVoice(string name, Transform parent, bool loop)
+        static AudioSource CreateVoice(string name, Transform parent, bool loop, bool ignoreListenerPause, int priority)
         {
             var go = UIFactory.Child(name, parent);
             var s = go.AddComponent<AudioSource>();
             s.playOnAwake = false;
             s.loop = loop;
-            s.ignoreListenerPause = true;
+            s.ignoreListenerPause = ignoreListenerPause;
+            s.priority = priority;
+            s.spatialBlend = 0f;
             return s;
         }
     }

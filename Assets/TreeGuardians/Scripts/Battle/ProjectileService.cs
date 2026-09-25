@@ -26,6 +26,7 @@ namespace TreeGuardians.Battle
 
         readonly Dictionary<ProjectileDefinition, ObjectPool<ProjectileController>> pools = new Dictionary<ProjectileDefinition, ObjectPool<ProjectileController>>(16);
         readonly List<ProjectileController> active = new List<ProjectileController>(64);
+        readonly List<ProjectileController> dying = new List<ProjectileController>(32);
         readonly List<RaycastHit2D> hits = new List<RaycastHit2D>(16);
         ContactFilter2D filter;
         BattleContext ctx;
@@ -82,8 +83,20 @@ namespace TreeGuardians.Battle
                 if (!p.Step(dt, this, hits, filter))
                 {
                     active.RemoveAt(i);
-                    p.ReleaseToPool();
+                    // Keep it alive a moment so the trail and trail particles fade instead of popping.
+                    p.BeginFade();
+                    dying.Add(p);
                 }
+            }
+            float now = Time.time;
+            for (int i = dying.Count - 1; i >= 0; i--)
+            {
+                var p = dying[i];
+                if (p == null) { dying.RemoveAt(i); continue; }
+                if (p.ReleaseAt <= 0f) { dying.RemoveAt(i); continue; } // re-launched by a saturated pool: it is live again
+                if (now < p.ReleaseAt) continue;
+                dying.RemoveAt(i);
+                p.ReleaseToPool();
             }
         }
 
@@ -91,6 +104,8 @@ namespace TreeGuardians.Battle
         {
             for (int i = 0; i < active.Count; i++) active[i]?.ReleaseToPool();
             active.Clear();
+            for (int i = 0; i < dying.Count; i++) dying[i]?.ReleaseToPool();
+            dying.Clear();
         }
 
         /// Returns true when the collider is a valid enemy target (and applies damage); consumed=false lets the projectile pass.
@@ -106,11 +121,12 @@ namespace TreeGuardians.Battle
             // A cast that starts inside the collider reports distance 0; use the projectile position as the impact point then.
             Vector2 point = hit.distance <= 0.001f ? p.Position : hit.point;
             info.hitPoint = point;
+            info.direction = p.Velocity.sqrMagnitude > 0.001f ? p.Velocity.normalized : Vector2.zero;
             if (ctx.targeting.TryGetSection(hit.collider, out var section))
             {
                 if (section.Side == p.Side && !p.Def.canHitOwnSide) return false;
                 if (section.IsDestroyed) return false;
-                if (section.Tree != null && section.Tree.IsDestructible && section.Tree.IsHoleAt(point)) return false; // flies on through the hole
+                if (section.Type != TreeSectionType.RootStabilizer && section.Tree != null && section.Tree.IsDestructible && section.Tree.IsHoleAt(point)) return false; // flies on through the hole
                 info.holeRadius = HoleRadius(p);
                 if (p.Def.splashRadius > 0f) return true;
                 info.amount = rawStructure;
@@ -143,10 +159,9 @@ namespace TreeGuardians.Battle
 
         public void SplashAt(ProjectileController p, Vector2 point, float rawGuardian, float rawStructure)
         {
-            var info = new DamageInfo { source = p.Side, isSpecial = p.IsSpecial, isTool = p.IsTool, isCrit = p.IsCrit, status = p.Def.statusEffect, hitPoint = point, sourceSlot = p.Source != null ? p.Source.SlotIndex : -1 };
+            var info = new DamageInfo { source = p.Side, isSpecial = p.IsSpecial, isTool = p.IsTool, isCrit = p.IsCrit, status = p.Def.statusEffect, hitPoint = point, sourceSlot = p.Source != null ? p.Source.SlotIndex : -1, direction = p.Velocity.sqrMagnitude > 0.001f ? p.Velocity.normalized : Vector2.zero };
             ctx.damage.Splash(point, p.Def.splashRadius, p.Def.splashFalloff, rawGuardian, rawStructure, info, p.Def.canHitOwnSide);
-            ctx.damage.CarveAt(point, Mathf.Max(HoleRadius(p), p.Def.splashRadius * 0.85f), p.Side, p.Def.canHitOwnSide);
-            if (p.Def.statusEffect.type == StatusEffectType.Poison) ctx.vfx?.Poison(point, p.Def.splashRadius);
+            ctx.damage.CarveAt(point, Mathf.Max(HoleRadius(p), p.Def.splashRadius * 0.85f), p.Side, p.Def.canHitOwnSide, info.direction);
             OnHitFeedback(p, point, true);
         }
 
@@ -156,12 +171,14 @@ namespace TreeGuardians.Battle
             p.Source?.OnOwnProjectileHit();
             ctx.vfx?.Hit(point, p.Def.tint);
             Services.Get<AudioService>()?.PlaySfx(p.Def.impactSfx);
-            if (p.Def.shake.amplitude > 0f) GameEventBus.Publish(new ScreenShakeEvent { amplitude = p.Def.shake.amplitude, duration = p.Def.shake.duration });
+            // Shake amplitude is 'trauma' (0..1) for the camera controller.
+            if (p.Def.shake.amplitude > 0f) GameEventBus.Publish(new ScreenShakeEvent { amplitude = Mathf.Clamp01(0.12f + p.Def.shake.amplitude * 2.5f), duration = p.Def.shake.duration });
         }
 
         public void OnGroundHit(ProjectileController p)
         {
-            ctx.vfx?.Hit(new Vector2(p.Position.x, groundY + 0.1f), new Color(0.7f, 0.6f, 0.4f));
+            ctx.vfx?.GroundPuff(new Vector2(p.Position.x, groundY + 0.05f));
+            Services.Get<AudioService>()?.PlaySfx(AudioEventId.Debris, 0.5f);
         }
 
         public void OnMiss(ProjectileController p)

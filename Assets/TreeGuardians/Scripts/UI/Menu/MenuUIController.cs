@@ -47,6 +47,8 @@ namespace TreeGuardians.UI.Menu
 
         [Header("Top Bar")]
         [SerializeField] TMP_Text playerLevelText;
+        [Tooltip("İsteğe bağlı: TopBar > ProfileButton > ProfileLabel. Atanırsa oyuncu adını gösterir (üzerindeki LocalizedTMPText kapatılır).")]
+        [SerializeField] TMP_Text profileNameText;
         [SerializeField] Button settingsButton;
         [SerializeField] Button coinsButton;
         [SerializeField] Button sapButton;
@@ -61,19 +63,26 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] Button guardiansButton;
         [SerializeField] Button toolsButton;
         [SerializeField] Button profileButton;
+        [Tooltip("Henüz olmayan özellikler (Sezon, Etkinlikler) için buton tonu; 'Yakında' izlenimi verir.")]
+        [SerializeField] Color comingSoonTint = new Color(0.75f, 0.75f, 0.75f, 1f);
 
         [Header("Center")]
         [SerializeField] TMP_Text treePowerText;
         [SerializeField] TMP_Text arenaNameText;
         [SerializeField] Image arenaBadge;
         [SerializeField] TMP_Text arenaProgressText;
+        [Tooltip("İsteğe bağlı: arena çubuğunun içinde '90 / 150' kupa sayacı.")] [SerializeField] TMP_Text arenaTrophyCountText;
         [SerializeField] Image arenaProgressFill;
         [SerializeField] Button editLoadoutButton;
         [SerializeField] CenterTreeDisplay centerTree;
         [Tooltip("Muhafız paneli açıkken sönen ana menü HUD kökleri (TopBar, raylar, orta HUD, BottomBar...). Paneller ve popup katmanı dahil edilmez.")] [SerializeField] CanvasGroup[] hudGroups = new CanvasGroup[0];
+        [Tooltip("Ortalanmış paneller (Mağaza, Görevler, Ayarlar...) açıkken sönen HUD kökleri. TopBar'ı eklemeyin: para birimleri görünür kalsın.")]
+        [SerializeField] CanvasGroup[] panelHiddenGroups = new CanvasGroup[0];
 
         [Header("Bottom")]
-        [Tooltip("Başarımlar sekmesini açar; etiket = tamamlanan/toplam başarım.")] [SerializeField] Button rankButton;
+        [Tooltip("Açıksa Rank butonu Arena Yolu'nu (RankingPanel) açar ve kupa sayısını gösterir; başarımlar Görevler panelindeki sekmeden açılır. Kapalıysa başarımlar sekmesini açar.")]
+        [SerializeField] bool rankButtonOpensArenaPath = true;
+        [Tooltip("Başarımlar sekmesini (veya Arena Yolu'nu) açar; etiket = tamamlanan/toplam başarım (veya kupa).")] [SerializeField] Button rankButton;
         [SerializeField] TMP_Text rankLabel;
         [Tooltip("Alınmamış başarım ödülü sayısı; 0 ise gizlenir.")] [SerializeField] GameObject rankBadge;
         [SerializeField] TMP_Text rankBadgeText;
@@ -94,7 +103,12 @@ namespace TreeGuardians.UI.Menu
         PlayerProgressService progress;
         QuestService questService;
         bool initialized;
-        static bool dailyPromptShownThisSession;
+        bool hudForcedHidden;
+        /// lastClaimUtcTicks of the daily reward the start-up prompt was shown for (once per claimable reward, not once per process).
+        static long dailyPromptShownForClaimTicks = long.MinValue;
+
+        readonly System.Collections.Generic.Dictionary<CanvasGroup, Coroutine> hudFades = new System.Collections.Generic.Dictionary<CanvasGroup, Coroutine>(8);
+        readonly System.Collections.Generic.Dictionary<CanvasGroup, bool> hudVisible = new System.Collections.Generic.Dictionary<CanvasGroup, bool>(8);
 
         void Awake()
         {
@@ -115,6 +129,7 @@ namespace TreeGuardians.UI.Menu
                 GameEventBus.Unsubscribe<QuestProgressEvent>(OnQuestProgress);
                 GameEventBus.Unsubscribe<QuestClaimedEvent>(OnQuestClaimed);
                 GameEventBus.Unsubscribe<RewardAppliedEvent>(OnRewardApplied);
+                GameEventBus.Unsubscribe<GuardianUpgradedEvent>(OnTutorialUpgrade);
                 if (questService != null) questService.OnChanged -= RefreshQuestSummaries;
                 if (guardiansPanel != null)
                 {
@@ -124,24 +139,53 @@ namespace TreeGuardians.UI.Menu
             }
         }
 
-        void OnGuardiansPanelOpened() => SetHudVisible(false);
-        void OnGuardiansPanelClosed() => SetHudVisible(true);
+        void OnGuardiansPanelOpened() => RefreshHudVisibility();
+        void OnGuardiansPanelClosed() => RefreshHudVisibility();
 
-        Coroutine[] hudFades;
-        /// Fades the main-menu HUD (bars, rails, center info) so a side-docked panel is not cluttered by the background UI.
+        /// Forces the whole main-menu HUD hidden (false) or back to its automatic state (true).
         public void SetHudVisible(bool visible)
         {
-            if (hudFades == null || hudFades.Length != hudGroups.Length) hudFades = new Coroutine[hudGroups.Length];
-            float dur = QualityApplier.ReduceMotion ? 0f : 0.2f;
-            for (int i = 0; i < hudGroups.Length; i++)
+            hudForcedHidden = !visible;
+            RefreshHudVisibility();
+        }
+
+        /// Side-docked Guardians panel: every hudGroup fades out. A centered panel: panelHiddenGroups fade out (rails, center HUD,
+        /// bottom bar) while the TopBar keeps the currencies visible. One pass over both lists so the two rules never fight.
+        void RefreshHudVisibility()
+        {
+            bool guardiansOpen = hudForcedHidden || (guardiansPanel != null && guardiansPanel.IsOpen);
+            bool centeredOpen = current != null && current.IsOpen && current != guardiansPanel;
+            ApplyHudGroups(hudGroups, guardiansOpen, centeredOpen);
+            ApplyHudGroups(panelHiddenGroups, guardiansOpen, centeredOpen);
+        }
+
+        void ApplyHudGroups(CanvasGroup[] groups, bool guardiansOpen, bool centeredOpen)
+        {
+            if (groups == null) return;
+            for (int i = 0; i < groups.Length; i++)
             {
-                var g = hudGroups[i];
+                var g = groups[i];
                 if (g == null) continue;
-                TGTween.Stop(hudFades[i]);
-                g.blocksRaycasts = visible;
-                g.interactable = visible;
-                hudFades[i] = TGTween.FadeCanvasGroup(g, visible ? 1f : 0f, dur);
+                bool hide = (guardiansOpen && Contains(hudGroups, g)) || (centeredOpen && Contains(panelHiddenGroups, g));
+                SetGroupVisible(g, !hide);
             }
+        }
+
+        static bool Contains(CanvasGroup[] groups, CanvasGroup g)
+        {
+            if (groups == null) return false;
+            for (int i = 0; i < groups.Length; i++) if (groups[i] == g) return true;
+            return false;
+        }
+
+        void SetGroupVisible(CanvasGroup g, bool visible)
+        {
+            if (hudVisible.TryGetValue(g, out bool was) && was == visible) return;
+            hudVisible[g] = visible;
+            if (hudFades.TryGetValue(g, out var running)) TGTween.Stop(running);
+            g.blocksRaycasts = visible;
+            g.interactable = visible;
+            hudFades[g] = TGTween.FadeCanvasGroup(g, visible ? 1f : 0f, QualityApplier.ReduceMotion ? 0f : 0.2f);
         }
 
         void HideAll()
@@ -169,13 +213,16 @@ namespace TreeGuardians.UI.Menu
             Wire(shopButton, () => OpenPanel(shopPanel));
             Wire(seasonButton, () => Toast("menu_coming_soon"));
             Wire(eventsButton, () => Toast("menu_coming_soon"));
+            TintComingSoon(seasonButton);
+            TintComingSoon(eventsButton);
             Wire(inboxButton, () => connectionPopup?.Show());
             Wire(treeButton, () => OpenPanel(treeUpgradePanel));
             Wire(guardiansButton, () => OpenPanel(guardiansPanel));
             Wire(toolsButton, () => OpenPanel(toolsPanel));
             Wire(profileButton, () => OpenPanel(profilePanel));
             Wire(editLoadoutButton, () => OpenPanel(guardiansPanel));
-            Wire(rankButton, () => OpenQuests(true));
+            if (rankButtonOpensArenaPath && rankingPanel != null) Wire(rankButton, () => OpenPanel(rankingPanel));
+            else Wire(rankButton, () => OpenQuests(true));
             Wire(questsButton, () => OpenQuests(false));
             Wire(arenaPathButton, () => OpenPanel(rankingPanel));
             Wire(battleButton, () => OpenPanel(battlePrepPanel));
@@ -193,7 +240,14 @@ namespace TreeGuardians.UI.Menu
                     Debug.LogWarning($"[MenuUIController] ChestSlotsView has {chestSlotsView.SlotCount} slots but GameBalanceConfig.chestSlotCount is {progress.Balance.chestSlotCount}.", chestSlotsView);
             }
             questService = Services.Get<QuestService>();
+            // A session left open (or resumed) across the day boundary: reset dailies before the badges are computed.
+            questService?.CheckDailyReset();
             if (questService != null) questService.OnChanged += RefreshQuestSummaries;
+            if (profileNameText != null)
+            {
+                var localized = profileNameText.GetComponent<LocalizedTMPText>();
+                if (localized != null) localized.enabled = false;
+            }
             if (guardiansPanel != null)
             {
                 guardiansPanel.OnOpened += OnGuardiansPanelOpened;
@@ -220,12 +274,7 @@ namespace TreeGuardians.UI.Menu
             }
             else
             {
-                var quests = Services.Get<QuestService>();
-                if (!dailyPromptShownThisSession && quests != null && quests.CanClaimDailyReward() && dailyRewardPopup != null)
-                {
-                    dailyPromptShownThisSession = true;
-                    TGTween.Delay(0.6f, () => { if (this != null && current == null) dailyRewardPopup.Show(); });
-                }
+                TryPromptDailyReward();
             }
 
             var tut = progress.Data.tutorial;
@@ -234,6 +283,30 @@ namespace TreeGuardians.UI.Menu
                 TGTween.Delay(1.2f, () => { if (this != null) Toast("tut_step_8"); });
                 GameEventBus.Subscribe<GuardianUpgradedEvent>(OnTutorialUpgrade);
             }
+        }
+
+        /// Shows the daily reward popup once per claimable reward (a session left open past the cooldown prompts again).
+        void TryPromptDailyReward()
+        {
+            var quests = questService != null ? questService : Services.Get<QuestService>();
+            if (quests == null || dailyRewardPopup == null || progress == null || !quests.CanClaimDailyReward()) return;
+            long claimTicks = progress.Data.dailyReward.lastClaimUtcTicks;
+            if (dailyPromptShownForClaimTicks == claimTicks) return;
+            dailyPromptShownForClaimTicks = claimTicks;
+            TGTween.Delay(0.6f, () => { if (this != null && current == null && !dailyRewardPopup.IsOpen) dailyRewardPopup.Show(); });
+        }
+
+        void OnApplicationFocus(bool focus)
+        {
+            if (!focus || !initialized || this == null) return;
+            questService?.CheckDailyReset();
+            TryPromptDailyReward();
+        }
+
+        void TintComingSoon(Button b)
+        {
+            if (b == null || b.targetGraphic == null) return;
+            b.targetGraphic.color = comingSoonTint;
         }
 
         void OnTutorialUpgrade(GuardianUpgradedEvent e)
@@ -255,16 +328,26 @@ namespace TreeGuardians.UI.Menu
         {
             if (panel == null) { Toast("menu_coming_soon"); return; }
             if (current == panel) return;
+            // The guardian detail is opened on top of the Guardians panel outside 'current'; never leave it behind another panel.
+            if (panel != guardianDetailPanel) CloseGuardianDetail();
             if (current != null) current.Close();
             current = panel;
-            panel.Open();
             panel.OnClosed += HandleCurrentClosed;
+            panel.Open();
+            RefreshHudVisibility();
         }
 
         void HandleCurrentClosed()
         {
             if (current != null) current.OnClosed -= HandleCurrentClosed;
             current = null;
+            RefreshHudVisibility();
+        }
+
+        /// Closes the guardian detail panel if it is open (Guardians panel closing, another panel opening).
+        public void CloseGuardianDetail()
+        {
+            if (guardianDetailPanel != null && guardianDetailPanel.IsOpen) guardianDetailPanel.Close();
         }
 
         public void CloseCurrent()
@@ -273,6 +356,7 @@ namespace TreeGuardians.UI.Menu
         }
 
         public bool IsAnyPanelOpen => current != null;
+        public bool IsGuardianDetailOpen => guardianDetailPanel != null && guardianDetailPanel.IsOpen;
         public CenterTreeDisplay CenterTree => centerTree;
 
         /// Quests panel on the requested tab (Rank button = achievements, Quests button = quests).
@@ -289,13 +373,17 @@ namespace TreeGuardians.UI.Menu
 
         public void OpenChestSlot(int index)
         {
-            chestsPanel?.ShowSlot(index);
-            if (chestsPanel != null && current != chestsPanel)
+            if (chestsPanel == null) return;
+            if (current != chestsPanel)
             {
+                CloseGuardianDetail();
                 if (current != null) current.Close();
                 current = chestsPanel;
                 chestsPanel.OnClosed += HandleCurrentClosed;
             }
+            chestsPanel.ShowSlot(index);
+            if (!chestsPanel.IsOpen && current == chestsPanel) HandleCurrentClosed();
+            else RefreshHudVisibility();
         }
 
         public void OpenChestPopup(int slotIndex)
@@ -385,7 +473,8 @@ namespace TreeGuardians.UI.Menu
         {
             if (progress == null) return;
             if (playerLevelText != null) playerLevelText.text = progress.Data.playerLevel.ToString();
-            if (treePowerText != null) treePowerText.text = progress.GetTreePower().ToString("N0");
+            if (profileNameText != null) profileNameText.text = ProfilePanel.GetDisplayName(progress.Data);
+            if (treePowerText != null) treePowerText.text = LocalizationService.Number(progress.GetTreePower());
             var arena = progress.CurrentArena;
             if (arena != null)
             {
@@ -396,13 +485,15 @@ namespace TreeGuardians.UI.Menu
                 {
                     int span = Mathf.Max(1, next.unlockTrophies - arena.unlockTrophies);
                     float t = Mathf.Clamp01((progress.Data.trophies - arena.unlockTrophies) / (float)span);
-                    if (arenaProgressFill != null) arenaProgressFill.fillAmount = t;
-                    if (arenaProgressText != null) arenaProgressText.text = string.Format(LocalizationService.Tr("menu_next_arena"), next.unlockTrophies);
+                    FillBar.Set(arenaProgressFill, t);
+                    if (arenaProgressText != null) arenaProgressText.text = LocalizationService.Tr("menu_next_arena", LocalizationService.Number(next.unlockTrophies));
+                    if (arenaTrophyCountText != null) arenaTrophyCountText.text = LocalizationService.Number(progress.Data.trophies) + " / " + LocalizationService.Number(next.unlockTrophies);
                 }
                 else
                 {
-                    if (arenaProgressFill != null) arenaProgressFill.fillAmount = 1f;
+                    FillBar.Set(arenaProgressFill, 1f);
                     if (arenaProgressText != null) arenaProgressText.text = LocalizationService.Tr("menu_max_arena");
+                    if (arenaTrophyCountText != null) arenaTrophyCountText.text = LocalizationService.Number(progress.Data.trophies);
                 }
             }
             centerTree?.Refresh();
@@ -419,8 +510,18 @@ namespace TreeGuardians.UI.Menu
             var q = quests != null ? quests.GetQuestSummary() : default;
             var a = quests != null ? quests.GetAchievementSummary() : default;
             int questClaimable = quests != null ? quests.QuestClaimableCount : 0;
-            SetSummary(questsLabel, questsBadge, questsBadgeText, q.completed, q.total, questClaimable);
-            SetSummary(rankLabel, rankBadge, rankBadgeText, a.completed, a.total, a.claimable);
+            if (rankButtonOpensArenaPath && rankingPanel != null)
+            {
+                // Rank = arena path (trophies); achievements live in the Quests panel tab, so their rewards join the Quests badge.
+                SetSummary(questsLabel, questsBadge, questsBadgeText, q.completed, q.total, questClaimable + a.claimable);
+                if (rankLabel != null) rankLabel.text = progress != null ? LocalizationService.Number(progress.Data.trophies) : "";
+                if (rankBadge != null) rankBadge.SetActive(false);
+            }
+            else
+            {
+                SetSummary(questsLabel, questsBadge, questsBadgeText, q.completed, q.total, questClaimable);
+                SetSummary(rankLabel, rankBadge, rankBadgeText, a.completed, a.total, a.claimable);
+            }
         }
 
         static void SetSummary(TMP_Text label, GameObject badge, TMP_Text badgeText, int completed, int total, int claimable)

@@ -14,6 +14,10 @@ namespace TreeGuardians.UI.Menu
 
         [Header("Silhouette (Guardians panel)")]
         [SerializeField] Color silhouetteColor = new Color(0.05f, 0.04f, 0.07f, 1f);
+        [Tooltip("Bölme olmayan ama silüete girmesi gereken ek parçalar. Kale tabanı ('Root') bilerek buraya EKLENMEZ: taban renkli kalmalı.")]
+        [SerializeField] SpriteRenderer[] extraSilhouetteParts = new SpriteRenderer[0];
+        [Tooltip("Tam silüetin üst sınırı. Kullanıcı isteği: Muhafızlar görünümünde bölmeler tamamen siyah (1), taban renkli kalır.")]
+        [SerializeField, Range(0f, 1f)] float maxSilhouette = 1f;
         [Tooltip("Seçili yuvanın silüet oranı (0 = tam görünür, 1 = tam siyah).")] [SerializeField, Range(0f, 1f)] float selectedSlotSilhouette = 0.45f;
         [SerializeField] float silhouetteFadeSeconds = 0.25f;
         [Tooltip("Panel açıkken ağacın kaydığı x (dünya birimi). Panel serbest alan bildirirse o kullanılır.")] [SerializeField] float loadoutOffsetX = -6.2f;
@@ -100,16 +104,24 @@ namespace TreeGuardians.UI.Menu
         {
             silhouette = value;
             if (block == null) block = new MaterialPropertyBlock();
+            float full = value * maxSilhouette;
             for (int i = 0; i < slots.Length; i++)
             {
                 var sr = slots[i]?.part;
                 if (sr == null) continue;
-                float amount = i == selectedSlot ? value * selectedSlotSilhouette : value;
-                sr.GetPropertyBlock(block);
-                block.SetFloat(SilhouetteId, amount);
-                block.SetColor(SilhouetteColorId, silhouetteColor);
-                sr.SetPropertyBlock(block);
+                ApplyTo(sr, i == selectedSlot ? full * selectedSlotSilhouette : full);
             }
+            if (extraSilhouetteParts != null)
+                for (int i = 0; i < extraSilhouetteParts.Length; i++)
+                    if (extraSilhouetteParts[i] != null) ApplyTo(extraSilhouetteParts[i], full);
+        }
+
+        void ApplyTo(SpriteRenderer sr, float amount)
+        {
+            sr.GetPropertyBlock(block);
+            block.SetFloat(SilhouetteId, amount);
+            block.SetColor(SilhouetteColorId, silhouetteColor);
+            sr.SetPropertyBlock(block);
         }
 
         void Update()

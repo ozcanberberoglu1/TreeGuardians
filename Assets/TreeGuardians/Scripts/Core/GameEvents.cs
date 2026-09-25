@@ -32,4 +32,7 @@ namespace TreeGuardians.Core
     public struct CoreExposedEvent { public BattleSide side; }
     public struct BattleMessageEvent { public string key; public float duration; }
     public struct ScreenShakeEvent { public float amplitude; public float duration; }
+    /// Brief slow-motion freeze on heavy impacts (battle only, ignored with reduce-motion).
+    public struct HitStopEvent { public float seconds; }
+    public struct GuardianDamagedEvent { public BattleSide side; public float amount; public bool killed; }
 }

@@ -12,6 +12,9 @@ namespace TreeGuardians.Quests
     /// Event-driven quests, achievements and the daily reward cycle.
     public sealed class QuestService : MonoBehaviour
     {
+        [Tooltip("Günlük görevler oyuncunun yerel gece yarısında sıfırlanır. Kapalıysa 00:00 UTC (Türkiye'de 03:00).")]
+        [SerializeField] bool resetAtLocalMidnight = true;
+
         PlayerProgressService progress;
         SaveService save;
         GameDatabase db;
@@ -228,13 +231,21 @@ namespace TreeGuardians.Quests
         /// Unclaimed achievement rewards (what the Rank badge shows).
         public int AchievementClaimableCount => GetAchievementSummary().claimable;
 
-        public void CheckDailyReset()
+        /// Resets daily quests once per day. Safe to call any time (boot, menu entry, app resume, a ticking panel);
+        /// returns true when a reset happened. The day boundary is the player's local midnight unless resetAtLocalMidnight is off
+        /// (then 00:00 UTC). The monotonic save clock still blocks rolling the device clock back.
+        public bool CheckDailyReset()
         {
+            if (!IsInitialized || progress.Data == null) return false;
             var now = save.GetUtcNow();
-            var last = progress.Data.lastDailyQuestResetUtcTicks > 0
-                ? new DateTime(progress.Data.lastDailyQuestResetUtcTicks, DateTimeKind.Utc)
-                : DateTime.MinValue;
-            if (now.Date <= last.Date) return;
+            long lastTicks = progress.Data.lastDailyQuestResetUtcTicks;
+            if (lastTicks > 0)
+            {
+                var last = new DateTime(lastTicks, DateTimeKind.Utc);
+                var nowDay = resetAtLocalMidnight ? now.ToLocalTime().Date : now.Date;
+                var lastDay = resetAtLocalMidnight ? last.ToLocalTime().Date : last.Date;
+                if (nowDay <= lastDay) return false;
+            }
             var quests = progress.Data.quests;
             for (int i = 0; i < quests.Count; i++)
             {
@@ -245,7 +256,19 @@ namespace TreeGuardians.Quests
                 quests[i].assignedUtcTicks = now.Ticks;
             }
             progress.Data.lastDailyQuestResetUtcTicks = now.Ticks;
+            if (lastTicks > 0) progress.Save();
             OnChanged?.Invoke();
+            return true;
+        }
+
+        void OnApplicationFocus(bool focus)
+        {
+            if (focus) CheckDailyReset();
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            if (!paused) CheckDailyReset();
         }
 
         // Daily reward. Offline prototype uses the monotonic device clock; a production build should

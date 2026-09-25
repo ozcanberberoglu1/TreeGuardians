@@ -59,10 +59,13 @@ namespace TreeGuardians.Guardians
             for (int i = 0; i < slots.Length; i++)
             {
                 var g = slots[i];
-                if (g == null || !g.IsActive || !g.IsAlive) continue;
+                if (g == null || !g.IsActive) continue;
+                if (!g.IsAlive) { g.Tick(dt, 0f); continue; }
                 if (oppTools != null && oppTools.IsSlowedAt(g.transform.position, out float slow)) g.SetExternalSlow(slow);
                 else g.SetExternalSlow(0f);
-                g.Tick(dt);
+                // Turn-based duel: statuses (stun, root, poison) only count down on the owner's own turn.
+                float statusDt = ctx != null && ctx.turns != null && ctx.turns.CurrentSide != side ? 0f : dt;
+                g.Tick(dt, statusDt);
             }
         }
 
@@ -140,7 +143,7 @@ namespace TreeGuardians.Guardians
                 if (g.Definition.passiveKind == GuardianPassiveKind.ArmorAura) armorAura += g.Definition.passiveMagnitude;
                 if (g.Definition.passiveKind == GuardianPassiveKind.ToolCooldownReduction) toolCd += g.Definition.passiveMagnitude;
             }
-            if (armorAura > 0f) ApplyArmorBuff(armorAura, 99999f);
+            for (int i = 0; i < slots.Length; i++) if (slots[i] != null && slots[i].IsActive) slots[i].AuraArmorBonus = armorAura;
             ctx?.ToolsOf(side)?.SetCooldownMultiplier(Mathf.Clamp(1f - toolCd, 0.4f, 1f));
         }
 

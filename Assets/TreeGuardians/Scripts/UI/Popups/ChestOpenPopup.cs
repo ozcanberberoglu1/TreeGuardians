@@ -56,6 +56,7 @@ namespace TreeGuardians.UI.Popups
             if (chestButton != null) chestButton.interactable = true;
             Open();
             if (chestImage != null) TGTween.PunchScale(chestImage.transform, 0.18f, 0.5f);
+            Services.Get<AudioService>()?.PlayUi(AudioEventId.ChestShake);
             TGTween.Stop(autoOpen);
             autoOpen = TGTween.Delay(autoOpenSeconds, OpenChest);
         }

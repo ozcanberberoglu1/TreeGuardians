@@ -32,4 +32,4 @@ MonoBehaviour:
   cooldownReductionPerLevel: 0.02
   arenaUnlockIndex: 0
   playableInPrototype: 1
-  useSfx: 18
+  useSfx: 49

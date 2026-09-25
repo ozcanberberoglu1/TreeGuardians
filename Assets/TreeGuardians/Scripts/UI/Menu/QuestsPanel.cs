@@ -65,7 +65,10 @@ namespace TreeGuardians.UI.Menu
         {
             if (!IsOpen || !Services.IsBootstrapped || Time.unscaledTime < nextTick) return;
             nextTick = Time.unscaledTime + 1f;
-            RefreshDaily();
+            var quests = Services.Get<QuestService>();
+            // Panel left open across the day boundary: daily quests reset live.
+            if (quests != null && quests.CheckDailyReset()) Refresh();
+            else RefreshDaily();
         }
 
         void Refresh()
@@ -75,26 +78,34 @@ namespace TreeGuardians.UI.Menu
             Highlight(tabQuestsButton, !showAchievements);
             Highlight(tabAchievementsButton, showAchievements);
             int n = 0;
-            if (!showAchievements)
+            // Three passes keep the list order stable inside each group: claimable first, then in progress, claimed last.
+            for (int pass = 0; pass < 3; pass++)
             {
-                var list = quests.Quests;
-                for (int i = 0; i < list.Count; i++)
+                if (!showAchievements)
                 {
-                    var q = list[i];
-                    var def = quests.GetQuestDefinition(q.id);
-                    if (def == null) continue;
-                    Row(n++).Bind(q.id, false, def.icon, def.titleKey, def.descriptionKey, q.progress, def.targetCount, q.claimed, quests.CanClaim(q.id), def.reward, def.isDaily, OnClaim);
+                    var list = quests.Quests;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var q = list[i];
+                        var def = quests.GetQuestDefinition(q.id);
+                        if (def == null) continue;
+                        bool claimable = quests.CanClaim(q.id);
+                        if (Group(claimable, q.claimed) != pass) continue;
+                        Row(n++).Bind(q.id, false, def.icon, def.titleKey, def.descriptionKey, q.progress, def.targetCount, q.claimed, claimable, def.reward, def.isDaily, OnClaim);
+                    }
                 }
-            }
-            else
-            {
-                var list = quests.Achievements;
-                for (int i = 0; i < list.Count; i++)
+                else
                 {
-                    var a = list[i];
-                    var def = quests.GetAchievementDefinition(a.id);
-                    if (def == null) continue;
-                    Row(n++).Bind(a.id, true, def.icon, def.titleKey, def.descriptionKey, a.progress, def.targetCount, a.claimed, quests.CanClaimAchievement(a.id), def.reward, false, OnClaim);
+                    var list = quests.Achievements;
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        var a = list[i];
+                        var def = quests.GetAchievementDefinition(a.id);
+                        if (def == null) continue;
+                        bool claimable = quests.CanClaimAchievement(a.id);
+                        if (Group(claimable, a.claimed) != pass) continue;
+                        Row(n++).Bind(a.id, true, def.icon, def.titleKey, def.descriptionKey, a.progress, def.targetCount, a.claimed, claimable, def.reward, false, OnClaim);
+                    }
                 }
             }
             for (int i = n; i < rows.Count; i++) rows[i].gameObject.SetActive(false);
@@ -108,6 +119,8 @@ namespace TreeGuardians.UI.Menu
             if (quests.CanClaimDailyReward()) dailyRewardLabel.text = LocalizationService.Tr("menu_daily_reward") + " — " + LocalizationService.Tr("ui_claim");
             else dailyRewardLabel.text = string.Format(LocalizationService.Tr("daily_next_in"), ChestSlotView.FormatTime(quests.TimeUntilDailyReward().TotalSeconds));
         }
+
+        static int Group(bool claimable, bool claimed) => claimable ? 0 : claimed ? 2 : 1;
 
         QuestRowView Row(int i)
         {

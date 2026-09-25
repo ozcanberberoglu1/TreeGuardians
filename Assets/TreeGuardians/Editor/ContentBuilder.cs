@@ -131,10 +131,11 @@ namespace TreeGuardians.Editor
             p.collisionRadius = radius; p.lifetime = lifetime;
             p.gravityScale = 1f; p.homingStrength = 3f; p.bounceCount = 0; p.pierceCount = 0; p.splashRadius = 0f; p.splashFalloff = 0.4f;
             p.statusEffect = new StatusEffectSpec();
-            p.impactSfx = AudioEventId.BarkHit; p.launchSfx = AudioEventId.ProjectileLaunch;
+            p.impactSfx = AudioEventId.BarkHit; p.launchSfx = AudioEventId.LaunchLight;
             p.shake = new ShakeProfile { amplitude = 0.05f, duration = 0.1f };
             p.impactVfxPrefab = null;
             extra?.Invoke(p);
+            AudioContentBuilder.ApplyProjectileSfx(p); // launch/impact per projectile type (motion, splash, status)
             EditorUtility.SetDirty(p);
             projectiles[id] = p;
             return p;
@@ -184,6 +185,7 @@ namespace TreeGuardians.Editor
             g.specialEnergyCost = 100f; g.specialMagnitude = specialMag; g.specialDuration = specialDur;
             g.passiveKind = passive; g.passiveMagnitude = passiveMag;
             g.arenaUnlockIndex = arenaUnlock; g.playableInPrototype = playable;
+            AudioContentBuilder.ApplyGuardianSfx(g); // no attack sound: the projectile's launchSfx is the shot
             EditorUtility.SetDirty(g);
             return g;
         }
@@ -216,6 +218,7 @@ namespace TreeGuardians.Editor
             t.effectMagnitude = magnitude; t.effectDuration = duration; t.effectRadius = radius; t.projectileCount = count; t.cooldownSeconds = cd; t.requiresAim = aim;
             t.maxLevel = 10; t.baseUpgradeSap = 20; t.upgradeGrowth = 1.4f; t.magnitudePerLevel = 0.08f; t.cooldownReductionPerLevel = 0.02f;
             t.arenaUnlockIndex = arenaUnlock; t.playableInPrototype = playable;
+            AudioContentBuilder.ApplyToolSfx(t);
             EditorUtility.SetDirty(t);
             return t;
         }
@@ -395,8 +398,8 @@ namespace TreeGuardians.Editor
             };
             t.guardianSlotPositions = new[]
             {
-                new Vector2(-1.64f, 1.95f + lift), new Vector2(0.01f, 1.95f + lift), new Vector2(1.66f, 2.22f + lift),
-                new Vector2(-1.63f, 3.58f + lift), new Vector2(0.01f, 3.65f + lift), new Vector2(1.63f, 3.59f + lift),
+                new Vector2(-1.64f, 1.95f + lift), new Vector2(0.01f, 1.95f + lift), new Vector2(1.66f, 1.95f + lift),
+                new Vector2(-1.63f, 3.58f + lift), new Vector2(0.01f, 3.59f + lift), new Vector2(1.63f, 3.59f + lift),
                 new Vector2(0f, 12f), new Vector2(0f, 12.5f)
             };
             t.toolMountPositions = new[] { new Vector2(-1.63f, 7.6f + lift), new Vector2(0.01f, 5.55f + lift), new Vector2(1.63f, 7.6f + lift) };

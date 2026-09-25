@@ -18,6 +18,8 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] GameObject emptyState;
         [SerializeField] GameObject readyGlow;
         [SerializeField] Button button;
+        [Tooltip("Kapalıysa sandık varken isim gizlenir (sandık görseli tipi belirtir; uzun isimler slot çerçevesinden taşmaz). Boş slotta 'Boş' yazısı her zaman görünür.")]
+        [SerializeField] bool showNameWhenFilled;
 
         Action onClick;
         float nextTick;
@@ -72,13 +74,16 @@ namespace TreeGuardians.UI.Menu
             if (readyGlow != null) readyGlow.SetActive(!empty && chests.IsReady(slotIndex));
             if (empty)
             {
-                if (nameText != null) nameText.text = LocalizationService.Tr("chest_empty_slot");
+                if (nameText != null) { nameText.gameObject.SetActive(true); nameText.text = LocalizationService.Tr("chest_empty_slot"); }
                 if (timerText != null) timerText.text = "";
                 return;
             }
-            var slot = chests.Slots[slotIndex];
             if (chestIcon != null) chestIcon.sprite = chests.IsReady(slotIndex) ? ChestArt.Open(def) : ChestArt.Closed(def);
-            if (nameText != null) nameText.text = LocalizationService.Tr(def.nameKey);
+            if (nameText != null)
+            {
+                nameText.gameObject.SetActive(showNameWhenFilled);
+                if (showNameWhenFilled) nameText.text = LocalizationService.Tr(def.nameKey);
+            }
             UpdateTimer(chests, def.unlockSeconds);
         }
 
@@ -105,13 +110,6 @@ namespace TreeGuardians.UI.Menu
         }
 #endif
 
-        public static string FormatTime(double seconds)
-        {
-            if (seconds < 0) seconds = 0;
-            var ts = TimeSpan.FromSeconds(seconds);
-            if (ts.TotalHours >= 1) return $"{(int)ts.TotalHours}h {ts.Minutes:00}m";
-            if (ts.TotalMinutes >= 1) return $"{ts.Minutes}m {ts.Seconds:00}s";
-            return $"{ts.Seconds}s";
-        }
+        public static string FormatTime(double seconds) => LocalizationService.Duration(seconds);
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
+using TreeGuardians.Audio;
 using TreeGuardians.Core;
 using TreeGuardians.Data;
 using TreeGuardians.Localization;
@@ -31,6 +32,10 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] Button sortRarityButton;
         [SerializeField] Button sortNewButton;
         [SerializeField] Button closeButton;
+        [Tooltip("Koleksiyon ızgarasının sütun sayısı; hücre genişliği içerik genişliğini dolduracak şekilde hesaplanır (0 = sahnedeki GridLayoutGroup ayarı aynen kalır).")]
+        [SerializeField] int gridColumns = 5;
+        [Tooltip("Kart yüksekliği / genişliği oranı (230x300 kart = 1.304).")]
+        [SerializeField] float cardAspect = 300f / 230f;
 
         readonly List<GuardianCardView> cards = new List<GuardianCardView>(16);
         readonly List<GuardianDefinition> working = new List<GuardianDefinition>(16);
@@ -90,6 +95,7 @@ namespace TreeGuardians.UI.Menu
         protected override void OnOpen()
         {
             selectedSlot = -1;
+            FitGridColumns();
             Refresh();
             MenuUIController.Instance?.CenterTree?.SetLoadoutMode(true, FreeAreaCenterWorldX());
         }
@@ -97,20 +103,39 @@ namespace TreeGuardians.UI.Menu
         protected override void OnClose()
         {
             base.OnClose();
+            MenuUIController.Instance?.CloseGuardianDetail();
             MenuUIController.Instance?.CenterTree?.SetLoadoutMode(false);
         }
 
+        /// Sizes the collection cells so gridColumns cards fill the content width (no dead column on wide screens).
+        void FitGridColumns()
+        {
+            if (gridColumns <= 0 || gridContent == null) return;
+            var grid = gridContent.GetComponent<GridLayoutGroup>();
+            if (grid == null) return;
+            float width = gridContent.rect.width;
+            if (width <= 1f) return;
+            float inner = width - grid.padding.left - grid.padding.right - grid.spacing.x * (gridColumns - 1);
+            float cellW = Mathf.Floor(inner / gridColumns);
+            if (cellW < 60f) return;
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = gridColumns;
+            grid.childAlignment = TextAnchor.UpperCenter;
+            grid.cellSize = new Vector2(cellW, Mathf.Round(cellW * Mathf.Max(0.5f, cardAspect)));
+        }
+
         /// World x of the middle of the screen area left of this panel, so the tree can slide next to it on any aspect ratio.
+        /// Measured at the panel's final size: UIPanel.Open has already applied the open tween's first (scaled-down) step.
         float? FreeAreaCenterWorldX()
         {
             var cam = Camera.main;
             var rt = transform as RectTransform;
             var canvas = GetComponentInParent<Canvas>();
             if (cam == null || rt == null || canvas == null) return null;
-            var corners = new Vector3[4];
-            rt.GetWorldCorners(corners);
+            Vector3 leftLocal = rt.localPosition + new Vector3(rt.rect.xMin, 0f, 0f);
+            Vector3 leftWorld = rt.parent != null ? rt.parent.TransformPoint(leftLocal) : leftLocal;
             var uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            float panelLeftPx = RectTransformUtility.WorldToScreenPoint(uiCam, corners[0]).x;
+            float panelLeftPx = RectTransformUtility.WorldToScreenPoint(uiCam, leftWorld).x;
             float worldWidth = cam.orthographic ? cam.orthographicSize * 2f * cam.aspect : 0f;
             if (worldWidth <= 0f || cam.pixelWidth <= 0) return null;
             float screenLeftWorld = cam.transform.position.x - worldWidth * 0.5f;
@@ -224,35 +249,51 @@ namespace TreeGuardians.UI.Menu
             if (view.IsEmpty)
             {
                 selectedSlot = selectedSlot == view.SlotIndex ? -1 : view.SlotIndex;
+                PlayCardSelect();
                 Refresh();
                 return;
             }
             if (selectedSlot >= 0 && selectedSlot != view.SlotIndex)
             {
-                progress.SwapEquipped(selectedSlot, view.SlotIndex);
+                if (progress.SwapEquipped(selectedSlot, view.SlotIndex)) PlayUi(AudioEventId.Equip);
                 selectedSlot = -1;
                 return;
             }
             selectedSlot = -1;
-            MenuUIController.Instance?.OpenGuardianDetail(view.GuardianId, view.SlotIndex);
+            OpenDetail(view.GuardianId, view.SlotIndex);
         }
 
         void OnCollectionCardClicked(GuardianCardView view)
         {
             if (!progress.IsGuardianUnlocked(view.GuardianId))
             {
-                MenuUIController.Instance?.OpenGuardianDetail(view.GuardianId, -1);
+                OpenDetail(view.GuardianId, -1);
                 return;
             }
             if (selectedSlot >= 0)
             {
-                progress.EquipGuardian(view.GuardianId, selectedSlot);
+                if (progress.EquipGuardian(view.GuardianId, selectedSlot)) PlayUi(AudioEventId.Equip);
                 selectedSlot = -1;
                 progress.ClearNewFlag(view.GuardianId);
                 return;
             }
             progress.ClearNewFlag(view.GuardianId);
-            MenuUIController.Instance?.OpenGuardianDetail(view.GuardianId, progress.FindEquippedSlot(view.GuardianId));
+            OpenDetail(view.GuardianId, progress.FindEquippedSlot(view.GuardianId));
         }
+
+        /// A card tap that opens the detail panel is answered by the panel's open sound; a tap that only switches the
+        /// already open detail to another guardian plays CardSelect instead (the generic click is suppressed either way).
+        void OpenDetail(string guardianId, int slot)
+        {
+            var menu = MenuUIController.Instance;
+            if (menu == null) return;
+            bool switching = menu.IsGuardianDetailOpen;
+            menu.OpenGuardianDetail(guardianId, slot);
+            if (switching) PlayCardSelect();
+        }
+
+        static void PlayCardSelect() => PlayUi(AudioEventId.CardSelect);
+
+        static void PlayUi(AudioEventId id) => Services.Get<AudioService>()?.PlayUi(id);
     }
 }

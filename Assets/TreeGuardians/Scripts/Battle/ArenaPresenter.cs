@@ -1,5 +1,7 @@
 using TreeGuardians.Core;
 using TreeGuardians.Data;
+using TreeGuardians.FX;
+using TreeGuardians.Trees;
 using UnityEngine;
 
 namespace TreeGuardians.Battle
@@ -8,6 +10,11 @@ namespace TreeGuardians.Battle
     public sealed class ArenaPresenter : MonoBehaviour
     {
         [SerializeField] GradientSprite sky;
+        [Tooltip("Kullanıcının boyalı arka planı (Assets/Art/bg.png); arenaya göre renklendirilir.")] [SerializeField] SpriteRenderer backdrop;
+        [SerializeField] SpriteRenderer[] contactShadows = new SpriteRenderer[0];
+        [Tooltip("Kalelerin durduğu yüzen adalar (Platforms-.png); arenanın platformTint rengini alır.")] [SerializeField] SpriteRenderer[] islands = new SpriteRenderer[0];
+        [Tooltip("Arena castleTint beyaz değilse parçaları renklendirilen kaleler.")] [SerializeField] TreeController[] castles = new TreeController[0];
+        [Tooltip("Arenaya göre yağmur/şimşek ayarı ve yaprak rengi alan hava durumu.")] [SerializeField] WeatherController weather;
         [SerializeField] SpriteRenderer[] clouds = new SpriteRenderer[0];
         [SerializeField] SpriteRenderer mountains;
         [SerializeField] SpriteRenderer forestBack;
@@ -29,6 +36,36 @@ namespace TreeGuardians.Battle
             arena = def;
             if (def == null) return;
             if (sky != null) sky.SetColors(def.skyTop, def.skyBottom);
+            if (backdrop != null)
+            {
+                var tint = def.backdropTint * def.ambientTint;
+                tint.a = 1f;
+                backdrop.color = tint;
+            }
+            foreach (var isl in islands)
+            {
+                if (isl == null) continue;
+                var c = def.platformTint;
+                c.a = 1f;
+                isl.color = c;
+            }
+            if (def.castleTint != Color.white)
+            {
+                var ct = def.castleTint;
+                ct.a = 1f;
+                foreach (var castle in castles)
+                {
+                    if (castle == null) continue;
+                    var sections = castle.Sections;
+                    for (int i = 0; i < sections.Count; i++) if (sections[i] != null) sections[i].SetBaseColor(ct);
+                }
+            }
+            // After the backdrop colour is set: the weather captures it as the dry-weather colour it darkens from.
+            if (weather != null)
+            {
+                weather.Configure(def.rainChance, def.lightning);
+                weather.SetLeafTint(def.leafTintA, def.leafTintB);
+            }
             foreach (var c in clouds) if (c != null) { c.color = def.ambientTint * new Color(1f, 1f, 1f, 0.9f); if (def.cloudsSprite != null) c.sprite = def.cloudsSprite; }
             Tint(mountains, def.mountainsSprite, Color.Lerp(def.skyBottom, def.groundColor, 0.45f) * def.ambientTint);
             Tint(forestBack, def.forestBackSprite, Color.Lerp(def.groundColor, def.skyBottom, 0.35f) * def.ambientTint);

@@ -85,16 +85,24 @@ namespace TreeGuardians.AI
         void ThinkTurn()
         {
             var roster = ctx.enemyRoster;
-            if (roster == null) return;
+            if (roster == null) { ctx.turns?.Skip(Side); return; }
             roster.GetAlive(ownAlive);
-            if (ownAlive.Count == 0) return;
+            if (ownAlive.Count == 0) { ctx.turns?.Skip(Side); return; }
+            for (int i = ownAlive.Count - 1; i >= 0; i--) if (!ownAlive[i].CanFire(false)) ownAlive.RemoveAt(i);
+            if (ownAlive.Count == 0)
+            {
+                // Everyone is stunned/rooted (at most ~1.5 s): wait it out instead of wasting the turn.
+                turnShotQueued = false;
+                thinkTimer = 0.25f;
+                return;
+            }
             var g = ownAlive[ctx.rng.Next(ownAlive.Count)];
             int viewIndex = IndexOf(roster, g);
-            if (viewIndex < 0) return;
+            if (viewIndex < 0) { ctx.turns?.Skip(Side); return; }
             bool useSpecial = g.SpecialReady && ctx.NextFloat() < (difficulty == BotDifficulty.Hard ? 0.8f : 0.45f) && g.CanFire(true);
-            if (!ChooseCastleAimPoint(out var aim)) return;
+            if (!ChooseCastleAimPoint(out var aim)) { ctx.turns?.Skip(Side); return; }
             var def = useSpecial && g.Definition.specialProjectile != null ? g.Definition.specialProjectile : g.Definition.normalProjectile;
-            if (def == null) return;
+            if (def == null) { ctx.turns?.Skip(Side); return; }
             var v = ctx.projectiles.LaunchVelocity(def, g.MuzzlePosition, aim, 1f);
             Vector2 dir = v.sqrMagnitude > 0.001f ? v.normalized : Vector2.left;
             float err = ctx.Range(-AngleError, AngleError) * Mathf.Deg2Rad;
@@ -120,7 +128,7 @@ namespace TreeGuardians.AI
                     var g = enemyAlive[i];
                     if (g.BodyCollider == null) continue;
                     Vector2 c = g.BodyCollider.bounds.center;
-                    if (!tree.IsHoleAt(c)) continue;
+                    if (tree.IsCoveredAt(c)) continue;
                     if (best == null || g.HealthPercent < best.HealthPercent) best = g;
                 }
                 if (best != null) { aim = best.BodyCollider.bounds.center; return true; }

@@ -109,6 +109,7 @@ namespace TreeGuardians.Trees
             }
             if (sectionCollider != null) sectionCollider.enabled = true;
             gameObject.SetActive(true);
+            if (keepVisualsOnDestroy) { SetFloat(ClearedId, 0f); SetFloat(FlashId, 0f); castleFlash = 0f; }
             WorldBounds = sectionCollider != null ? sectionCollider.bounds : new Bounds(transform.position, Vector3.one);
         }
 
@@ -116,7 +117,23 @@ namespace TreeGuardians.Trees
         static readonly int MaskRectId = Shader.PropertyToID("_MaskRect");
         static readonly int UseMaskId = Shader.PropertyToID("_UseMask");
         static readonly int SilhouetteId = Shader.PropertyToID("_Silhouette");
+        static readonly int FlashId = Shader.PropertyToID("_Flash");
+        static readonly int ClearedId = Shader.PropertyToID("_Cleared");
         MaterialPropertyBlock block;
+        float castleFlash;
+
+        void SetFloat(int id, float value)
+        {
+            if (block == null) block = new MaterialPropertyBlock();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null) continue;
+                r.GetPropertyBlock(block);
+                block.SetFloat(id, value);
+                r.SetPropertyBlock(block);
+            }
+        }
 
         /// Binds the castle's shared destruction mask to this part's renderers (Sprite Destructible shader).
         public void SetMask(Texture mask, Vector4 shaderRect, bool carvable)
@@ -166,6 +183,8 @@ namespace TreeGuardians.Trees
             for (int i = 0; i < renderers.Length; i++) if (renderers[i] != null && intact != null) renderers[i].sprite = intact;
         }
 
+        public void ClearShield() { ShieldHealth = 0f; ShieldExpiresAt = 0f; }
+
         public void AddShield(float amount, float duration)
         {
             ShieldHealth = Mathf.Max(ShieldHealth, amount);
@@ -205,7 +224,12 @@ namespace TreeGuardians.Trees
             if (IsDestroyed) return;
             IsDestroyed = true;
             if (sectionCollider != null) sectionCollider.enabled = false;
-            if (!keepVisualsOnDestroy)
+            if (keepVisualsOnDestroy)
+            {
+                // Castle wall part: fade the whole part out (the shared hole mask is left alone so neighbours keep their shape).
+                TGTween.FloatTo(0f, 1f, 0.3f, v => { if (this != null) SetFloat(ClearedId, v); }, Ease.InQuad);
+            }
+            else
             {
                 for (int i = 0; i < renderers.Length; i++)
                 {
@@ -222,6 +246,7 @@ namespace TreeGuardians.Trees
         {
             int stage = HealthPercent > 0.66f ? 0 : HealthPercent > 0.33f ? 1 : 2;
             if (stage == damageStage) return;
+            if (stage > damageStage && Tree != null && Tree.IsDestructible) Services.Get<TreeGuardians.Audio.AudioService>()?.PlaySfxAt(AudioEventId.WallCrack, transform.position);
             damageStage = stage;
             if (damageStateSprites == null || damageStateSprites.Length < 3) return;
             var s = damageStateSprites[stage] != null ? damageStateSprites[stage] : damageStateSprites[0];
@@ -231,6 +256,7 @@ namespace TreeGuardians.Trees
 
         void Flash()
         {
+            if (keepVisualsOnDestroy) { castleFlash = 1f; SetFloat(FlashId, 1f); return; }
             flashUntil = Time.time + 0.08f;
             for (int i = 0; i < renderers.Length; i++) if (renderers[i] != null) renderers[i].color = Color.white;
         }
@@ -238,6 +264,11 @@ namespace TreeGuardians.Trees
         /// Called by TreeController each frame; restores colours after a hit flash and reacts to protection changes.
         public void Tick()
         {
+            if (castleFlash > 0f)
+            {
+                castleFlash = Mathf.Max(0f, castleFlash - Time.deltaTime / 0.14f);
+                SetFloat(FlashId, castleFlash * castleFlash);
+            }
             if (flashUntil > 0f && Time.time >= flashUntil)
             {
                 flashUntil = 0f;

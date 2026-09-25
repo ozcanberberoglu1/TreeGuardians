@@ -186,6 +186,7 @@ namespace TreeGuardians.Battle
                 var s = tmpSections[ctx.rng.Next(tmpSections.Count)];
                 ctx.damage.HitSection(s, damage * 1.5f, new DamageInfo { amount = damage, source = source.Side, isSpecial = true, hitPoint = s.transform.position, sourceSlot = source.SlotIndex });
                 ctx.vfx?.Burst(s.transform.position, new Color(1f, 0.95f, 0.4f), 1f);
+                Core.Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.MagicImpact, s.transform.position, 0.7f);
                 return true;
             }
             Vector2 from = source.MuzzlePosition;
@@ -204,6 +205,7 @@ namespace TreeGuardians.Battle
                 float dmg = damage * Mathf.Pow(0.8f, hits);
                 ctx.damage.HitGuardian(g, dmg, new DamageInfo { amount = dmg, source = source.Side, isSpecial = true, hitPoint = g.transform.position, sourceSlot = source.SlotIndex });
                 ctx.vfx?.Burst(g.transform.position, new Color(1f, 0.95f, 0.4f), 0.8f);
+                Core.Services.Get<Audio.AudioService>()?.PlaySfxAt(AudioEventId.MagicImpact, g.transform.position, 0.7f, 1f + hits * 0.08f);
                 from = g.transform.position;
                 hits++;
             }

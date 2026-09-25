@@ -80,7 +80,7 @@ namespace TreeGuardians.UI.Menu
             if (openButton != null) openButton.gameObject.SetActive(!empty && chests.CanOpen(slotIndex));
             bool canSkip = !empty && !chests.IsReady(slotIndex);
             if (skipButton != null) skipButton.gameObject.SetActive(canSkip);
-            if (canSkip && skipLabel != null) skipLabel.text = string.Format(LocalizationService.Tr("chest_skip"), chests.GetSkipGemCost(slotIndex));
+            if (canSkip && skipLabel != null) skipLabel.text = LocalizationService.Tr("chest_skip", LocalizationService.Number(chests.GetSkipGemCost(slotIndex)));
             if (timerText != null)
             {
                 if (empty) timerText.text = "";
@@ -92,7 +92,8 @@ namespace TreeGuardians.UI.Menu
                 if (empty) infoText.text = "";
                 else if (!chests.Slots[slotIndex].unlocking && chests.IsAnyUnlocking && !chests.IsReady(slotIndex)) infoText.text = LocalizationService.Tr("chest_busy");
                 else if (chests.Slots[slotIndex].unlocking && !chests.IsReady(slotIndex)) infoText.text = LocalizationService.Tr("chest_unlocking");
-                else infoText.text = $"{def.cardDraws} {LocalizationService.Tr("guardian_cards")} · {def.coinsMin}-{def.coinsMax} {LocalizationService.Tr("currency_coins")}";
+                else infoText.text = LocalizationService.Tr("chest_info_cards", def.cardDraws) + " · "
+                    + LocalizationService.Number(def.coinsMin) + "-" + LocalizationService.Number(def.coinsMax) + " " + LocalizationService.Tr("currency_coins");
             }
         }
 

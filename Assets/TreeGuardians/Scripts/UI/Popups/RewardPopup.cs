@@ -54,7 +54,8 @@ namespace TreeGuardians.UI.Popups
             }
             if (collectButton != null) collectButton.interactable = false;
             Open();
-            Services.Get<AudioService>()?.PlayUi(AudioEventId.RewardPop);
+            // Each tile plays its own rising RewardPop in RewardItemView.Pop; a popup-level pop would double the first one.
+            if (shown == 0) Services.Get<AudioService>()?.PlayUi(AudioEventId.RewardPop);
             TGTween.Delay(0.1f + shown * revealDelay + 0.1f, () => { if (collectButton != null) collectButton.interactable = true; });
         }
     }

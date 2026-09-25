@@ -9,6 +9,7 @@ namespace TreeGuardians.Battle
     {
         public BattleState State { get; private set; } = BattleState.Initializing;
         public float StateTime { get; private set; }
+        float prePauseTime;
         public event Action<BattleState, BattleState> OnChanged;
 
         BattleState prePause = BattleState.Playing;
@@ -31,6 +32,7 @@ namespace TreeGuardians.Battle
         {
             if (State != BattleState.Playing && State != BattleState.ReadyCountdown && State != BattleState.Intro) return;
             prePause = State;
+            prePauseTime = StateTime;
             Set(BattleState.Paused);
         }
 
@@ -38,6 +40,7 @@ namespace TreeGuardians.Battle
         {
             if (State != BattleState.Paused) return;
             Set(prePause);
+            StateTime = prePauseTime; // intro / countdown continue where they were
         }
 
         public void Tick(float dt) => StateTime += dt;

@@ -14,121 +14,660 @@ MonoBehaviour:
   m_EditorClassIdentifier: TreeGuardians.Runtime::TreeGuardians.Data.AudioLibrary
   sfx:
   - id: 1
-    clips: []
-    volume: 1
+    clips:
+    - {fileID: 8300000, guid: 7648d725ba93c4ad8b9f85766c1b06a0, type: 3}
+    volume: 0.5
     pitchVariance: 0.05
     isUi: 1
+    minInterval: 0.04
+    maxInstances: 2
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
   - id: 2
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: b975ee039fc5744fa8915365c3d59886, type: 3}
+    volume: 0.25
+    pitchVariance: 0.04
     isUi: 1
+    minInterval: 0.08
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
   - id: 3
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 4f706c8fafaec4184b735ea2c024e6fd, type: 3}
+    volume: 0.33
+    pitchVariance: 0.04
     isUi: 1
+    minInterval: 0.08
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
   - id: 4
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 01c831db0c5e1477ca83ad428e26b2d1, type: 3}
+    volume: 0.35
+    pitchVariance: 0.02
     isUi: 1
+    minInterval: 0.15
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
   - id: 5
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 72a00317060134cd0b25319159b8804c, type: 3}
+    volume: 0.6
+    pitchVariance: 0.06
     isUi: 0
+    minInterval: 0.05
+    maxInstances: 1
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 6
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 1b47b113bf5a248e7825552771d937b5, type: 3}
+    - {fileID: 8300000, guid: cd3c99e8911c948758dbb569c4f25d2d, type: 3}
+    - {fileID: 8300000, guid: 2c48b324bd4e64a5691604d8db5849b3, type: 3}
+    volume: 0.65
+    pitchVariance: 0.08
     isUi: 0
+    minInterval: 0.03
+    maxInstances: 2
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 7
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: c51ecfb50d0504be1b83e0376d3453a8, type: 3}
+    - {fileID: 8300000, guid: 2c7f736f6d23e46e0ab468b9011f4871, type: 3}
+    - {fileID: 8300000, guid: 6b9141cb8684441fcb36fb0ce0066f92, type: 3}
+    volume: 0.85
+    pitchVariance: 0.1
     isUi: 0
+    minInterval: 0.03
+    maxInstances: 3
+    priority: 128
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 8
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 989710dea6d914cc5b08ee737a3a30f5, type: 3}
+    volume: 0.5
+    pitchVariance: 0.06
     isUi: 0
+    minInterval: 0.1
+    maxInstances: 2
+    priority: 48
+    duckTo: 0.6
+    duckHold: 0.4
+    pausable: 1
   - id: 9
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: e4cf498552c7e493891491e8a32a4864, type: 3}
+    volume: 0.62
+    pitchVariance: 0.12
     isUi: 0
+    minInterval: 0.06
+    maxInstances: 2
+    priority: 120
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 10
     clips: []
-    volume: 1
-    pitchVariance: 0.05
+    volume: 0.6
+    pitchVariance: 0
     isUi: 0
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 40
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 11
     clips: []
-    volume: 1
+    volume: 0.8
     pitchVariance: 0.05
     isUi: 0
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 128
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   - id: 12
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
-    isUi: 0
+    clips:
+    - {fileID: 8300000, guid: 0c522434710364874b97a6b72fe476fa, type: 3}
+    volume: 0.85
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.5
+    maxInstances: 1
+    priority: 16
+    duckTo: 0.3
+    duckHold: 2.2
+    pausable: 0
   - id: 13
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
-    isUi: 0
+    clips:
+    - {fileID: 8300000, guid: 8c733242681eb4d58948611790e1de86, type: 3}
+    volume: 0.85
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.5
+    maxInstances: 1
+    priority: 16
+    duckTo: 0.3
+    duckHold: 2.6
+    pausable: 0
   - id: 14
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 7df0d49d5e7d1460fbc59083c04da398, type: 3}
     volume: 1
-    pitchVariance: 0.05
-    isUi: 0
+    pitchVariance: 0.03
+    isUi: 1
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 40
+    duckTo: 0.5
+    duckHold: 1.2
+    pausable: 0
   - id: 15
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
-    isUi: 0
+    clips:
+    - {fileID: 8300000, guid: 95b1b1e1555da4523adec24a5b75e598, type: 3}
+    volume: 0.85
+    pitchVariance: 0.02
+    isUi: 1
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 40
+    duckTo: 0.6
+    duckHold: 0.8
+    pausable: 0
   - id: 16
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    clips:
+    - {fileID: 8300000, guid: 4cbca690154ba4ad59e482e8f0ebce9c, type: 3}
+    volume: 0.4
+    pitchVariance: 0.06
     isUi: 1
+    minInterval: 0.04
+    maxInstances: 3
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
   - id: 17
-    clips: []
+    clips:
+    - {fileID: 8300000, guid: 7c092553e7be34c38a9b62717ee05914, type: 3}
+    volume: 0.35
+    pitchVariance: 0.06
+    isUi: 1
+    minInterval: 0.3
+    maxInstances: 1
+    priority: 80
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 18
+    clips:
+    - {fileID: 8300000, guid: 3ff5b4f41f1e04178b48281f683ce5f2, type: 3}
+    volume: 0.75
+    pitchVariance: 0.06
+    isUi: 0
+    minInterval: 0.1
+    maxInstances: 1
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 19
+    clips:
+    - {fileID: 8300000, guid: d8631fcbef84d4a41a8206f5583e57be, type: 3}
+    volume: 0.7
+    pitchVariance: 0.04
+    isUi: 0
+    minInterval: 0.15
+    maxInstances: 1
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 20
+    clips:
+    - {fileID: 8300000, guid: 187b3fe365fc9483d9d4986b9bcfccf4, type: 3}
+    volume: 0.6
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 21
+    clips:
+    - {fileID: 8300000, guid: 3ba2dcaf46a414ba8acb941341ac13a5, type: 3}
+    volume: 0.6
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 112
+    duckTo: 0.7
+    duckHold: 0.3
+    pausable: 1
+  - id: 22
+    clips:
+    - {fileID: 8300000, guid: 6a5314b1b080148d8b2cc7e5eac22e01, type: 3}
+    volume: 0.45
+    pitchVariance: 0.12
+    isUi: 0
+    minInterval: 0.08
+    maxInstances: 2
+    priority: 152
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 23
+    clips:
+    - {fileID: 8300000, guid: c9d8a55309a8f417b887660bd473795f, type: 3}
     volume: 1
+    pitchVariance: 0.06
+    isUi: 0
+    minInterval: 0.1
+    maxInstances: 2
+    priority: 96
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 24
+    clips:
+    - {fileID: 8300000, guid: 18a1f19fd5d384d1cb9a3563977a3132, type: 3}
+    volume: 0.65
+    pitchVariance: 0.05
+    isUi: 0
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 25
+    clips:
+    - {fileID: 8300000, guid: 1a96e51b10c314c0283dbee9f86cc235, type: 3}
+    volume: 0.6
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.3
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 26
+    clips:
+    - {fileID: 8300000, guid: 416e6dd779f114d7989a6c24c03a5630, type: 3}
+    volume: 0.45
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.3
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 27
+    clips:
+    - {fileID: 8300000, guid: 540e92c1e45444d2498c9dffc1e3ca1f, type: 3}
+    volume: 0.6
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.5
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 28
+    clips:
+    - {fileID: 8300000, guid: d7dc1080a6cb74c84b8fb9503ebd7cd7, type: 3}
+    volume: 0.35
+    pitchVariance: 0.04
+    isUi: 1
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 29
+    clips:
+    - {fileID: 8300000, guid: b5345a30ed48d4f4e8516345b47f8077, type: 3}
+    volume: 0.4
+    pitchVariance: 0.1
+    isUi: 0
+    minInterval: 1.5
+    maxInstances: 1
+    priority: 200
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 30
+    clips:
+    - {fileID: 8300000, guid: 7d9baf1d79af649698d98a2979fc3d12, type: 3}
+    volume: 0.45
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 2
+    maxInstances: 1
+    priority: 180
+    duckTo: 0.7
+    duckHold: 1.5
+    pausable: 1
+  - id: 31
+    clips:
+    - {fileID: 8300000, guid: e4550fc430f4f4839b47cb7c700a6403, type: 3}
+    volume: 0.55
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.5
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 32
+    clips:
+    - {fileID: 8300000, guid: b92fc97a95e7a4397b78e33ab3875c38, type: 3}
+    volume: 0.75
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 1
+    maxInstances: 1
+    priority: 40
+    duckTo: 0.6
+    duckHold: 1
+    pausable: 0
+  - id: 33
+    clips:
+    - {fileID: 8300000, guid: 46e8ac949d0564997b1f8eecbac5d39d, type: 3}
+    volume: 0.9
+    pitchVariance: 0
+    isUi: 0
+    minInterval: 1
+    maxInstances: 1
+    priority: 16
+    duckTo: 0.2
+    duckHold: 2.5
+    pausable: 1
+  - id: 34
+    clips:
+    - {fileID: 8300000, guid: e068f5f3b78604f37a97f1011971fad3, type: 3}
+    - {fileID: 8300000, guid: 05643e50de45546648ab73593a5ca4be, type: 3}
+    volume: 0.6
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.12
+    maxInstances: 2
+    priority: 104
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 35
+    clips:
+    - {fileID: 8300000, guid: 35430b91b978a4704a8f107aac5becd7, type: 3}
+    - {fileID: 8300000, guid: 497186c828c994f7ba03b3c800633be4, type: 3}
+    volume: 0.75
+    pitchVariance: 0.1
+    isUi: 0
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 160
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 36
+    clips:
+    - {fileID: 8300000, guid: 6b203ea45c966421b8a8afa0ab95e0a7, type: 3}
+    volume: 0.55
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.06
+    maxInstances: 2
+    priority: 128
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 37
+    clips:
+    - {fileID: 8300000, guid: a3fc526544163405aa7bd69c6824c8a4, type: 3}
+    - {fileID: 8300000, guid: ef647f87e14694b10b5872f3cda056bb, type: 3}
+    - {fileID: 8300000, guid: bffa04ad45b0843eaa92ece0283412d4, type: 3}
+    volume: 0.65
+    pitchVariance: 0.1
+    isUi: 0
+    minInterval: 0.035
+    maxInstances: 2
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 38
+    clips:
+    - {fileID: 8300000, guid: 1c72b7314a0fb40cd9442ef2c2fa16bd, type: 3}
+    - {fileID: 8300000, guid: b48577fb381cd4f62ae99eee4829b620, type: 3}
+    volume: 0.55
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.04
+    maxInstances: 2
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 39
+    clips:
+    - {fileID: 8300000, guid: 297573580fe2743db81fb9d6feb33902, type: 3}
+    - {fileID: 8300000, guid: f357aa9613f3341639c211efad20d18e, type: 3}
+    volume: 0.45
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.04
+    maxInstances: 2
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 40
+    clips:
+    - {fileID: 8300000, guid: e3a938d3214bf4dbb9876f297b810b13, type: 3}
+    volume: 0.6
+    pitchVariance: 0.1
+    isUi: 0
+    minInterval: 0.03
+    maxInstances: 3
+    priority: 128
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 41
+    clips:
+    - {fileID: 8300000, guid: a858486b368d74ae8abad9c96f54c76f, type: 3}
+    volume: 0.8
+    pitchVariance: 0.08
+    isUi: 0
+    minInterval: 0.1
+    maxInstances: 2
+    priority: 128
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 42
+    clips:
+    - {fileID: 8300000, guid: 996607f83d8c5413c90e850f06efef35, type: 3}
+    volume: 0.5
+    pitchVariance: 0.02
+    isUi: 1
+    minInterval: 1
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 43
+    clips:
+    - {fileID: 8300000, guid: f1ed44c6726eb42bcaf5f1ba5a6c5fea, type: 3}
+    volume: 0.55
+    pitchVariance: 0.04
+    isUi: 0
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 44
+    clips:
+    - {fileID: 8300000, guid: 00e4a9158e9a34deaa4af1a8eecf3285, type: 3}
+    volume: 0.4
     pitchVariance: 0.05
     isUi: 1
-  - id: 18
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 45
+    clips:
+    - {fileID: 8300000, guid: 9aae928ff9236404ba6343173a0d3f1f, type: 3}
+    volume: 0.45
+    pitchVariance: 0.04
+    isUi: 1
+    minInterval: 0.1
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 46
+    clips:
+    - {fileID: 8300000, guid: 0f525eae14fec4afe9aecb0e577bb487, type: 3}
+    volume: 0.3
+    pitchVariance: 0.03
+    isUi: 1
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 64
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 47
+    clips:
+    - {fileID: 8300000, guid: 9ef49687c265e420ea5f336bf5351db5, type: 3}
+    volume: 0.7
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.5
+    maxInstances: 1
+    priority: 40
+    duckTo: 0.35
+    duckHold: 2
+    pausable: 0
+  - id: 48
+    clips:
+    - {fileID: 8300000, guid: 545d825c463b94c2e828989021c7fd14, type: 3}
+    volume: 0.45
+    pitchVariance: 0
+    isUi: 1
+    minInterval: 0.05
+    maxInstances: 3
+    priority: 56
+    duckTo: 1
+    duckHold: 0
+    pausable: 0
+  - id: 49
+    clips:
+    - {fileID: 8300000, guid: 8739baaf27bc14fe18ff6121e1dd1c2b, type: 3}
+    volume: 0.4
+    pitchVariance: 0.1
     isUi: 0
-  - id: 19
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    minInterval: 0.3
+    maxInstances: 1
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 50
+    clips:
+    - {fileID: 8300000, guid: 3dbe3a220e0244a0899ea01825190ee6, type: 3}
+    volume: 0.5
+    pitchVariance: 0.08
     isUi: 0
-  - id: 20
-    clips: []
-    volume: 1
-    pitchVariance: 0.05
+    minInterval: 0.05
+    maxInstances: 2
+    priority: 144
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 51
+    clips:
+    - {fileID: 8300000, guid: d9f10fbe8fddc4b3d80a67a6e928f7f5, type: 3}
+    volume: 0.55
+    pitchVariance: 0.03
     isUi: 0
+    minInterval: 0.3
+    maxInstances: 1
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
+  - id: 52
+    clips:
+    - {fileID: 8300000, guid: 953204da70b6647c5bd2ab00571d4d68, type: 3}
+    volume: 0.6
+    pitchVariance: 0.04
+    isUi: 0
+    minInterval: 0.2
+    maxInstances: 1
+    priority: 112
+    duckTo: 1
+    duckHold: 0
+    pausable: 1
   music:
   - id: 1
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: 662c59c8d30254d82be291b253cbede5, type: 3}
+    volume: 0.45
   - id: 2
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: 28b0a7b2006da4367ad26bec7c246cac, type: 3}
+    volume: 0.35
   - id: 3
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: 03d44d49500194fd9b4dce8e62216904, type: 3}
+    volume: 0.37
   - id: 4
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: 10a7015a1ebaa4b0d8d1f63b40bd61b8, type: 3}
+    volume: 0.37
   - id: 5
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: 6e7cea3c945e0471e86734858e67ca57, type: 3}
+    volume: 0.38
   - id: 6
-    clip: {fileID: 0}
-    volume: 0.8
+    clip: {fileID: 8300000, guid: be7eb7cb3104a46389b890d3c5d897f6, type: 3}
+    volume: 0.4
+  ambience:
+  - id: 1
+    clip: {fileID: 8300000, guid: e27aa191455e549b6a3763febd596ac7, type: 3}
+    volume: 0.3
+  - id: 2
+    clip: {fileID: 8300000, guid: 24c078e6e3a024cdca6e4c3333ae627f, type: 3}
+    volume: 0.45

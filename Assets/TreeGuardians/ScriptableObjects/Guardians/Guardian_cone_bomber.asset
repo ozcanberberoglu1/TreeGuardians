@@ -46,5 +46,5 @@ MonoBehaviour:
   passiveMagnitude: 0
   arenaUnlockIndex: 0
   playableInPrototype: 1
-  attackSfx: 6
+  attackSfx: 0
   hurtSfx: 9

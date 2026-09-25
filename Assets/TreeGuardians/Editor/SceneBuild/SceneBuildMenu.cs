@@ -6,13 +6,13 @@ namespace TreeGuardians.Editor.SceneBuild
 {
     public static class SceneBuildMenu
     {
-        [MenuItem("Tree Guardians/3. Build Core Scenes (Boot, Loading, MainMenu, Results)", priority = 10)]
+        /// 02_MainMenu is hand-edited by the user, so it is never part of a batch rebuild.
+        [MenuItem("Tree Guardians/3. Build Core Scenes (Boot, Loading, Results)", priority = 10)]
         public static void BuildCoreScenes()
         {
             BootSceneBuilder.Build();
             LoadingSceneBuilder.Build();
             ResultsSceneBuilder.Build();
-            MainMenuSceneBuilder.Build();
             ApplySettings();
         }
 
@@ -23,7 +23,12 @@ namespace TreeGuardians.Editor.SceneBuild
         public static void BuildLoading() { LoadingSceneBuilder.Build(); ApplySettings(); }
 
         [MenuItem("Tree Guardians/3c. Build MainMenu Scene", priority = 13)]
-        public static void BuildMainMenu() { MainMenuSceneBuilder.Build(); ApplySettings(); }
+        public static void BuildMainMenu()
+        {
+            if (!EditorUtility.DisplayDialog("Rebuild 02_MainMenu?", "02_MainMenu is hand-edited. Rebuilding it destroys every manual edit in that scene.", "Rebuild anyway", "Cancel")) return;
+            MainMenuSceneBuilder.Build();
+            ApplySettings();
+        }
 
         [MenuItem("Tree Guardians/3d. Build Results Scene", priority = 14)]
         public static void BuildResults() { ResultsSceneBuilder.Build(); ApplySettings(); }
@@ -42,7 +47,7 @@ namespace TreeGuardians.Editor.SceneBuild
         [MenuItem("Tree Guardians/4b. Build Sandbox Scene", priority = 17)]
         public static void BuildSandbox() { BattleSceneBuilder.BuildSandbox(); ApplySettings(); }
 
-        [MenuItem("Tree Guardians/9. Build Everything (Art, Content, Scenes)", priority = 20)]
+        [MenuItem("Tree Guardians/9. Build Everything (Art, Content, Scenes except MainMenu)", priority = 20)]
         public static void BuildEverything()
         {
             PlaceholderArtGenerator.GenerateAll();
@@ -53,8 +58,7 @@ namespace TreeGuardians.Editor.SceneBuild
             ResultsSceneBuilder.Build();
             BattleSceneBuilder.Build();
             BattleSceneBuilder.BuildSandbox();
-            MainMenuSceneBuilder.Build();
-            ContentBuilder.BuildAll();
+            ContentBuilder.BuildAll(); // 02_MainMenu is hand-edited: never rebuilt here
             ApplySettings();
         }
 

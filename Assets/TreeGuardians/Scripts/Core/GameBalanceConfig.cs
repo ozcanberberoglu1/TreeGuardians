@@ -61,7 +61,7 @@ namespace TreeGuardians.Core
         public float battleDurationSeconds = 300f;
         public float readyCountdownSeconds = 3f;
         public float introSeconds = 1.2f;
-        public float resultRevealDelaySeconds = 1.5f;
+        public float resultRevealDelaySeconds = 2.8f; // time to enjoy the end banner, confetti and collapse
 
         [Header("Battle Rules")]
         [Tooltip("Otomatik (hafif) atışların hasar çarpanı; manuel nişan tam hasar verir.")]

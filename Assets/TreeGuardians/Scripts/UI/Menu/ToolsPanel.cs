@@ -28,6 +28,8 @@ namespace TreeGuardians.UI.Menu
         [SerializeField] Button closeButton;
         [SerializeField] Color okColor = new Color(0.9f, 0.95f, 0.9f);
         [SerializeField] Color missingColor = new Color(1f, 0.4f, 0.35f);
+        [Tooltip("Çıkarma sesinin perde çarpanı: aynı Equip sesi bu çarpanla çalar (1'in altı = daha pes).")]
+        [SerializeField] float unequipPitch = 0.85f;
 
         readonly List<ToolCardView> cards = new List<ToolCardView>(8);
         string selectedId;
@@ -70,8 +72,24 @@ namespace TreeGuardians.UI.Menu
         protected override void OnOpen()
         {
             selectedSlot = -1;
-            selectedId = null;
+            selectedId = DefaultSelection();
             Refresh();
+        }
+
+        /// The detail box never opens empty: the first equipped tool, else the first unlocked one, else the first tool.
+        string DefaultSelection()
+        {
+            var p = Services.Get<PlayerProgressService>();
+            if (p == null) return null;
+            for (int i = 0; i < p.Balance.toolSlotCount; i++)
+            {
+                var id = p.GetEquippedToolId(i);
+                if (!string.IsNullOrEmpty(id) && p.Database.GetTool(id) != null) return id;
+            }
+            var tools = p.Database.tools;
+            for (int i = 0; i < tools.Count; i++) if (tools[i] != null && p.IsToolUnlocked(tools[i].id)) return tools[i].id;
+            for (int i = 0; i < tools.Count; i++) if (tools[i] != null) return tools[i].id;
+            return null;
         }
 
         void Refresh()
@@ -117,24 +135,26 @@ namespace TreeGuardians.UI.Menu
             bool has = def != null;
             if (detailIcon != null) { detailIcon.enabled = has; if (has) { detailIcon.sprite = def.icon; detailIcon.color = def.accentColor; } }
             if (detailName != null) detailName.text = has ? LocalizationService.Tr(def.nameKey) : "";
-            if (detailDesc != null) detailDesc.text = has ? LocalizationService.Tr(def.descriptionKey) : "";
+            if (detailDesc != null) detailDesc.text = has ? LocalizationService.Tr(def.descriptionKey) : LocalizationService.Tr("tools_select_hint");
+            if (upgradeButton != null && upgradeButton.gameObject.activeSelf != has) upgradeButton.gameObject.SetActive(has);
+            if (equipButton != null && equipButton.gameObject.activeSelf != has) equipButton.gameObject.SetActive(has);
             if (!has)
             {
                 if (detailStats != null) detailStats.text = "";
                 if (detailCost != null) detailCost.text = "";
-                if (upgradeButton != null) upgradeButton.interactable = false;
-                if (equipButton != null) equipButton.interactable = false;
                 return;
             }
             int level = progress.GetToolLevel(def.id);
             bool unlocked = progress.IsToolUnlocked(def.id);
-            if (detailStats != null) detailStats.text = $"{LocalizationService.Tr("ui_level_short").Replace("{0}", level.ToString())}   {LocalizationService.Tr("guardian_cooldown")}: {def.GetCooldown(level):0}s   {LocalizationService.Tr("guardian_power")}: {def.GetMagnitude(level):0}";
+            if (detailStats != null) detailStats.text = LocalizationService.Tr("ui_level_short", level)
+                + "   " + LocalizationService.Tr("guardian_cooldown") + ": " + LocalizationService.Tr("fmt_seconds", def.GetCooldown(level))
+                + "   " + LocalizationService.Tr("guardian_power") + ": " + LocalizationService.Number(Mathf.RoundToInt(def.GetMagnitude(level)));
             bool can = progress.CanUpgradeTool(def.id, out int cost, out string reason);
             if (detailCost != null)
             {
-                if (!unlocked) { detailCost.text = string.Format(LocalizationService.Tr("ui_unlock_at"), def.arenaUnlockIndex + 1); detailCost.color = missingColor; }
+                if (!unlocked) { detailCost.text = LocalizationService.Tr("ui_unlock_at", def.arenaUnlockIndex + 1); detailCost.color = missingColor; }
                 else if (level >= def.maxLevel) { detailCost.text = LocalizationService.Tr("ui_max"); detailCost.color = okColor; }
-                else { detailCost.text = cost + " " + LocalizationService.Tr("currency_sap"); detailCost.color = progress.Wallet.CanAfford(CurrencyType.Sap, cost) ? okColor : missingColor; }
+                else { detailCost.text = LocalizationService.Number(cost) + " " + LocalizationService.Tr("currency_sap"); detailCost.color = progress.Wallet.CanAfford(CurrencyType.Sap, cost) ? okColor : missingColor; }
             }
             if (upgradeButton != null) upgradeButton.interactable = can;
             int equippedAt = progress.FindEquippedToolSlot(def.id);
@@ -144,6 +164,7 @@ namespace TreeGuardians.UI.Menu
 
         void OnSlotClicked(ToolCardView v)
         {
+            PlayUi(AudioEventId.CardSelect);
             if (string.IsNullOrEmpty(v.ToolId)) { selectedSlot = selectedSlot == v.SlotIndex ? -1 : v.SlotIndex; Refresh(); return; }
             selectedId = v.ToolId;
             selectedSlot = -1;
@@ -152,11 +173,13 @@ namespace TreeGuardians.UI.Menu
 
         void OnCardClicked(ToolCardView v)
         {
+            bool equipped = false;
             if (selectedSlot >= 0 && progress.IsToolUnlocked(v.ToolId))
             {
-                progress.EquipTool(v.ToolId, selectedSlot);
+                equipped = progress.EquipTool(v.ToolId, selectedSlot);
                 selectedSlot = -1;
             }
+            PlayUi(equipped ? AudioEventId.Equip : AudioEventId.CardSelect);
             selectedId = v.ToolId;
             Refresh();
         }
@@ -181,12 +204,24 @@ namespace TreeGuardians.UI.Menu
         {
             if (progress == null || string.IsNullOrEmpty(selectedId)) return;
             int at = progress.FindEquippedToolSlot(selectedId);
-            if (at >= 0) { progress.UnequipTool(at); Refresh(); return; }
+            if (at >= 0)
+            {
+                if (progress.UnequipTool(at)) PlayUi(AudioEventId.Equip, unequipPitch);
+                Refresh();
+                return;
+            }
             int free = -1;
             for (int i = 0; i < progress.Balance.toolSlotCount; i++) if (string.IsNullOrEmpty(progress.GetEquippedToolId(i))) { free = i; break; }
-            if (free < 0) { MenuUIController.Instance?.Toast("tools_equipped"); return; }
-            progress.EquipTool(selectedId, free);
+            if (free < 0)
+            {
+                MenuUIController.Instance?.Toast("loadout_full");
+                equipButton?.GetComponent<UIButtonFeedback>()?.ShakeInvalid();
+                return;
+            }
+            if (progress.EquipTool(selectedId, free)) PlayUi(AudioEventId.Equip);
             Refresh();
         }
+
+        static void PlayUi(AudioEventId id, float pitch = 1f) => Services.Get<AudioService>()?.PlayUi(id, 1f, pitch);
     }
 }

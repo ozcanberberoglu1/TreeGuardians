@@ -9,6 +9,9 @@ namespace TreeGuardians.Core
 
     public static class TGTween
     {
+        /// Number culture for CountTo (set by LocalizationService when the language changes).
+        public static System.IFormatProvider NumberCulture = System.Globalization.CultureInfo.InvariantCulture;
+
         public static float Evaluate(Ease ease, float t)
         {
             t = Mathf.Clamp01(t);
@@ -182,7 +185,7 @@ namespace TreeGuardians.Core
         public static Coroutine CountTo(TMP_Text text, int from, int to, float duration, string format = "{0:N0}", bool unscaled = true)
         {
             if (text == null) return null;
-            if (duration <= 0f || TweenRunner.Instance == null) { text.SetText(string.Format(format, to)); return null; }
+            if (duration <= 0f || TweenRunner.Instance == null) { text.SetText(string.Format(NumberCulture, format, to)); return null; }
             return Run(CountRoutine(text, from, to, duration, format, unscaled));
         }
 
@@ -195,10 +198,10 @@ namespace TreeGuardians.Core
                 if (text == null) yield break;
                 elapsed += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
                 int v = Mathf.RoundToInt(Mathf.Lerp(from, to, Evaluate(Ease.OutCubic, elapsed / duration)));
-                if (v != last) { last = v; text.SetText(string.Format(format, v)); }
+                if (v != last) { last = v; text.SetText(string.Format(NumberCulture, format, v)); }
                 yield return null;
             }
-            if (text != null) text.SetText(string.Format(format, to));
+            if (text != null) text.SetText(string.Format(NumberCulture, format, to));
         }
 
         public static Coroutine MoveAnchored(RectTransform rt, Vector2 to, float duration, Ease ease = Ease.OutCubic, bool unscaled = true, Action onDone = null)

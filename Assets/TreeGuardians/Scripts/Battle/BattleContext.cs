@@ -44,6 +44,8 @@ namespace TreeGuardians.Battle
         public Vector2 hitPoint;
         public int sourceSlot;
         [Tooltip("Kale duvarında açılacak delik yarıçapı (0 = delik yok).")] public float holeRadius;
+        /// Travel direction of the projectile (debris flies back against it).
+        public Vector2 direction;
     }
 
     [Serializable]

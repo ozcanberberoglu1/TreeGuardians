@@ -1,6 +1,7 @@
 using System;
 using TreeGuardians.Battle;
 using TreeGuardians.Core;
+using TreeGuardians.Meta;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -114,9 +115,24 @@ namespace TreeGuardians.SceneFlow
             LoadDirect(ResultsScene);
         }
 
+        /// Replays the same arena and difficulty with a fresh RNG stream. The setup is rebuilt from the current progress, so
+        /// trophies and loadout changed by the previous battle are respected; the tutorial never replays on retry (it is
+        /// marked done when a tutorial battle ends).
         public void RetryLastBattle()
         {
-            if (PendingBattleSetup == null) { GoToMainMenu(); return; }
+            var last = PendingBattleSetup;
+            if (last == null) { GoToMainMenu(); return; }
+            var progress = Services.Get<PlayerProgressService>();
+            var arena = progress != null && progress.Database != null ? progress.Database.GetArena(last.arenaId) : null;
+            if (arena != null)
+            {
+                PendingBattleSetup = BattleSetupFactory.Create(progress, arena, last.difficulty, false);
+            }
+            else
+            {
+                last.seed = unchecked((int)DateTime.UtcNow.Ticks);
+                last.isTutorial = false;
+            }
             LoadViaLoading(BattleScene);
         }
 

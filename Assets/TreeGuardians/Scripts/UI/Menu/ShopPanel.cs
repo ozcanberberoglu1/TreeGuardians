@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using TreeGuardians.Audio;
 using TreeGuardians.Chests;
 using TreeGuardians.Core;
 using TreeGuardians.Data;
@@ -31,6 +32,7 @@ namespace TreeGuardians.UI.Menu
 
         long lastFreeChestTicks;
         bool busy;
+        float nextTick;
 
         protected override void Awake()
         {
@@ -47,6 +49,14 @@ namespace TreeGuardians.UI.Menu
         protected override void OnOpen()
         {
             if (noteText != null) noteText.text = LocalizationService.Tr("shop_mock_note");
+            RefreshFree();
+        }
+
+        void Update()
+        {
+            // Live free-chest countdown while the shop stays open.
+            if (!IsOpen || Time.unscaledTime < nextTick) return;
+            nextTick = Time.unscaledTime + 1f;
             RefreshFree();
         }
 
@@ -72,6 +82,8 @@ namespace TreeGuardians.UI.Menu
             if (chests.TryAddChest("twig", 0) >= 0)
             {
                 lastFreeChestTicks = (save != null ? save.GetUtcNow() : DateTime.UtcNow).Ticks;
+                // The chest goes straight into a slot (no reward popup): the pop answers the tap instead of the generic click.
+                Services.Get<AudioService>()?.PlayUi(AudioEventId.RewardPop);
                 MenuUIController.Instance?.Toast("chest_twig");
                 RefreshFree();
             }

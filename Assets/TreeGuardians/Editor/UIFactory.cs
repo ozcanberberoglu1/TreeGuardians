@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using TreeGuardians.Core;
 using TreeGuardians.Localization;
@@ -14,7 +15,9 @@ namespace TreeGuardians.Editor
     /// Editor-time factory for pre-authored UI and 2D scene objects. Everything it creates is saved into the scene.
     public static class UIFactory
     {
-        public const string FontPath = "Assets/TreeGuardians/Settings/TG_Main SDF.asset";
+        public const string FontPath = "Assets/Fonts/Fredoka_SemiCondensed-SemiBold SDF.asset";
+        public const string FontBodyPath = "Assets/Fonts/Fredoka_SemiCondensed-Medium SDF.asset";
+        public const string LegacyFontPath = "Assets/TreeGuardians/Settings/TG_Main SDF.asset";
 
         public static readonly Color Outline = new Color(0.11f, 0.13f, 0.18f);
         public static readonly Color PanelDark = new Color(0.13f, 0.17f, 0.24f, 0.96f);
@@ -31,15 +34,27 @@ namespace TreeGuardians.Editor
         public static readonly Color TextDark = new Color(0.14f, 0.16f, 0.2f);
         public static readonly Color Dim = new Color(0f, 0f, 0f, 0.6f);
 
-        static TMP_FontAsset font;
+        static TMP_FontAsset font, fontBody;
 
+        /// Rounded display font (Fredoka SemiBold) used by the hand-made menu; headings, buttons, numbers.
         public static TMP_FontAsset Font
         {
             get
             {
                 if (font == null) font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontPath);
+                if (font == null) font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(LegacyFontPath);
                 if (font == null) font = TMP_Settings.defaultFontAsset;
                 return font;
+            }
+        }
+
+        /// Body text (Fredoka Medium).
+        public static TMP_FontAsset FontBody
+        {
+            get
+            {
+                if (fontBody == null) fontBody = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontBodyPath);
+                return fontBody != null ? fontBody : Font;
             }
         }
 
@@ -253,15 +268,75 @@ namespace TreeGuardians.Editor
             return bg;
         }
 
+        // ------------------------------------------------------------------ menu style kit (mainmenuAtlas2)
+        public const string KitTexturePath = "Assets/TreeGuardians/Art/UI/Panel/mainmenuAtlas2.png";
+        static Dictionary<string, Sprite> kit;
+
+        /// Menu art kit sprite by index: 41 dark square, 42 yellow button, 43 blue button, 44 green button, 45 dark pill,
+        /// 46 yellow ribbon panel, 47 green square, 50 six-slot bar, 51 plate with avatar slot, 36 starburst,
+        /// 0 acorn (coins), 1 log (sap), 2 gem, 4 trophy, 5 shield, 9 target, 16 helmet, 39 tree avatar, 40 swords,
+        /// 24/25/26/27/29/17 closed chests.
+        public static Sprite Kit(int index)
+        {
+            if (kit == null)
+            {
+                kit = new Dictionary<string, Sprite>();
+                foreach (var o in AssetDatabase.LoadAllAssetsAtPath(KitTexturePath))
+                    if (o is Sprite sp) kit[sp.name] = sp;
+            }
+            kit.TryGetValue("mainmenuAtlas2_" + index, out var s);
+            if (s == null) Debug.LogWarning("[TG] Kit sprite missing: mainmenuAtlas2_" + index);
+            return s;
+        }
+
+        /// Kit button (yellow 42 / blue 43 / green 44 / dark 41): full-colour art, label lifted above the dark bottom band.
+        public static Button KitButton(string name, Transform parent, int kitIndex, string labelKey, float fontSize = 40f, string literal = null)
+        {
+            var img = Image(name, parent, Kit(kitIndex), Color.white, true, true);
+            var btn = img.gameObject.AddComponent<Button>();
+            btn.targetGraphic = img;
+            var colors = btn.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = Color.white;
+            colors.pressedColor = new Color(0.85f, 0.85f, 0.85f);
+            colors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 1f);
+            colors.selectedColor = Color.white;
+            btn.colors = colors;
+            img.gameObject.AddComponent<UIButtonFeedback>();
+            if (!string.IsNullOrEmpty(labelKey) || literal != null)
+            {
+                var label = OutlinedText("Label", img.transform, labelKey, fontSize, TextLight, TextAlignmentOptions.Center, literal);
+                Stretch((RectTransform)label.transform, 16f, kitIndex == 41 || kitIndex == 45 ? 6f : 18f, 16f, 6f);
+            }
+            return btn;
+        }
+
+        /// Rounded bar driven by UIFill (no squashed caps): back + trailing ghost + fill.
+        public static UIFill SlicedBar(string name, Transform parent, Color back, Color fill, float inset = 4f, bool ghost = true, bool reverse = false)
+        {
+            var bg = Image(name, parent, Ui("bar_back"), back, true, false);
+            RectTransform ghostRt = null;
+            if (ghost)
+            {
+                var g = Image("Ghost", bg.transform, Ui("bar_fill"), new Color(1f, 0.93f, 0.8f, 0.85f), true, false);
+                ghostRt = Stretch((RectTransform)g.transform, inset, inset, inset, inset);
+            }
+            var f = Image("Fill", bg.transform, Ui("bar_fill"), fill, true, false);
+            var fillRt = Stretch((RectTransform)f.transform, inset, inset, inset, inset);
+            var ui = bg.gameObject.AddComponent<UIFill>();
+            ui.EditorSetup(fillRt, ghostRt, false, reverse);
+            return ui;
+        }
+
         public static TMP_Text Text(string name, Transform parent, string localizationKey, float size, Color color, TextAlignmentOptions align = TextAlignmentOptions.Center, bool bold = false, string literal = null)
         {
             var rt = Rect(name, parent);
             var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
-            t.font = Font;
+            t.font = bold ? Font : FontBody;
             t.fontSize = size;
             t.color = color;
             t.alignment = align;
-            t.fontStyle = bold ? FontStyles.Bold : FontStyles.Normal;
+            t.fontStyle = FontStyles.Normal; // the weight comes from the font file, not faux bold
             t.raycastTarget = false;
             t.enableWordWrapping = true;
             t.overflowMode = TextOverflowModes.Ellipsis;

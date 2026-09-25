@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using TreeGuardians.AI;
 using TreeGuardians.Battle;
@@ -18,8 +19,15 @@ namespace TreeGuardians.Editor.SceneBuild
     /// 03_Battle: environment layers, two pre-authored trees (sections, slots, guardians, mounts), pools, systems and HUD.
     public static class BattleSceneBuilder
     {
-        const float GroundY = -3.3f;
+        const float GroundY = -2.0f;          // castle base line: castles stand on floating islands above the card bar
+        const float ProjectileFloorY = -5.4f; // misses drop past the islands and out of view
+        const float BackdropCenterY = 7.1f;   // bg.png meadow row lands just under the island tops
         const float TreeX = 7.6f;
+        const float IslandScale = 0.6f;
+        const float IslandTopOffset = 0.22f;  // grass surface sits this far under the sprite's top edge
+        public const string VfxSpritePrefabPath = "Assets/TreeGuardians/Prefabs/VFX/Vfx_Sprite.prefab";
+        public const string GuardianFlashMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_GuardianFlash.mat";
+        public const string AdditiveMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_FX_Additive.mat";
         public const string ProjectilePrefabPath = "Assets/TreeGuardians/Prefabs/Projectiles/Projectile_Default.prefab";
         public const string VfxFolder = "Assets/TreeGuardians/Prefabs/VFX";
 
@@ -53,8 +61,7 @@ namespace TreeGuardians.Editor.SceneBuild
             F.Child("GroundLine", bounds.transform, new Vector3(0f, GroundY, 0f));
 
             var projectilePrefab = BuildProjectilePrefab();
-            BuildVfxPrefabs(out var burst, out var hit, out var heal, out var poison, out var shard, out var dmgText);
-            var smoke = VfxPrefab("Vfx_Smoke", ArtPaths.Vfx("poison"), 23); // 64 px soft cloud; glow was only 32 px
+            BuildVfxPrefabs(out var spritePrefab, out var additivePrefab, out var dmgText);
 
             var playerSide = F.Root("PlayerSide");
             var playerTree = BuildTree("PlayerTree", playerSide.transform, playerDef, BattleSide.Player, new Vector3(-TreeX, GroundY, 0f), false, out var playerRoster, out var playerTools);
@@ -81,11 +88,14 @@ namespace TreeGuardians.Editor.SceneBuild
 
             F.Set(projectiles, "poolRoot", projectileRoot.transform);
             F.Set(projectiles, "defaultPrefab", projectilePrefab);
-            F.Set(projectiles, "groundY", GroundY);
+            F.Set(projectiles, "groundY", ProjectileFloorY);
             F.Set(vfx, "vfxRoot", vfxRoot.transform);
             F.Set(vfx, "textRoot", textRoot.transform);
-            F.Set(vfx, "burstPrefab", burst); F.Set(vfx, "hitPrefab", hit); F.Set(vfx, "healPrefab", heal); F.Set(vfx, "poisonPrefab", poison); F.Set(vfx, "shardPrefab", shard); F.Set(vfx, "damageTextPrefab", dmgText);
-            F.Set(vfx, "smokePrefab", smoke);
+            F.Set(vfx, "spritePrefab", spritePrefab); F.Set(vfx, "additivePrefab", additivePrefab); F.Set(vfx, "damageTextPrefab", dmgText);
+            F.Set(vfx, "debrisFloorY", GroundY + 0.05f);
+            WireVfxSprites(vfx);
+            F.Set(vfx, "holeSmoke", BuildHoleSmoke(vfx.transform));
+            F.Set(vfx, "confetti", BuildConfetti(vfx.transform));
 
             tutorialController = null;
             var hud = BuildHUD(cam, out var aimView);
@@ -215,38 +225,41 @@ namespace TreeGuardians.Editor.SceneBuild
             gso.FindProperty("worldSize").vector2Value = new Vector2(44f, 18f);
             gso.ApplyModifiedPropertiesWithoutUndo();
 
-            var cloudsRoot = F.Child("CloudsFar", env.transform);
-            var clouds = new Object[3];
-            for (int i = 0; i < 3; i++)
+            // Painted backdrop (user art), 29.7 units square: meadow at the bottom, tree line mid-castle, mountains + clouds up top.
+            var backdropSprite = AssetDatabase.LoadAssetAtPath<Sprite>(UserArtSlicer.BackdropPath);
+            var backdrop = F.WorldSprite("Backdrop", env.transform, backdropSprite, Color.white, -95, new Vector3(0f, BackdropCenterY, 5f));
+            if (backdropSprite != null) { float s = 29.7f / backdropSprite.bounds.size.x; backdrop.transform.localScale = new Vector3(s, s, 1f); }
+
+            // Floating islands (user art) under both castles; the enemy one is mirrored for variety.
+            var islandSprite = AssetDatabase.LoadAllAssetsAtPath(UserArtSlicer.PlatformsPath).OfType<Sprite>().FirstOrDefault(sp => sp.name == "platform_big");
+            var islands = new Object[2];
+            for (int i = 0; i < 2; i++)
             {
-                var c = F.WorldSprite("Cloud_" + i, cloudsRoot.transform, F.Sprite(ArtPaths.Arena("clouds")), new Color(1f, 1f, 1f, 0.9f), -90, new Vector3(-12f + i * 12f, 5.2f + (i % 2) * 1.2f, 5f));
-                c.transform.localScale = new Vector3(2.4f, 2.4f, 1f);
-                clouds[i] = c;
+                float x = i == 0 ? -TreeX : TreeX;
+                var isl = F.WorldSprite(i == 0 ? "Island_Player" : "Island_Enemy", env.transform, islandSprite, Color.white, -8, new Vector3(x, GroundY + IslandTopOffset, 0.5f));
+                isl.transform.localScale = new Vector3(i == 0 ? IslandScale : -IslandScale, IslandScale, 1f);
+                islands[i] = isl;
             }
-            var mountains = F.WorldSprite("MountainsFar", env.transform, F.Sprite(ArtPaths.Arena("mountains")), new Color(0.56f, 0.66f, 0.82f), -80, new Vector3(0f, -0.2f, 4f));
-            mountains.transform.localScale = new Vector3(6f, 2.6f, 1f);
-            var forestBack = F.WorldSprite("ForestBack", env.transform, F.Sprite(ArtPaths.Arena("forest_back")), new Color(0.28f, 0.5f, 0.38f), -70, new Vector3(0f, -1.6f, 3f));
-            forestBack.transform.localScale = new Vector3(6f, 2.4f, 1f);
-            var forestMid = F.WorldSprite("ForestMid", env.transform, F.Sprite(ArtPaths.Arena("forest_mid")), new Color(0.32f, 0.58f, 0.36f), -60, new Vector3(0f, -2.4f, 2f));
-            forestMid.transform.localScale = new Vector3(6f, 2.6f, 1f);
             var mist = F.WorldSprite("Mist", env.transform, F.Sprite(ArtPaths.Arena("mist")), new Color(1f, 1f, 1f, 0.35f), -55, new Vector3(0f, -1.2f, 1.5f));
             mist.transform.localScale = new Vector3(6f, 2.5f, 1f);
             mist.enabled = false;
 
             var particles = F.Child("AtmosphereParticles", env.transform);
-            var leaves = MakeParticles("Leaves", particles.transform, F.Sprite(ArtPaths.Vfx("leaf")), new Color(0.6f, 0.85f, 0.4f), 0.28f, 4f, new Vector2(-0.6f, 0.6f), new Vector2(-1.4f, -0.7f), 40, -45);
             var fireflies = MakeParticles("Fireflies", particles.transform, F.Sprite(ArtPaths.Vfx("glow")), new Color(1f, 0.95f, 0.5f), 0.14f, 3f, new Vector2(-0.4f, 0.4f), new Vector2(-0.2f, 0.3f), 36, -45);
 
-            var ground = F.WorldSprite("StaticGround", env.transform, F.Sprite(ArtPaths.Arena("ground")), new Color(0.42f, 0.66f, 0.32f), -50, new Vector3(0f, GroundY + 0.15f, 0f));
-            ground.transform.localScale = new Vector3(6f, 3f, 1f);
-            var foreground = F.WorldSprite("ForegroundPlants", env.transform, F.Sprite(ArtPaths.Arena("foreground")), new Color(0.3f, 0.5f, 0.25f), 30, new Vector3(0f, GroundY - 0.9f, -1f));
-            foreground.transform.localScale = new Vector3(6f, 1.6f, 1f);
+            float islandWidth = 12.29f * IslandScale * 0.9f;
+            WeatherBuilder.Build(env.transform, Object.FindFirstObjectByType<Camera>(), GroundY, 9.4f, 30f, 43, true,
+                new[] { new Vector2(-TreeX, islandWidth), new Vector2(TreeX, islandWidth) });
 
             F.Set(presenter, "sky", grad);
-            F.SetArray(presenter, "clouds", clouds);
-            F.Set(presenter, "mountains", mountains); F.Set(presenter, "forestBack", forestBack); F.Set(presenter, "forestMid", forestMid);
-            F.Set(presenter, "ground", ground); F.Set(presenter, "foreground", foreground); F.Set(presenter, "mist", mist);
-            F.Set(presenter, "leaves", leaves); F.Set(presenter, "fireflies", fireflies);
+            F.SetArray(presenter, "clouds", new Object[0]);
+            F.Set(presenter, "mountains", (Object)null); F.Set(presenter, "forestBack", (Object)null); F.Set(presenter, "forestMid", (Object)null);
+            F.Set(presenter, "ground", (Object)null); F.Set(presenter, "foreground", (Object)null); F.Set(presenter, "mist", mist);
+            F.Set(presenter, "leaves", (Object)null); F.Set(presenter, "fireflies", fireflies);
+            F.Set(presenter, "backdrop", backdrop);
+            F.SetArray(presenter, "contactShadows", new Object[0]);
+            F.SetArray(presenter, "islands", islands);
+            sky.SetActive(false); // the painted backdrop covers the whole frame
             return presenter;
         }
 
@@ -301,32 +314,45 @@ namespace TreeGuardians.Editor.SceneBuild
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = F.Sprite(ArtPaths.Projectile("generic"));
             sr.sortingOrder = 20;
-            go.transform.localScale = Vector3.one * 0.7f;
+            go.transform.localScale = Vector3.one * 0.85f;
             var pc = go.AddComponent<ProjectileController>();
             F.Set(pc, "sprite", sr);
+            var glow = F.WorldSprite("Glow", go.transform, F.Sprite(ArtPaths.Vfx("glow")), new Color(1f, 0.95f, 0.8f, 0.45f), 19, Vector3.zero);
+            glow.transform.localScale = new Vector3(1.3f, 1.3f, 1f);
+            var tr = go.AddComponent<TrailRenderer>();
+            tr.time = 0.22f;
+            tr.minVertexDistance = 0.05f;
+            tr.numCapVertices = 4;
+            tr.widthCurve = new AnimationCurve(new Keyframe(0f, 0.22f), new Keyframe(1f, 0f));
+            tr.sharedMaterial = AssetDatabase.GetBuiltinExtraResource<Material>("Sprites-Default.mat");
+            tr.sortingOrder = 19;
+            tr.emitting = false;
+            tr.alignment = LineAlignment.View;
+            F.Set(pc, "trail", tr);
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, ProjectilePrefabPath);
             Object.DestroyImmediate(go);
             return prefab;
         }
 
-        static void BuildVfxPrefabs(out VfxSprite burst, out VfxSprite hit, out VfxSprite heal, out VfxSprite poison, out VfxSprite shard, out DamageText dmgText)
+        static void BuildVfxPrefabs(out VfxSprite sprite, out VfxSprite additive, out DamageText dmgText)
         {
             ContentBuilder.EnsureFolder(VfxFolder);
-            burst = VfxPrefab("Vfx_Burst", ArtPaths.Vfx("burst"), 25);
-            hit = VfxPrefab("Vfx_Hit", ArtPaths.Vfx("hit"), 26);
-            heal = VfxPrefab("Vfx_Heal", ArtPaths.Vfx("heal"), 26);
-            poison = VfxPrefab("Vfx_Poison", ArtPaths.Vfx("poison"), 15);
-            shard = VfxPrefab("Vfx_Shard", ArtPaths.Vfx("bark_shard"), 24);
+            sprite = VfxPrefab("Vfx_Sprite", VfxArtGenerator.PathOf("soft_puff"), 24, null);
+            var addMat = LoadOrCreateMaterial(AdditiveMaterialPath, "Tree Guardians/2D/Sprite Additive");
+            additive = VfxPrefab("Vfx_Additive", VfxArtGenerator.PathOf("flash"), 27, addMat);
 
             var go = new GameObject("DamageText");
             var tmp = go.AddComponent<TextMeshPro>();
             tmp.font = F.Font;
-            tmp.fontSize = 4f;
+            tmp.fontSize = 6f;
             tmp.alignment = TextAlignmentOptions.Center;
-            tmp.fontStyle = FontStyles.Bold;
+            tmp.fontStyle = FontStyles.Normal;
+            var numberMat = DamageNumberMaterial(F.Font);
+            if (numberMat != null) tmp.fontSharedMaterial = numberMat; // shared preset: no per-object material instance
+            tmp.enableWordWrapping = false;
             tmp.text = "12";
             var rt = go.GetComponent<RectTransform>();
-            rt.sizeDelta = new Vector2(3f, 1f);
+            rt.sizeDelta = new Vector2(4f, 1.2f);
             var mr = go.GetComponent<MeshRenderer>();
             if (mr != null) mr.sortingOrder = 60;
             var dt = go.AddComponent<DamageText>();
@@ -336,17 +362,135 @@ namespace TreeGuardians.Editor.SceneBuild
             dmgText = prefab.GetComponent<DamageText>();
         }
 
-        static VfxSprite VfxPrefab(string name, string spritePath, int order)
+        public const string DamageNumberMaterialPath = "Assets/TreeGuardians/Art/Materials/TG_DamageNumber.mat";
+
+        /// Outline + soft drop shadow preset for world-space damage numbers, built from the font's own atlas material.
+        static Material DamageNumberMaterial(TMP_FontAsset font)
+        {
+            if (font == null || font.material == null) return null;
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(DamageNumberMaterialPath);
+            if (mat == null)
+            {
+                ContentBuilder.EnsureFolder("Assets/TreeGuardians/Art/Materials");
+                mat = new Material(font.material) { name = "TG_DamageNumber" };
+                AssetDatabase.CreateAsset(mat, DamageNumberMaterialPath);
+            }
+            else if (mat.shader != font.material.shader) mat.shader = font.material.shader;
+            mat.SetTexture(ShaderUtilities.ID_MainTex, font.material.GetTexture(ShaderUtilities.ID_MainTex));
+            mat.SetFloat(ShaderUtilities.ID_GradientScale, font.material.GetFloat(ShaderUtilities.ID_GradientScale));
+            mat.SetFloat(ShaderUtilities.ID_TextureWidth, font.material.GetFloat(ShaderUtilities.ID_TextureWidth));
+            mat.SetFloat(ShaderUtilities.ID_TextureHeight, font.material.GetFloat(ShaderUtilities.ID_TextureHeight));
+            mat.EnableKeyword(ShaderUtilities.Keyword_Outline);
+            mat.SetFloat(ShaderUtilities.ID_OutlineWidth, 0.24f);
+            mat.SetColor(ShaderUtilities.ID_OutlineColor, new Color32(34, 20, 14, 255));
+            mat.SetFloat(ShaderUtilities.ID_FaceDilate, 0.1f);
+            mat.EnableKeyword(ShaderUtilities.Keyword_Underlay);
+            mat.SetColor(ShaderUtilities.ID_UnderlayColor, new Color(0f, 0f, 0f, 0.45f));
+            mat.SetFloat(ShaderUtilities.ID_UnderlayOffsetX, 0.4f);
+            mat.SetFloat(ShaderUtilities.ID_UnderlayOffsetY, -0.6f);
+            mat.SetFloat(ShaderUtilities.ID_UnderlaySoftness, 0.25f);
+            EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        static VfxSprite VfxPrefab(string name, string spritePath, int order, Material material)
         {
             var go = new GameObject(name);
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = F.Sprite(spritePath);
             sr.sortingOrder = order;
+            if (material != null) sr.sharedMaterial = material;
             var v = go.AddComponent<VfxSprite>();
             F.Set(v, "sprite", sr);
             var prefab = PrefabUtility.SaveAsPrefabAsset(go, $"{VfxFolder}/{name}.prefab");
             Object.DestroyImmediate(go);
             return prefab.GetComponent<VfxSprite>();
+        }
+
+        static Sprite Fx(string name) => AssetDatabase.LoadAssetAtPath<Sprite>(VfxArtGenerator.PathOf(name));
+
+        static void WireVfxSprites(BattleVFX vfx)
+        {
+            F.SetArray(vfx, "splinters", new Object[] { Fx("splinter_0"), Fx("splinter_1"), Fx("splinter_2"), Fx("splinter_3") });
+            F.SetArray(vfx, "chips", new Object[] { Fx("chip_0"), Fx("chip_1"), Fx("chip_2") });
+            F.SetArray(vfx, "leafBits", WeatherBuilder.LeafSprites());
+            F.Set(vfx, "puff", Fx("smoke_puff"));
+            F.Set(vfx, "dust", Fx("dust"));
+            F.Set(vfx, "spark", Fx("spark"));
+            F.Set(vfx, "ring", Fx("ring"));
+            F.Set(vfx, "flash", Fx("flash"));
+            F.Set(vfx, "star", F.Sprite(ArtPaths.Vfx("burst")));
+            F.Set(vfx, "glow", F.Sprite(ArtPaths.Vfx("glow")));
+            F.Set(vfx, "heal", F.Sprite(ArtPaths.Vfx("heal")));
+        }
+
+        /// Smoke that keeps curling out of fresh holes (emitted by BattleVFX with EmitParams; rate stays 0).
+        static ParticleSystem BuildHoleSmoke(Transform parent)
+        {
+            var go = F.Child("HoleSmoke", parent);
+            var ps = go.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.playOnAwake = false; main.loop = true; main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = 2f; main.startSpeed = 0f; main.startSize = 0.45f;
+            main.maxParticles = 160;
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            var em = ps.emission; em.rateOverTime = 0f;
+            var shape = ps.shape; shape.enabled = false;
+            var size = ps.sizeOverLifetime; size.enabled = true; size.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0f, 0.5f), new Keyframe(0.35f, 1.1f), new Keyframe(1f, 2.1f)));
+            var rot = ps.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-0.6f, 0.6f);
+            var vel = ps.limitVelocityOverLifetime; vel.enabled = true; vel.dampen = 0.08f; vel.limit = 0.9f;
+            var force = ps.forceOverLifetime; force.enabled = true; force.space = ParticleSystemSimulationSpace.World; force.x = new ParticleSystem.MinMaxCurve(-0.25f, -0.05f); force.y = new ParticleSystem.MinMaxCurve(0.1f, 0.25f);
+            var col = ps.colorOverLifetime; col.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(new Color(0.9f, 0.9f, 0.92f), 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.85f, 0.12f), new GradientAlphaKey(0.5f, 0.6f), new GradientAlphaKey(0f, 1f) });
+            col.color = g;
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            var puff = Fx("smoke_puff");
+            r.sharedMaterial = WeatherBuilder.ParticleMaterial("HoleSmoke", puff != null ? puff.texture : null);
+            r.sortingOrder = 22;
+            r.maxParticleSize = 0.5f;
+            return ps;
+        }
+
+        /// Victory confetti: two bursts from above the arena, fluttering down.
+        static ParticleSystem BuildConfetti(Transform parent)
+        {
+            var go = F.Child("VictoryConfetti", parent, new Vector3(0f, 8.8f, 0f));
+            go.transform.position = new Vector3(0f, 8.8f, -1f);
+            var ps = go.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.playOnAwake = false; main.loop = false; main.duration = 2.5f; main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.useUnscaledTime = true;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(3.2f, 4.6f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(1.5f, 5f);
+            main.startSize3D = true;
+            main.startSizeX = new ParticleSystem.MinMaxCurve(0.14f, 0.24f);
+            main.startSizeY = new ParticleSystem.MinMaxCurve(0.08f, 0.14f);
+            main.startSizeZ = 1f;
+            main.startRotation = new ParticleSystem.MinMaxCurve(0f, Mathf.PI * 2f);
+            main.gravityModifier = 0.35f;
+            main.maxParticles = 260;
+            var cg = new Gradient();
+            cg.SetKeys(new[] { new GradientColorKey(new Color(1f, 0.82f, 0.2f), 0f), new GradientColorKey(new Color(0.36f, 0.8f, 0.36f), 0.25f), new GradientColorKey(new Color(0.3f, 0.62f, 1f), 0.5f), new GradientColorKey(new Color(0.95f, 0.36f, 0.4f), 0.75f), new GradientColorKey(new Color(0.75f, 0.5f, 1f), 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
+            main.startColor = new ParticleSystem.MinMaxGradient(cg) { mode = ParticleSystemGradientMode.RandomColor };
+            var em = ps.emission; em.rateOverTime = 0f;
+            em.SetBursts(new[] { new ParticleSystem.Burst(0f, 120), new ParticleSystem.Burst(0.6f, 80) });
+            var shape = ps.shape; shape.shapeType = ParticleSystemShapeType.Box; shape.scale = new Vector3(22f, 0.5f, 1f);
+            shape.rotation = new Vector3(90f, 0f, 0f);
+            var rot = ps.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-6f, 6f);
+            var noise = ps.noise; noise.enabled = true; noise.strength = 0.8f; noise.frequency = 0.6f; noise.quality = ParticleSystemNoiseQuality.Low;
+            var lim = ps.limitVelocityOverLifetime; lim.enabled = true; lim.limit = 2.4f; lim.dampen = 0.2f;
+            var col = ps.colorOverLifetime; col.enabled = true;
+            var fade = new Gradient();
+            fade.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) }, new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 0.8f), new GradientAlphaKey(0f, 1f) });
+            col.color = fade;
+            var r = go.GetComponent<ParticleSystemRenderer>();
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(VfxArtGenerator.PathOf("confetti"));
+            r.sharedMaterial = WeatherBuilder.ParticleMaterial("Confetti", tex);
+            r.sortingOrder = 70;
+            return ps;
         }
 
         // ------------------------------------------------------------------ trees
@@ -438,26 +582,13 @@ namespace TreeGuardians.Editor.SceneBuild
             {
                 Vector2 pos = def.toolMountPositions[i];
                 var m = F.Child($"Mount_{i + 1:00}", mountsRoot.transform, new Vector3(pos.x, pos.y, 0f));
-                var ms = F.WorldSprite("Marker", m.transform, F.Sprite(ArtPaths.TreePart("platform")), new Color(0.45f, 0.35f, 0.25f), 14, Vector3.zero);
-                ms.transform.localScale = new Vector3(0.4f, 0.4f, 1f);
                 mounts[i] = m.transform;
             }
 
-            var barRoot = F.Child("TreeHealthWorldBar", root.transform, new Vector3(0f, 7.6f, 0f));
-            var barBack = F.WorldSprite("Back", barRoot.transform, F.Ui("white"), BarBack, 40, Vector3.zero);
-            barBack.transform.localScale = new Vector3(90f, 8f, 1f);
-            var fillPivot = F.Child("FillPivot", barRoot.transform, new Vector3(-1.72f, 0f, 0f));
-            var barFill = F.WorldSprite("Fill", fillPivot.transform, F.Ui("white"), F.Green, 41, new Vector3(1.72f, 0f, 0f));
-            barFill.transform.localScale = new Vector3(86f, 5.5f, 1f);
-            var heartIcon = F.WorldSprite("Icon", barRoot.transform, F.Icon("heart"), F.Red, 42, new Vector3(-2.15f, 0f, 0f));
-            heartIcon.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
-
+            // Castle integrity lives in the top HUD plates; no world-space bar over the castle.
             F.SetArray(tree, "sections", sections.ToArray());
             F.SetArray(tree, "guardianSlots", slots);
             F.SetArray(tree, "toolMounts", mounts);
-            F.Set(tree, "healthBarFill", fillPivot.transform);
-            F.Set(tree, "healthBarFillRenderer", barFill);
-            SetGradient(tree, "healthGradient");
             F.SetArray(roster, "slots", guardians);
             F.SetArray(tools, "mounts", mounts);
             return tree;
@@ -617,8 +748,8 @@ namespace TreeGuardians.Editor.SceneBuild
             col.isTrigger = true;
             col.size = new Vector2(0.85f, 1.05f);
             col.offset = new Vector2(0f, 0.55f);
-            var platform = F.WorldSprite("Platform", go.transform, F.Sprite(ArtPaths.TreePart("platform")), new Color(0.5f, 0.38f, 0.26f), 7, new Vector3(0f, -0.04f, 0f));
-            platform.transform.localScale = new Vector3(0.55f, 0.55f, 1f);
+            var platform = F.WorldSprite("Shadow", go.transform, Fx("soft_puff"), new Color(0f, 0f, 0f, 0.38f), 7, new Vector3(0f, 0.02f, 0f));
+            platform.transform.localScale = new Vector3(0.62f, 0.16f, 1f);
             var visualRoot = F.Child("VisualRoot", go.transform);
             var sprite = F.WorldSprite("Sprite", visualRoot.transform, F.Sprite(ArtPaths.WorldSprite("thorn_archer")), Color.white, 8, Vector3.zero);
             sprite.transform.localScale = new Vector3(0.42f, 0.42f, 1f);
@@ -646,7 +777,10 @@ namespace TreeGuardians.Editor.SceneBuild
 
             F.Set(ctrl, "sprite", sprite); F.Set(ctrl, "visualRoot", visualRoot.transform); F.Set(ctrl, "muzzle", muzzle.transform);
             F.Set(ctrl, "healthBarFill", hpPivot.transform); F.Set(ctrl, "healthBarFillRenderer", hpFill); F.Set(ctrl, "energyBarFill", enPivot.transform);
+            F.SetArray(ctrl, "barRenderers", new Object[] { hpBack, hpFill, enBack, enFill });
             F.Set(ctrl, "selectionRing", ring); F.Set(ctrl, "shieldVisual", shield); F.Set(ctrl, "statusIcon", status); F.Set(ctrl, "bodyCollider", col); F.Set(ctrl, "platform", platform);
+            F.Set(ctrl, "flashMaterial", LoadOrCreateMaterial(GuardianFlashMaterialPath, "Tree Guardians/2D/Sprite Silhouette", m => { m.SetFloat("_Silhouette", 0f); m.SetColor("_SilhouetteColor", Color.white); }));
+            F.Set(ctrl, "showPlatform", true);
             SetGradient(ctrl, "healthGradient");
             go.SetActive(false);
             return ctrl;
@@ -665,35 +799,56 @@ namespace TreeGuardians.Editor.SceneBuild
         }
 
         // ------------------------------------------------------------------ HUD
+        static readonly Color InkBrown = new Color(0.36f, 0.2f, 0.06f);
+        static readonly Color BarTrack = new Color(0.05f, 0.06f, 0.1f, 0.9f);
+
+        /// Menu-style player/enemy plate: kit plate 51 with avatar slot, name, sliced integrity bar and percent.
+        static RectTransform CastlePlate(string name, Transform parent, bool enemy, string literalName, Color barColor, int avatarKit,
+            out TMP_Text nameText, out UIFill bar, out TMP_Text percent)
+        {
+            float dir = enemy ? -1f : 1f;
+            var anchor = new Vector2(enemy ? 1f : 0f, 1f);
+            var root = F.Rect(name, parent);
+            F.Anchor(root, anchor, new Vector2(20f * dir, -14f), new Vector2(600f, 130f), anchor);
+            var plate = F.Image("Plate", root, F.Kit(51), Color.white, true, false);
+            F.Stretch((RectTransform)plate.transform);
+            if (enemy) plate.transform.localScale = new Vector3(-1f, 1f, 1f);
+            var avatar = F.Image("Avatar", root, F.Kit(avatarKit), Color.white, false, false);
+            F.Anchor((RectTransform)avatar.transform, new Vector2(enemy ? 1f : 0f, 0.5f), new Vector2(64f * dir, 2f), new Vector2(86f, 86f));
+            var align = enemy ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.MidlineLeft;
+            nameText = F.OutlinedText("Name", root, null, 34f, F.TextLight, align, literalName);
+            F.Anchor((RectTransform)nameText.transform, anchor, new Vector2(150f * dir, -12f), new Vector2(340f, 44f), anchor);
+            bar = F.SlicedBar("IntegrityBar", root, BarTrack, barColor, 4f, true, enemy);
+            F.Anchor((RectTransform)bar.transform, anchor, new Vector2(150f * dir, -66f), new Vector2(340f, 32f), anchor);
+            percent = F.OutlinedText("Percent", root, null, 30f, F.TextLight, TextAlignmentOptions.Center, "100%");
+            F.Anchor((RectTransform)percent.transform, anchor, new Vector2(498f * dir, -62f), new Vector2(92f, 40f), anchor);
+            return root;
+        }
+
         static BattleHUD BuildHUD(Camera cam, out AimView aimView)
         {
             var canvas = F.Canvas("BattleCanvas");
             var hud = canvas.gameObject.AddComponent<BattleHUD>();
             var safe = F.SafeArea(canvas.transform);
 
-            // Top HUD
+            // Top HUD: two plates, the timer pill and one arena chip — the same kit art as the main menu.
             var top = F.Rect("TopHUD", safe);
-            F.AnchorStretchX(top, -10f, 120f, 20f, 20f, 1f, 1f);
-            var pName = F.OutlinedText("PlayerName", top, null, 28f, F.TextLight, TextAlignmentOptions.MidlineLeft, "You");
-            F.Anchor((RectTransform)pName.transform, new Vector2(0f, 1f), new Vector2(0f, 0f), new Vector2(400f, 36f), new Vector2(0f, 1f));
-            var pBar = F.FillBar("PlayerTreeBar", top, F.PanelMid, F.Green, out var pFill);
-            F.Anchor((RectTransform)pBar.transform, new Vector2(0f, 1f), new Vector2(0f, -40f), new Vector2(620f, 40f), new Vector2(0f, 1f));
-            var eName = F.OutlinedText("EnemyName", top, null, 28f, F.TextLight, TextAlignmentOptions.MidlineRight, "Bot");
-            F.Anchor((RectTransform)eName.transform, new Vector2(1f, 1f), new Vector2(0f, 0f), new Vector2(400f, 36f), new Vector2(1f, 1f));
-            var eBar = F.FillBar("EnemyTreeBar", top, F.PanelMid, F.Red, out var eFill);
-            F.Anchor((RectTransform)eBar.transform, new Vector2(1f, 1f), new Vector2(0f, -40f), new Vector2(620f, 40f), new Vector2(1f, 1f));
-            eFill.fillOrigin = 1;
-            var timerPill = F.Image("TimerPill", top, F.Ui("pill"), F.PanelDark, true, false);
-            F.Anchor((RectTransform)timerPill.transform, new Vector2(0.5f, 1f), new Vector2(0f, -4f), new Vector2(220f, 70f), new Vector2(0.5f, 1f));
-            var timer = F.OutlinedText("Timer", timerPill.transform, null, 40f, F.TextLight, TextAlignmentOptions.Center, "2:30");
-            F.Stretch((RectTransform)timer.transform);
-            var arena = F.Text("ArenaName", top, null, 22f, new Color(0.9f, 0.92f, 0.95f), TextAlignmentOptions.Center, false, "");
-            F.Anchor((RectTransform)arena.transform, new Vector2(0.5f, 1f), new Vector2(0f, -78f), new Vector2(500f, 30f), new Vector2(0.5f, 1f));
-            var offline = F.Image("OfflineBadge", top, F.Ui("pill"), new Color(0.25f, 0.3f, 0.4f), true, false);
-            F.Anchor((RectTransform)offline.transform, new Vector2(0.5f, 1f), new Vector2(0f, -108f), new Vector2(230f, 30f), new Vector2(0.5f, 1f));
-            var offlineText = F.OutlinedText("Text", offline.transform, "battle_offline", 18f, F.TextLight); F.Stretch((RectTransform)offlineText.transform);
-            var pause = F.IconButton("PauseButton", safe, F.PanelDark, F.Icon("pause"), F.TextLight);
-            F.Anchor((RectTransform)pause.transform, new Vector2(1f, 1f), new Vector2(-14f, -130f), new Vector2(84f, 84f), new Vector2(1f, 1f));
+            F.Stretch(top);
+            CastlePlate("PlayerPlate", top, false, "You", new Color(0.47f, 0.82f, 0.29f), 39, out var pName, out var pBar, out var pPct);
+            CastlePlate("EnemyPlate", top, true, "Bot", new Color(0.94f, 0.36f, 0.3f), 16, out var eName, out var eBar, out var ePct);
+            var timerPill = F.Image("TimerPill", top, F.Kit(45), Color.white, true, false);
+            F.Anchor((RectTransform)timerPill.transform, new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(236f, 90f), new Vector2(0.5f, 1f));
+            var timer = F.OutlinedText("Timer", timerPill.transform, null, 48f, F.TextLight, TextAlignmentOptions.Center, "4:59");
+            F.Stretch((RectTransform)timer.transform, 10f, 8f, 10f, 4f);
+            var arenaChip = F.Image("ArenaChip", top, F.Kit(45), new Color(1f, 1f, 1f, 0.92f), true, false);
+            F.Anchor((RectTransform)arenaChip.transform, new Vector2(0.5f, 1f), new Vector2(0f, -106f), new Vector2(470f, 48f), new Vector2(0.5f, 1f));
+            var arena = F.Text("ArenaName", arenaChip.transform, null, 22f, new Color(0.86f, 0.9f, 0.97f), TextAlignmentOptions.Center, false, "");
+            F.Stretch((RectTransform)arena.transform, 18f, 4f, 18f, 4f);
+            arena.enableAutoSizing = true; arena.fontSizeMin = 14f; arena.fontSizeMax = 22f;
+            var pause = F.KitButton("PauseButton", top, 41, null);
+            F.Anchor((RectTransform)pause.transform, new Vector2(1f, 1f), new Vector2(-636f, -22f), new Vector2(100f, 100f), new Vector2(1f, 1f));
+            var pauseIcon = F.Image("Icon", pause.transform, F.Icon("pause"), F.TextLight, false, false);
+            F.Stretch((RectTransform)pauseIcon.transform, 26f, 26f, 26f, 26f);
 
             // Aim layer
             var aimLayer = F.Rect("AimLayer", safe);
@@ -707,7 +862,7 @@ namespace TreeGuardians.Editor.SceneBuild
                 d.enabled = false;
                 dots[i] = d;
             }
-            var gauge = F.Image("PowerGauge", aimLayer, F.Ui("bar_back"), F.PanelDark, true, false);
+            var gauge = F.Image("PowerGauge", aimLayer, F.Ui("bar_back"), BarTrack, true, false);
             ((RectTransform)gauge.transform).sizeDelta = new Vector2(160f, 26f);
             var gaugeFill = F.Image("Fill", gauge.transform, F.Ui("bar_fill"), F.Honey, true, false);
             F.Stretch((RectTransform)gaugeFill.transform, 5f, 5f, 5f, 5f);
@@ -718,48 +873,92 @@ namespace TreeGuardians.Editor.SceneBuild
             reticle.enabled = false;
             F.Set(aimView, "layer", aimLayer); F.SetArray(aimView, "dots", dots); F.Set(aimView, "powerGauge", gauge.transform); F.Set(aimView, "powerFill", gaugeFill); F.Set(aimView, "reticle", reticle);
 
-            // Guardian action bar
-            var bar = F.HorizontalGroup("GuardianActionBar", safe, 10f, TextAnchor.MiddleCenter);
-            F.Anchor(bar, new Vector2(0.5f, 0f), new Vector2(-180f, 12f), new Vector2(1500f, 170f), new Vector2(0.5f, 0f));
+            // Combat controls (fade out together when the battle ends)
+            var combat = F.Rect("CombatControls", safe);
+            F.Stretch(combat);
+            var combatGroup = F.Group(combat.gameObject, 1f);
+            var bar = F.HorizontalGroup("GuardianActionBar", combat, 12f, TextAnchor.LowerCenter);
+            F.Anchor(bar, new Vector2(0.5f, 0f), new Vector2(0f, 10f), new Vector2(1300f, 214f), new Vector2(0.5f, 0f));
             bar.gameObject.AddComponent<FitRowScale>();
             var gButtons = new Object[8];
             for (int i = 0; i < 8; i++) gButtons[i] = GuardianActionButton("GuardianButton_" + i, bar);
-            var toolBar = F.HorizontalGroup("ToolActionBar", safe, 10f, TextAnchor.MiddleCenter);
-            F.Anchor(toolBar, new Vector2(1f, 0f), new Vector2(-20f, 12f), new Vector2(400f, 150f), new Vector2(1f, 0f));
+            var toolBar = F.HorizontalGroup("ToolActionBar", combat, 10f, TextAnchor.LowerRight);
+            F.Anchor(toolBar, new Vector2(1f, 0f), new Vector2(-24f, 12f), new Vector2(480f, 160f), new Vector2(1f, 0f));
             var tButtons = new Object[3];
             for (int i = 0; i < 3; i++) tButtons[i] = ToolActionButton("ToolButton_" + i, toolBar);
-            var hint = F.OutlinedText("HintText", safe, null, 26f, F.Honey, TextAlignmentOptions.Center, "");
-            F.Anchor((RectTransform)hint.transform, new Vector2(0.5f, 0f), new Vector2(0f, 262f), new Vector2(1200f, 40f), new Vector2(0.5f, 0f));
 
-            // Turn banner + countdown (castle duel)
-            var turnPill = F.Image("TurnPill", safe, F.Ui("pill"), F.PanelDark, true, false);
-            F.Anchor((RectTransform)turnPill.transform, new Vector2(0.5f, 0f), new Vector2(0f, 190f), new Vector2(520f, 64f), new Vector2(0.5f, 0f));
-            var turnText = F.OutlinedText("Text", turnPill.transform, null, 30f, F.TextLight, TextAlignmentOptions.Center, "");
-            F.Stretch((RectTransform)turnText.transform, 16f, 14f, 16f, 4f);
-            var turnFillBack = F.Image("TimerBack", turnPill.transform, F.Ui("bar_back"), F.PanelMid, true, false);
-            F.Anchor((RectTransform)turnFillBack.transform, new Vector2(0.5f, 0f), new Vector2(0f, 6f), new Vector2(460f, 12f), new Vector2(0.5f, 0f));
-            var turnFill = F.Image("Fill", turnFillBack.transform, F.Ui("bar_fill"), F.Green, true, false);
+            // Turn pill: label + count badge + sliced timer bar (castle duel)
+            var turnPill = F.Image("TurnPill", combat, F.Kit(45), Color.white, true, false);
+            F.Anchor((RectTransform)turnPill.transform, new Vector2(0.5f, 0f), new Vector2(0f, 222f), new Vector2(520f, 80f), new Vector2(0.5f, 0f));
+            var turnText = F.OutlinedText("Text", turnPill.transform, null, 34f, F.TextLight, TextAlignmentOptions.Center, "");
+            F.Stretch((RectTransform)turnText.transform, 28f, 16f, 96f, 6f);
+            var badge = F.Image("CountBadge", turnPill.transform, F.Ui("circle"), new Color(0.36f, 0.75f, 0.35f), false, false);
+            F.Anchor((RectTransform)badge.transform, new Vector2(1f, 0.5f), new Vector2(-50f, 4f), new Vector2(72f, 72f));
+            var countText = F.OutlinedText("Count", badge.transform, null, 40f, F.TextLight, TextAlignmentOptions.Center, "10");
+            F.Stretch((RectTransform)countText.transform);
+            var turnBar = F.Image("TimerBack", turnPill.transform, F.Ui("bar_back"), BarTrack, true, false);
+            F.Anchor((RectTransform)turnBar.transform, new Vector2(0.5f, 0f), new Vector2(-36f, 10f), new Vector2(380f, 10f), new Vector2(0.5f, 0f));
+            var turnFill = F.Image("Fill", turnBar.transform, F.Ui("white"), F.Green, false, false);
             F.Stretch((RectTransform)turnFill.transform, 2f, 2f, 2f, 2f);
             turnFill.type = Image.Type.Filled; turnFill.fillMethod = Image.FillMethod.Horizontal;
 
-            // Battle message
+            // Hint chip above the pill (hidden when empty)
+            var hintChip = F.Image("HintChip", combat, F.Kit(45), new Color(1f, 1f, 1f, 0.9f), true, false);
+            F.Anchor((RectTransform)hintChip.transform, new Vector2(0.5f, 0f), new Vector2(0f, 310f), new Vector2(720f, 54f), new Vector2(0.5f, 0f));
+            var hintGroup = F.Group(hintChip.gameObject, 0f);
+            var hint = F.Text("HintText", hintChip.transform, null, 24f, new Color(1f, 0.9f, 0.6f), TextAlignmentOptions.Center, false, "");
+            F.Stretch((RectTransform)hint.transform, 26f, 4f, 26f, 4f);
+            hint.enableAutoSizing = true; hint.fontSizeMin = 16f; hint.fontSizeMax = 24f;
+
+            // Turn banner ribbon (slides in on every turn change)
+            var banner = F.Rect("TurnBanner", safe);
+            F.Anchor(banner, new Vector2(0.5f, 0.66f), Vector2.zero, new Vector2(860f, 128f));
+            var bannerGroup = F.Group(banner.gameObject, 0f);
+            var ribbon = F.Image("Ribbon", banner, F.Kit(46), Color.white, true, false);
+            F.Stretch((RectTransform)ribbon.transform);
+            var bannerText = F.OutlinedText("Text", banner, null, 60f, InkBrown, TextAlignmentOptions.Center, "");
+            bannerText.outlineColor = new Color(1f, 0.97f, 0.85f);
+            bannerText.outlineWidth = 0.12f;
+            F.Stretch((RectTransform)bannerText.transform, 40f, 18f, 40f, 10f);
+            banner.gameObject.SetActive(false);
+
+            // Short messages (time's up, core exposed, can't fire): dark chip + text
             var msg = F.Rect("BattleMessage", safe);
-            F.Anchor(msg, new Vector2(0.5f, 0.6f), Vector2.zero, new Vector2(1400f, 160f));
+            F.Anchor(msg, new Vector2(0.5f, 0.52f), Vector2.zero, new Vector2(900f, 110f));
             var msgGroup = F.Group(msg.gameObject, 0f);
-            var msgText = F.OutlinedText("Text", msg, null, 96f, F.Honey, TextAlignmentOptions.Center, "READY");
-            F.Stretch((RectTransform)msgText.transform);
+            var msgBack = F.Image("Back", msg, F.Kit(45), new Color(1f, 1f, 1f, 0.94f), true, false);
+            F.Stretch((RectTransform)msgBack.transform);
+            var msgText = F.OutlinedText("Text", msg, null, 50f, F.Honey, TextAlignmentOptions.Center, "READY");
+            F.Stretch((RectTransform)msgText.transform, 30f, 10f, 30f, 10f);
+            msgText.enableAutoSizing = true; msgText.fontSizeMin = 26f; msgText.fontSizeMax = 50f;
+
+            // End banner (victory / defeat / draw) with a starburst behind
+            var end = F.Rect("EndBanner", safe);
+            F.Anchor(end, new Vector2(0.5f, 0.6f), Vector2.zero, new Vector2(1080f, 170f));
+            var endGroup = F.Group(end.gameObject, 0f);
+            var burst = F.Image("Starburst", end, F.Kit(36), new Color(1f, 0.92f, 0.55f, 0.45f), false, false);
+            F.Anchor((RectTransform)burst.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 500f));
+            var endRibbon = F.Image("Ribbon", end, F.Kit(46), Color.white, true, false);
+            F.Stretch((RectTransform)endRibbon.transform);
+            var endText = F.OutlinedText("Text", end, null, 92f, InkBrown, TextAlignmentOptions.Center, "");
+            endText.outlineColor = new Color(1f, 0.97f, 0.85f);
+            endText.outlineWidth = 0.14f;
+            F.Stretch((RectTransform)endText.transform, 40f, 20f, 40f, 10f);
+            end.gameObject.SetActive(false);
 
             // Pause popup
-            var popup = F.Image("PausePopup", safe, F.Ui("panel"), F.PanelDark, true, true);
-            F.Anchor((RectTransform)popup.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(800f, 460f));
+            var popup = F.Image("PausePopup", safe, F.Kit(41), Color.white, true, true);
+            F.Anchor((RectTransform)popup.transform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(780f, 470f));
             F.Group(popup.gameObject, 1f);
             var pausePanel = popup.gameObject.AddComponent<UIPanel>();
-            var pTitle = F.OutlinedText("Title", popup.transform, "battle_paused", 44f, F.Honey);
-            F.AnchorStretchX((RectTransform)pTitle.transform, -20f, 60f, 40f, 40f, 1f, 1f);
-            var resume = F.Button("ResumeButton", popup.transform, F.Green, "battle_resume", 30f);
-            F.Anchor((RectTransform)resume.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, 20f), new Vector2(420f, 84f));
-            var forfeit = F.Button("ForfeitButton", popup.transform, F.Red, "battle_forfeit", 30f);
-            F.Anchor((RectTransform)forfeit.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, -90f), new Vector2(420f, 84f));
+            var pTitle = F.OutlinedText("Title", popup.transform, "battle_paused", 52f, F.Honey);
+            F.AnchorStretchX((RectTransform)pTitle.transform, -30f, 70f, 40f, 40f, 1f, 1f);
+            var resume = F.KitButton("ResumeButton", popup.transform, 44, "battle_resume", 36f);
+            F.Anchor((RectTransform)resume.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, 10f), new Vector2(430f, 116f));
+            var forfeit = F.KitButton("ForfeitButton", popup.transform, 45, "battle_forfeit", 30f);
+            F.Anchor((RectTransform)forfeit.transform, new Vector2(0.5f, 0.5f), new Vector2(0f, -118f), new Vector2(360f, 90f));
+            var forfeitLabel = forfeit.GetComponentInChildren<TMP_Text>();
+            if (forfeitLabel != null) forfeitLabel.color = new Color(1f, 0.62f, 0.56f);
             var pGroup = popup.GetComponent<CanvasGroup>(); pGroup.alpha = 0f; pGroup.blocksRaycasts = false; pGroup.interactable = false;
             popup.gameObject.SetActive(false);
 
@@ -767,16 +966,17 @@ namespace TreeGuardians.Editor.SceneBuild
             var tut = F.Image("BattleTutorialOverlay", safe, F.Ui("white"), new Color(0f, 0f, 0f, 0.35f), false, false);
             F.Stretch((RectTransform)tut.transform, -100f, -100f, -100f, -100f);
             var tutGroup = F.Group(tut.gameObject, 1f);
-            var tutPanel = F.Image("TextPanel", tut.transform, F.Ui("panel"), F.PanelDark, true, false);
-            F.Anchor((RectTransform)tutPanel.transform, new Vector2(0.5f, 0.72f), Vector2.zero, new Vector2(1300f, 130f));
-            var tutText = F.OutlinedText("Text", tutPanel.transform, null, 32f, F.TextLight, TextAlignmentOptions.Center, "");
-            F.Stretch((RectTransform)tutText.transform, 24f, 10f, 24f, 10f);
+            var tutPanel = F.Image("TextPanel", tut.transform, F.Kit(41), Color.white, true, false);
+            F.Anchor((RectTransform)tutPanel.transform, new Vector2(0.5f, 0.72f), Vector2.zero, new Vector2(1300f, 140f));
+            var tutText = F.OutlinedText("Text", tutPanel.transform, null, 34f, F.TextLight, TextAlignmentOptions.Center, "");
+            F.Stretch((RectTransform)tutText.transform, 30f, 12f, 30f, 12f);
+            tutText.enableAutoSizing = true; tutText.fontSizeMin = 22f; tutText.fontSizeMax = 34f;
             var spotlight = F.Image("Spotlight", tut.transform, F.Ui("glow"), new Color(1f, 0.85f, 0.3f, 0.7f), true, false);
             spotlight.type = Image.Type.Simple;
             ((RectTransform)spotlight.transform).sizeDelta = new Vector2(220f, 220f);
             spotlight.gameObject.SetActive(false);
-            var tutSkip = F.Button("SkipButton", tut.transform, F.PanelMid, "tut_skip", 24f);
-            F.Anchor((RectTransform)tutSkip.transform, new Vector2(1f, 1f), new Vector2(-130f, -240f), new Vector2(280f, 64f), new Vector2(1f, 1f));
+            var tutSkip = F.KitButton("SkipButton", tut.transform, 45, "tut_skip", 26f);
+            F.Anchor((RectTransform)tutSkip.transform, new Vector2(1f, 1f), new Vector2(-130f, -240f), new Vector2(280f, 76f), new Vector2(1f, 1f));
             tut.gameObject.SetActive(false);
             var tutorial = F.Root("BattleTutorialController").AddComponent<TreeGuardians.Tutorial.BattleTutorialController>();
             F.Set(tutorial, "overlayRoot", tut.gameObject); F.Set(tutorial, "overlayGroup", tutGroup); F.Set(tutorial, "stepText", tutText);
@@ -789,79 +989,106 @@ namespace TreeGuardians.Editor.SceneBuild
             F.Group(overlay.gameObject, 1f);
             var transition = overlay.gameObject.AddComponent<TransitionOverlay>();
 
-            F.Set(hud, "playerNameText", pName); F.Set(hud, "enemyNameText", eName); F.Set(hud, "playerCoreFill", pFill); F.Set(hud, "enemyCoreFill", eFill);
-            F.Set(hud, "timerText", timer); F.Set(hud, "arenaText", arena); F.Set(hud, "offlineBadge", offline.gameObject);
-            F.SetArray(hud, "guardianButtons", gButtons); F.SetArray(hud, "toolButtons", tButtons); F.Set(hud, "hintText", hint);
-            F.Set(hud, "turnGroup", turnPill.gameObject); F.Set(hud, "turnText", turnText); F.Set(hud, "turnTimerFill", turnFill);
+            F.Set(hud, "playerNameText", pName); F.Set(hud, "enemyNameText", eName);
+            F.Set(hud, "playerCoreBar", pBar); F.Set(hud, "enemyCoreBar", eBar);
+            F.Set(hud, "playerCorePercent", pPct); F.Set(hud, "enemyCorePercent", ePct);
+            F.Set(hud, "timerText", timer); F.Set(hud, "timerPlate", timerPill); F.Set(hud, "arenaText", arena); F.Set(hud, "offlineBadge", (Object)null);
+            F.SetArray(hud, "guardianButtons", gButtons); F.SetArray(hud, "toolButtons", tButtons);
+            F.Set(hud, "combatGroup", combatGroup); F.Set(hud, "hintText", hint); F.Set(hud, "hintGroup", hintGroup);
+            F.Set(hud, "turnGroup", turnPill.gameObject); F.Set(hud, "turnText", turnText); F.Set(hud, "turnCountText", countText);
+            F.Set(hud, "turnPill", badge); F.Set(hud, "turnTimerFill", turnFill);
+            F.Set(hud, "turnBanner", bannerGroup); F.Set(hud, "turnBannerText", bannerText); F.Set(hud, "turnBannerRibbon", ribbon);
             F.Set(hud, "messageGroup", msgGroup); F.Set(hud, "messageText", msgText);
+            F.Set(hud, "endBanner", endGroup); F.Set(hud, "endBannerText", endText); F.Set(hud, "endBannerRibbon", endRibbon);
             F.Set(hud, "pauseButton", pause); F.Set(hud, "pausePopup", pausePanel); F.Set(hud, "resumeButton", resume); F.Set(hud, "forfeitButton", forfeit); F.Set(hud, "transition", transition);
             return hud;
         }
 
+        /// Guardian card: the card art fills the button; selection lifts it with a honey halo; sliced HP/energy bars.
         static GuardianActionButton GuardianActionButton(string name, Transform parent)
         {
-            var frame = F.Image(name, parent, F.Ui("card"), F.PanelMid, true, true);
-            ((RectTransform)frame.transform).sizeDelta = new Vector2(150f, 170f);
-            var btn = frame.gameObject.AddComponent<Button>();
-            btn.targetGraphic = frame;
-            frame.gameObject.AddComponent<UIButtonFeedback>();
-            var glow = F.Image("SpecialGlow", frame.transform, F.Ui("glow"), F.Honey, false, false);
-            F.Stretch((RectTransform)glow.transform, -30f, -30f, -30f, -30f);
-            glow.transform.SetAsFirstSibling();
+            var root = F.Image(name, parent, F.Ui("white"), new Color(1f, 1f, 1f, 0f), false, true);
+            ((RectTransform)root.transform).sizeDelta = new Vector2(152f, 188f);
+            var le = root.gameObject.AddComponent<LayoutElement>(); le.preferredWidth = 152f; le.preferredHeight = 188f;
+            var btn = root.gameObject.AddComponent<Button>();
+            btn.targetGraphic = root;
+            btn.transition = Selectable.Transition.None;
+            root.gameObject.AddComponent<UIButtonFeedback>();
+            var group = F.Group(root.gameObject, 1f);
+            var lift = F.Rect("Lift", root.transform);
+            F.Stretch(lift);
+            var glow = F.Image("SpecialGlow", lift, F.Ui("glow"), new Color(1f, 0.85f, 0.3f), false, false);
+            F.Stretch((RectTransform)glow.transform, -34f, -34f, -34f, -34f);
+            glow.preserveAspect = false;
             glow.enabled = false;
-            var portrait = F.Image("Portrait", frame.transform, null, Color.white, false, false);
-            F.Stretch((RectTransform)portrait.transform, 12f, 44f, 12f, 12f);
-            var cd = F.Image("CooldownFill", frame.transform, F.Ui("soft"), new Color(0f, 0f, 0f, 0.6f), true, false);
-            F.Stretch((RectTransform)cd.transform, 12f, 44f, 12f, 12f);
-            cd.type = Image.Type.Filled; cd.fillMethod = Image.FillMethod.Vertical; cd.fillOrigin = 1; cd.fillAmount = 0f;
-            var hpBack = F.Image("HealthBack", frame.transform, F.Ui("bar_back"), F.PanelDark, true, false);
-            F.AnchorStretchX((RectTransform)hpBack.transform, 24f, 18f, 12f, 12f, 0f, 0f);
-            var hp = F.Image("HealthFill", hpBack.transform, F.Ui("bar_fill"), F.Green, true, false);
-            F.Stretch((RectTransform)hp.transform, 3f, 3f, 3f, 3f); hp.type = Image.Type.Filled; hp.fillMethod = Image.FillMethod.Horizontal;
-            var enBack = F.Image("EnergyBack", frame.transform, F.Ui("bar_back"), F.PanelDark, true, false);
-            F.AnchorStretchX((RectTransform)enBack.transform, 8f, 14f, 12f, 12f, 0f, 0f);
-            var en = F.Image("EnergyFill", enBack.transform, F.Ui("bar_fill"), F.Honey, true, false);
-            F.Stretch((RectTransform)en.transform, 3f, 3f, 3f, 3f); en.type = Image.Type.Filled; en.fillMethod = Image.FillMethod.Horizontal;
-            var sel = F.Image("SelectedFrame", frame.transform, F.Ui("card"), F.Honey, true, false);
-            F.Stretch((RectTransform)sel.transform, -8f, -8f, -8f, -8f);
-            sel.transform.SetSiblingIndex(1);
+            var sel = F.Image("SelectedFrame", lift, F.Ui("glow"), new Color(1f, 0.86f, 0.35f, 0.95f), false, false);
+            F.Stretch((RectTransform)sel.transform, -22f, -22f, -22f, -22f);
+            sel.preserveAspect = false;
             sel.enabled = false;
-            var dead = F.Image("DeadOverlay", frame.transform, F.Ui("soft"), new Color(0f, 0f, 0f, 0.7f), true, false);
-            F.Stretch((RectTransform)dead.transform, 8f, 8f, 8f, 8f);
+            var shadow = F.Image("Shadow", lift, F.Ui("shadow"), new Color(0f, 0f, 0f, 0.45f), true, false);
+            F.Stretch((RectTransform)shadow.transform, -6f, -10f, -6f, 2f);
+            var portrait = F.Image("Portrait", lift, null, Color.white, false, false);
+            F.Stretch((RectTransform)portrait.transform, -14f, -10f, -14f, -10f);
+            var cd = F.Image("CooldownFill", lift, F.Ui("soft"), new Color(0f, 0f, 0f, 0.55f), true, false);
+            F.Stretch((RectTransform)cd.transform, 10f, 40f, 10f, 10f);
+            cd.type = Image.Type.Filled; cd.fillMethod = Image.FillMethod.Vertical; cd.fillOrigin = 1; cd.fillAmount = 0f;
+            cd.enabled = false;
+            var hp = F.SlicedBar("HealthBar", lift, BarTrack, new Color(0.47f, 0.82f, 0.29f), 3f, true);
+            F.AnchorStretchX((RectTransform)hp.transform, 30f, 16f, 18f, 18f, 0f, 0f);
+            var en = F.SlicedBar("EnergyBar", lift, BarTrack, new Color(0.36f, 0.72f, 1f), 2f, false);
+            F.AnchorStretchX((RectTransform)en.transform, 14f, 11f, 24f, 24f, 0f, 0f);
+            var dead = F.Image("DeadOverlay", lift, F.Ui("soft"), new Color(0.05f, 0.05f, 0.08f, 0.72f), true, false);
+            F.Stretch((RectTransform)dead.transform, 6f, 6f, 6f, 6f);
             var deadIcon = F.Image("Icon", dead.transform, F.Icon("close"), F.Red, false, false);
-            F.Anchor((RectTransform)deadIcon.transform, new Vector2(0.5f, 0.6f), Vector2.zero, new Vector2(60f, 60f));
+            F.Anchor((RectTransform)deadIcon.transform, new Vector2(0.5f, 0.58f), Vector2.zero, new Vector2(64f, 64f));
             dead.SetActive(false);
-            var stun = F.Image("StunIcon", frame.transform, F.Icon("motion"), F.Honey, false, false);
-            F.Anchor((RectTransform)stun.transform, new Vector2(1f, 1f), new Vector2(-4f, -4f), new Vector2(40f, 40f), new Vector2(1f, 1f));
+            var stun = F.Image("StunIcon", lift, F.Icon("motion"), F.Honey, false, false);
+            F.Anchor((RectTransform)stun.transform, new Vector2(1f, 1f), new Vector2(-2f, -2f), new Vector2(44f, 44f), new Vector2(1f, 1f));
             stun.gameObject.SetActive(false);
-            var view = frame.gameObject.AddComponent<GuardianActionButton>();
-            F.Set(view, "button", btn); F.Set(view, "portrait", portrait); F.Set(view, "cooldownFill", cd); F.Set(view, "healthFill", hp); F.Set(view, "energyFill", en);
+            var view = root.gameObject.AddComponent<GuardianActionButton>();
+            F.Set(view, "button", btn); F.Set(view, "group", group); F.Set(view, "lift", lift); F.Set(view, "portrait", portrait); F.Set(view, "cooldownFill", cd);
+            F.Set(view, "healthBar", hp); F.Set(view, "energyBar", en);
             F.Set(view, "selectedFrame", sel); F.Set(view, "specialGlow", glow); F.Set(view, "deadOverlay", dead.gameObject); F.Set(view, "stunIcon", stun.gameObject);
             return view;
         }
 
         static void SetActive(this Image img, bool v) => img.gameObject.SetActive(v);
 
+        /// Tool button on the dark kit square: icon, radial cooldown with seconds, two-line label.
         static ToolActionButton ToolActionButton(string name, Transform parent)
         {
-            var frame = F.Image(name, parent, F.Ui("card"), F.PanelMid, true, true);
-            ((RectTransform)frame.transform).sizeDelta = new Vector2(120f, 140f);
+            var frame = F.Image(name, parent, F.Kit(41), Color.white, true, true);
+            ((RectTransform)frame.transform).sizeDelta = new Vector2(150f, 156f);
+            var le = frame.gameObject.AddComponent<LayoutElement>(); le.preferredWidth = 150f; le.preferredHeight = 156f;
             var btn = frame.gameObject.AddComponent<Button>();
             btn.targetGraphic = frame;
+            var colors = btn.colors;
+            colors.normalColor = Color.white; colors.highlightedColor = Color.white; colors.selectedColor = Color.white;
+            colors.pressedColor = new Color(0.85f, 0.85f, 0.85f); colors.disabledColor = new Color(0.7f, 0.7f, 0.7f, 1f);
+            btn.colors = colors;
             frame.gameObject.AddComponent<UIButtonFeedback>();
-            var icon = F.Image("Icon", frame.transform, F.Sprite(ArtPaths.Tool("catapult")), Color.white, false, false);
-            F.Stretch((RectTransform)icon.transform, 16f, 36f, 16f, 12f);
-            var cd = F.Image("CooldownFill", frame.transform, F.Ui("soft"), new Color(0f, 0f, 0f, 0.6f), true, false);
-            F.Stretch((RectTransform)cd.transform, 10f, 30f, 10f, 10f);
-            cd.type = Image.Type.Filled; cd.fillMethod = Image.FillMethod.Radial360; cd.fillAmount = 0f;
-            var label = F.OutlinedText("Label", frame.transform, null, 16f, F.TextLight, TextAlignmentOptions.Center, "");
-            F.AnchorStretchX((RectTransform)label.transform, 6f, 26f, 4f, 4f, 0f, 0f);
-            var sel = F.Image("SelectedFrame", frame.transform, F.Ui("card"), F.Honey, true, false);
-            F.Stretch((RectTransform)sel.transform, -8f, -8f, -8f, -8f);
+            var group = F.Group(frame.gameObject, 1f);
+            var sel = F.Image("SelectedFrame", frame.transform, F.Ui("glow"), new Color(1f, 0.86f, 0.35f, 0.95f), false, false);
+            F.Stretch((RectTransform)sel.transform, -24f, -24f, -24f, -24f);
+            sel.preserveAspect = false;
             sel.transform.SetAsFirstSibling();
             sel.enabled = false;
+            var icon = F.Image("Icon", frame.transform, F.Sprite(ArtPaths.Tool("catapult")), Color.white, false, false);
+            F.Anchor((RectTransform)icon.transform, new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(88f, 88f), new Vector2(0.5f, 1f));
+            var cd = F.Image("CooldownFill", frame.transform, F.Ui("circle"), new Color(0f, 0f, 0f, 0.55f), false, false);
+            F.Anchor((RectTransform)cd.transform, new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(96f, 96f), new Vector2(0.5f, 1f));
+            cd.type = Image.Type.Filled; cd.fillMethod = Image.FillMethod.Radial360; cd.fillOrigin = 2; cd.fillClockwise = false; cd.fillAmount = 0f;
+            var cdText = F.OutlinedText("CooldownText", cd.transform, null, 38f, F.TextLight, TextAlignmentOptions.Center, "");
+            F.Stretch((RectTransform)cdText.transform);
+            cdText.gameObject.SetActive(false);
+            var label = F.Text("Label", frame.transform, null, 17f, F.TextLight, TextAlignmentOptions.Center, false, "");
+            F.AnchorStretchX((RectTransform)label.transform, 8f, 46f, 8f, 8f, 0f, 0f);
+            label.enableAutoSizing = true; label.fontSizeMin = 12f; label.fontSizeMax = 17f;
+            label.lineSpacing = -18f;
+            label.overflowMode = TextOverflowModes.Truncate;
             var view = frame.gameObject.AddComponent<ToolActionButton>();
-            F.Set(view, "button", btn); F.Set(view, "icon", icon); F.Set(view, "cooldownFill", cd); F.Set(view, "selectedFrame", sel); F.Set(view, "label", label);
+            F.Set(view, "button", btn); F.Set(view, "group", group); F.Set(view, "icon", icon); F.Set(view, "cooldownFill", cd); F.Set(view, "cooldownText", cdText);
+            F.Set(view, "selectedFrame", sel); F.Set(view, "label", label);
             return view;
         }
     }
