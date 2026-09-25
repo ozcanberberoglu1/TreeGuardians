@@ -1519,7 +1519,7 @@ TextureImporter:
         width: 174
         height: 143
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -1528,6 +1528,28 @@ TextureImporter:
       bones: []
       spriteID: 8b57f7637ef734884b677afd7441fc1f
       internalID: 8687486799443021748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mainmenuAtlas2_28
+      rect:
+        serializedVersion: 2
+        x: 594
+        y: 1845
+        width: 58
+        height: 58
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82f79ea93391349baad6e319e4c8463d
+      internalID: -56927855473298834
       vertices: []
       indices: 
       edges: []
